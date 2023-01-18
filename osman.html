@@ -18,51 +18,79 @@
         align-items: center;
         justify-content: left;
       }
-      .class{
-        margin-left: 20vh;
-        font-size: 42px;
-        color: white;
+      #abitbigger {
+        font-size: 72px;
       }
-      #text {
-        opacity: 0.2;
-        transition: opacity 2s ease-in-out;
-        margin-left: 20vh;
-        font-size: 42px;
+      .section1 {
         color: white;
+        font-size: 36px;
+        display: flex;
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
       }
+      .section2 {
+        background-color: gray;
+        color: white;
+        font-size: 36px;
+        display: flex;
+        height: 100vh;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+
     </style>
   </head>
-  <body>
-    <div class="fenster" id="left">
-      <div class="stuff" id="text" id="first">
-        Hi, my name is Osman Marmullaku. <a href="osman/skills.html" onclick="window.location.href = this.href; return false;">clickable word</a>
+  <body>  
+      <div class="section1">
+        <div id="header">
+          Hi, my name is Osman Marmullaku. <br> 
+          I love to express my creativity  through <br> 
+          <span id="abitbigger"> 
+            <a href="osman/skills.html" id="linky">code</a>
+          </span>
+          and  
+          <span id="abitbigger">
+            <a href="osman/art.html" id="linky">art</a>&nbsp
+          </span>
 
+          <span style="font-size: smaller; font-style: italic">
+            <br><br><br><br>Scroll down to learn more
+            about me. 
+          </span>
+        </div>
       </div>
-      <div class="stuff" id="picture">
 
+      <div class="section2">
+        <div class="childhood">
+          succ
+        </div>
       </div>
-    </div>
-    </div>
+
 
     <script>
+    // Get all sections
+    const sections = document.querySelectorAll('.section1, .section2, .section3');
 
-      function appearText(){
-        document.querySelector(#left).style.opacity = 1;
-      }
+    // Add event listener to the scroll event
+    window.addEventListener('scroll', () => {
+      // Get the current scroll position
+      const scrollPosition = window.pageYOffset;
 
-      window.onload = appearText();
-      
-
-      var i = 1;
-
-      if (window.scrollY >= 1500) {
-        document.body.style.backgroundImage = `url(image${i}.png)`;
-        i += 1;
-      if (windows.ScrollY >= 3000) {
-        document.body.style.backgroundImage = `url(image${i}.png)`;
-      }
-    }
-
+      // Iterate over each section
+      sections.forEach((section, index) => {
+        // Check if the current section is in view
+        if (scrollPosition >= section.offsetTop && scrollPosition < section.offsetTop + section.offsetHeight) {
+          // Add the 'active' class to the current section
+          section.classList.add('active');
+        } else {
+          // Remove the 'active' class from the current section
+          section.classList.remove('active');
+        }
+      });
+    });
 
     </script>
   </body>

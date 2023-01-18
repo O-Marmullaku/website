@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+    }
+
+    .center-text {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .section1 {
+      background-color: #f5f5f5;
+    }
+
+    .section2 {
+      background-color: #e5e5e5;
+      padding: 50px;
+    }
+    /* Add the below CSS to snap the first section to the top */
+    .section1.fixed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <div class="section1">
+    <div class="center-text">
+      <h1>I love expressing my creativity through film and picture</h1>
+      <p>Which is also the reason im self-taught in Adobe Photoshop, Premiere, Sony-Vegas and video creation alltogether.
+        I have 4 youtube channels with sum of 6'000 Subscribers where I post funny skits, gameplay and education footage.
+        All edited and designed to be as humorous and interesting as it can be.</div>
+  </div>
+
+  <div class="section2">
+    <h1>About me</h1>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed auctor, magna vel tincidunt condimentum, ipsum velit commodo enim, euismod feugiat nunc magna quis purus.</p>
+  </div>
+
+  <script>
+    // select the section1
+    const section1 = document.querySelector('.section1');
+
+    // Add event listener to the scroll event
+    window.addEventListener('scroll', () => {
+      if (window.pageYOffset > section1.offsetHeight) {
+        section1.classList.add('fixed');
+      } else {
+        section1.classList.remove('fixed');
+      }
+    });
+  </script>
+
+</body>
+</html>
