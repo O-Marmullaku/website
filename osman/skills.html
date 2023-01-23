@@ -7,10 +7,25 @@
     <title>Document</title>
     
     <style>
-        body {
-            margin-left: 35%;
-            margin-right: 35%;
+        .stuff {
+        align-items: center;
+        justify-content: center;
+        margin-left: 20%;
+        margin-right: 20%;
         }
+        
+        @media (min-width: 50%){
+            .stuff {
+                width: 20%;
+            }
+        }
+
+        @media (max-width: 900px) {
+            .stuff {
+                color: green;
+            }
+        }
+
         .header {
             justify-content: center;
             font-size: 24px;
@@ -19,14 +34,44 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        Ever since my father built a computer in front of my when I was a kid,
-        I have always been interested in computers. I love learning about new technologies,
-        languages, frameworks, etc. Check out some of my projects down below!
-    </div>
+    <div class="stuff">
+        <div class="header">
+            Ever since my father built a computer in front of my when I was a kid,
+            I have always been interested in computers. I love learning about new technologies,
+            languages, frameworks, etc. Check out some of my projects down below!
+        </div>
 
-    <div>
-        <a href="Osman/Skills/SentimentAnalysis.html" onclick="window.location.href = this.href; return false;">Simple Sentiment Analysis</a>
+        <div>
+            <a href="Osman/Skills/SentimentAnalysis.html" >Simple Media-Sentiment Analysis</a>
+        </div>
+
+        <div>
+            <a href="Osman/Skills/HardAlgorithmsExplainedEasily.html" >Hard Algorithms solved understandably</a>
+        </div>
+
+        <div>
+            <a href="Osman/Skills/TimeRez.html" >TimeRez - perception of time enhancer</a>
+        </div>
+
+        <div>
+            <a href="Osman/Skills/WebCreate.html" >Making a Webpage understandably</a>
+        </div>
+
+        <div>
+            <a href="Osman/Skills/SibChat.html" >SyBL - extreme lightweight chatting program for your siblings</a>
+        </div>
+
+        <div>
+            <a href="Osman/Skills/TASKer.html" >TASKer - lightweight application to automatize mundane tasks</a>
+        </div>
+
+        <div>
+            <a href="Osman/Skills/Misc.html" >Miscellaneous IT stuff I've done</a>
+        </div>
+
+        <div>
+            <a href="Osman/Skills/KAAE.html" >KAAE - the first truly HARDCORE first-person-shooter</a>
+        </div>
     </div>
 </body>
 </html>
