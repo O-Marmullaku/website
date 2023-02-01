@@ -60,10 +60,6 @@
       #theBabyHimself {
         padding-right: 0px;
       }
-      #theManHimself:active {
-        width: 500px;
-        height: 500px;
-      }
       .portrait:hover {
         cursor: pointer;
       }
@@ -81,7 +77,6 @@
         color: white;
       }
       .ArrowSection {
-
         margin-left: 40px;
         display: flex;
         flex-grow: 1;
