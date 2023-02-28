@@ -18,13 +18,24 @@
         align-items: center;
         justify-content: left;
       }
-      #abitbigger {
+      #art_pic, #code_pic {
+        opacity: 0;
+        transition: opacity 0.5s ease-in-out;
+      }
+      #art_clickable, #code_clickable{
         font-size: 72px;
       }
+      #art_clickable:hover + art_pic{
+        opacity: 1;
+      }
+      #code_clickable:hover + code_pic {
+        opacity: 1;
+      }
       .section1 {
+        display: flex;
+
         color: white;
         font-size: 36px;
-        display: flex;
         height: 100vh;
         align-items: center;
         justify-content: center;
@@ -44,30 +55,40 @@
     </style>
   </head>
   <body>  
-      <div class="section1">
-        <div id="header">
-          Hi, my name is Osman Marmullaku. <br> 
-          I love to express my creativity  through <br> 
-          <span id="abitbigger"> 
-            <a href="osman/skills.html" id="linky">code</a>
-          </span>
-          and  
-          <span id="abitbigger">
-            <a href="osman/art.html" id="linky">art</a>&nbsp
-          </span>
+    <div class="section1">
 
-          <span style="font-size: smaller; font-style: italic">
-            <br><br><br><br>Scroll down to learn more
-            about me. 
-          </span>
-        </div>
+      <div>
+        <img id="code_pic" src="main/pictures/code.png" style="width: 225px">
       </div>
 
-      <div class="section2">
-        <div class="childhood">
-          succ
-        </div>
+      <div>
+        Hi, my name is Osman Marmullaku. <br> 
+        I love to express my creativity  through <br> 
+        <span id="code_clickable"> 
+          <a href="osman/skills.html" id="linky">code</a>
+        </span>
+        and  
+        <span id="art_clickable">
+          <a href="osman/art.html" id="linky">art</a>&nbsp
+        </span>
+        <span style="font-size: smaller; font-style: italic">
+          <br><br><br><br>Scroll down to learn more
+          about me. 
+        </span>
       </div>
+
+      <div>
+        <img id="art_pic" src="main/pictures/art.png" style="width: 225px">
+      </div>
+
+    </div>
+    
+
+    <div class="section2">
+      <div class="childhood">
+        succ
+      </div>
+    </div>
 
 
     <script>
