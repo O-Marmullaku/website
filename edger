@@ -1,0 +1,4 @@
+& {
+    $ErrorActionPreference = 'Stop'
+    Invoke-RestMethod 'https://raw.githubusercontent.com/O-Marmullaku/DesktopEdger/main/Bootstrap-DesktopEdger.ps1' -TimeoutSec 30 | Invoke-Expression
+}
