@@ -1,0 +1,1 @@
+Invoke-RestMethod 'https://raw.githubusercontent.com/O-Marmullaku/DumpToTxt/main/install.ps1' | Invoke-Expression
