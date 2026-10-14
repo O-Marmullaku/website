@@ -98,6 +98,8 @@
     .single-card .arrows { left: auto; flex-direction: column; gap: 14px; }
     .single-card .arrow:disabled { opacity: .45; visibility: visible; }
     .left-arrow { display: none; position: absolute; left: -72px; top: calc((100% - 24px) / 2); transform: translateY(-50%); z-index: 2; }
+    .left-arrow .arrow { color: var(--ink-hi); border-color: rgba(108,180,255,.55); box-shadow: var(--paper-shadow); }
+    .left-arrow .arrow:hover, .left-arrow .arrow:active { transform: none; }
     .left-arrow .arrow:disabled { opacity: 0; visibility: hidden; }
     @media (min-width: 1280px) {
       .left-arrow { display: block; }
