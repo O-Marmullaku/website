@@ -10,12 +10,6 @@
 <body>
   <header><a class="brand" href="../">Marmullaku</a><button id="sign-out" hidden>Sign out</button></header>
   <main>
-    <section id="login" class="login">
-      <h1>Sibling sign-in</h1><p class="muted">Your CV, company links, and the family archive.</p>
-      <form id="email-form"><label>Email<input name="email" type="email" autocomplete="email" required maxlength="254"></label><button class="primary" type="submit">Send sign-in code</button></form>
-      <form id="code-form" hidden><label>Code from your email<input name="code" autocomplete="one-time-code" inputmode="numeric" required pattern="[0-9]{6,10}" maxlength="10"></label><button class="primary" type="submit">Sign in</button><button id="change-email" type="button">Use another email</button></form>
-      <p id="login-status" role="status"></p>
-    </section>
     <section id="workspace" hidden>
       <div class="page-title"><div><h1 id="owner-name">Your résumé</h1><p class="muted">Shared only through your active company links.</p></div><a class="button" href="legacy.html">Family archive</a></div>
       <nav class="tabs" aria-label="Sibling area"><button id="cv-tab" aria-current="page">Edit CV</button><button id="links-tab">Company links</button></nav>

@@ -1,6 +1,9 @@
 (() => {
   const $ = id => document.getElementById(id), session = window.siblingSession;
-  let profile, email = '', dirty = false;
+  let profile, dirty = false;
+  function signInRedirect() {
+    location.replace('../?sign-in=1' + (new URLSearchParams(location.search).get('return') === 'legacy' ? '&return=legacy' : ''));
+  }
   const sections = [
     ['contact', 'Contact', [['label', 'Text', 200], ['href', 'Link · optional', 500]]],
     ['skills', 'Skills', [['label', 'Skill', 100], ['level', 'Proficiency · 0–100', 100, 'number']]],
@@ -15,24 +18,9 @@
     const button = form.querySelector('button[type=submit]'); button.disabled = true;
     try { await work(); } finally { button.disabled = false; }
   }
-  $('email-form').addEventListener('submit', e => {
-    e.preventDefault(); submit(e.currentTarget, async () => {
-      email = new FormData(e.target).get('email').trim().toLowerCase();
-      status('login-status', 'Sending your sign-in code…');
-      try { await session.sendCode(email); $('email-form').hidden = true; $('code-form').hidden = false; status('login-status', 'If this email has sibling access, a sign-in code is on its way.'); $('code-form').elements.code.focus(); }
-      catch (error) { status('login-status', error.message, true); }
-    });
-  });
-  $('change-email').addEventListener('click', () => { $('email-form').hidden = false; $('code-form').hidden = true; status('login-status', ''); });
-  $('code-form').addEventListener('submit', e => {
-    e.preventDefault(); submit(e.currentTarget, async () => {
-      try { await session.verify(email, new FormData(e.target).get('code').trim()); e.target.reset(); await load(); }
-      catch (error) { status('login-status', error.message, true); }
-    });
-  });
   $('sign-out').addEventListener('click', async () => {
     if (dirty && !confirm('Leave without saving your CV changes?')) return;
-    dirty = false; await session.signOut(); location.reload();
+    dirty = false; await session.signOut(); location.assign('../');
   });
   function tab(name) {
     $('cv-panel').hidden = name !== 'cv'; $('links-panel').hidden = name !== 'links';
@@ -129,10 +117,13 @@
   async function load() {
     try {
       ({profile} = await session.request('profile')); fillCV(); await listLinks();
-      $('owner-name').textContent = profile.display_name; $('workspace').hidden = false; $('login').hidden = true; $('sign-out').hidden = false; status('global-status', '');
+      $('owner-name').textContent = profile.display_name; $('workspace').hidden = false; $('sign-out').hidden = false; status('global-status', '');
       if (new URLSearchParams(location.search).get('return') === 'legacy') { location.replace('legacy.html'); return; }
       if (location.search.includes('links')) tab('links');
-    } catch (error) { status('login-status', error.message, true); if (error.status === 401 || error.status === 403) await session.signOut(); }
+    } catch (error) {
+      status('global-status', error.message, true);
+      if (error.status === 401 || error.status === 403) { await session.signOut(); signInRedirect(); }
+    }
   }
-  if (session.active) load();
+  if (session.active) load(); else signInRedirect();
 })();

@@ -11,3 +11,18 @@
 .access-dialog [hidden] { display: none; }
 .access-dialog :focus-visible { outline: 2px solid #6cb4ff; outline-offset: 4px; }
 .access-dialog .access-error { color: #ffb4ab; margin-top: 16px; margin-bottom: 0; }
+.footer-identity { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-sign-in { border: 0; background: none; padding: 8px 0; color: var(--muted); font: inherit; cursor: pointer; text-underline-offset: 4px; }
+.footer-sign-in:hover { color: var(--text); text-decoration: underline; }
+.sign-in-dialog { width: min(420px, calc(100% - 32px)); }
+.sign-in-dialog h2 { margin-top: 0; margin-bottom: 28px; }
+.sign-in-dialog label { display: block; color: #d8e4f3; font-size: 15px; margin-bottom: 20px; }
+.sign-in-dialog input { box-sizing: border-box; display: block; width: 100%; min-height: 48px; margin-top: 8px; padding: 12px 14px; border: 1px solid #435974; border-radius: 8px; background: #101c2e; color: #eef3fa; font: inherit; font-size: 16px; }
+.sign-in-dialog .password-field { display: block; position: relative; }
+.sign-in-dialog .password-field input { padding-right: 50px; }
+.password-toggle { position: absolute; right: 4px; top: 4px; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: #b8c6d9; cursor: pointer; }
+.password-toggle:hover { color: #eef3fa; background: #20334d; }
+.sign-in-secondary { display: block; margin: 18px auto 0; padding: 6px; border: 0; background: transparent; color: #b8c6d9; font: inherit; font-size: 14px; cursor: pointer; text-underline-offset: 4px; }
+.sign-in-secondary:hover { color: #eef3fa; text-decoration: underline; }
+.sign-in-dialog .access-error { font-size: 14px; margin: 0 0 16px; }
+.sign-in-dialog .access-error:empty { display: none; }

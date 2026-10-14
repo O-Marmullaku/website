@@ -350,12 +350,25 @@
 
   <footer>
     <div class="container">
-      <p>© 2026 Marmullaku</p>
-      <a href="admin/">Sibling sign-in</a>
+      <div class="footer-identity"><button type="button" class="footer-sign-in" id="sign-in-trigger">Sign in</button><p>© 2026 Marmullaku</p></div>
       <p data-i18n="rights">All rights reserved.</p>
     </div>
   </footer>
 
+  <dialog class="access-dialog sign-in-dialog" id="sign-in-dialog" aria-labelledby="sign-in-title">
+    <button class="access-close" id="sign-in-close" type="button" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2 id="sign-in-title">Sign in</h2>
+    <p id="sign-in-help" hidden></p>
+    <form id="sign-in-form">
+      <label id="sign-in-email-label">Email<input id="sign-in-email" name="email" type="email" autocomplete="username" required maxlength="254" autofocus></label>
+      <label id="sign-in-password-label">Password<span class="password-field"><input id="sign-in-password" name="password" type="password" autocomplete="current-password" required maxlength="128"><button type="button" class="password-toggle" id="password-toggle" aria-label="Show password" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
+      <label id="sign-in-code-label" hidden>Email code<input id="sign-in-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" disabled></label>
+      <p class="access-error" id="sign-in-status" role="alert"></p>
+      <button class="access-action" id="sign-in-submit" type="submit">Sign in</button>
+    </form>
+    <button type="button" class="sign-in-secondary" id="sign-in-setup">Set up or reset password</button>
+    <button type="button" class="sign-in-secondary" id="sign-in-back" hidden>Back to sign in</button>
+  </dialog>
   <dialog class="access-dialog" id="access-dialog" aria-labelledby="access-title" aria-describedby="access-detail">
     <button class="access-close" id="access-close" type="button" data-i18n-label="close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     <h2 id="access-title">Private résumé</h2>
@@ -402,6 +415,8 @@
 
   <script src="main/backend-config.js"></script>
   <script src="main/access-api.js"></script>
+  <script src="admin/session.js"></script>
+  <script src="main/sign-in.js"></script>
   <script src="main/private-access.js"></script>
   <script src="main/cv-safe.js"></script>
   <script src="main/cv-playground.js"></script>

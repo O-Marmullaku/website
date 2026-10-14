@@ -9,8 +9,11 @@ changing other applications' tables. See the shared infrastructure registry in
 Only a confirmed email explicitly assigned to a sibling's `invite_email` can
 claim that profile. All other shared Auth users receive 403. Provision invitations
 through trusted SQL; clients cannot assign email or ownership. One user owns one
-profile. Sibling sign-in requests email codes only for invited addresses; no
-invitations are sent by deployment. The `app: marmullaku` signup routing marker
+profile. The homepage Sign in dialog uses email and password. First-time setup
+and password reset verify an invited email code before the user chooses a password.
+Neither passwords nor codes are retained in browser storage. The shared session
+is tab-local; the password is shared with any other apps using the same Auth account.
+No invitations are sent by deployment. The `app: marmullaku` signup routing marker
 prevents creating an unrelated Cards profile; it grants no Marmullaku access.
 
 Company links use 32 random bytes in a URL fragment. Only their SHA-256 hashes
@@ -23,7 +26,7 @@ are restricted to HTTP(S), mailto, and tel.
 
 Deploy `schema.sql` once with the Supabase migration tool, and apply the narrowly
 scoped routing update in `auth-routing.sql` after checking the current shared
-signup trigger. Run `node --test tests/private-access.test.mjs` before deployment.
+signup trigger. Run `node --test tests/private-access.test.mjs tests/session.test.mjs` before deployment.
 The Edge Function deployment includes `index.ts` and `handler.mjs`. The original
 archive is stored in service-only `marmullaku_archive_chunks`, covered by the
 shared PostgreSQL backups. The archive is **not** committed or served by Pages.
