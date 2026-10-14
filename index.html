@@ -78,7 +78,7 @@
     /* fractional --visible leaves the next card peeking; each edge fades by how far there is left to scroll (set in ends()) */
     .people { -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fl), #000 calc(100% - var(--fr)), transparent);
       mask-image: linear-gradient(to right, transparent, #000 var(--fl), #000 calc(100% - var(--fr)), transparent); }
-    /* Each direction sits beside its corresponding faded edge, centred on the cards. */
+    /* Roomy desktops and single-card layouts use a right-hand pair; intermediate layouts flank the cards. */
     .carousel { --gutter: 0px; position: relative; }
     .arrows { position: absolute; left: -72px; right: -72px; top: calc((100% - 24px) / 2); transform: translateY(-50%); z-index: 2;
       display: flex; flex-direction: row-reverse; justify-content: space-between; pointer-events: none; }
@@ -97,6 +97,10 @@
     .carousel.single-card { padding-left: 0; }
     .single-card .arrows { left: auto; flex-direction: column; gap: 14px; }
     .single-card .arrow:disabled { opacity: .45; visibility: visible; }
+    @media (min-width: 1280px) {
+      .arrows { left: auto; flex-direction: column; gap: 14px; }
+      .arrow:disabled { opacity: .45; visibility: visible; }
+    }
 
     /* cards: frosted navy panels; the portrait bleeds to the edge, the one you're on lights up gold along its foot */
     .card { scroll-snap-align: start; background: var(--card); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden;
@@ -329,7 +333,7 @@
     </ul>
     <div class="arrows">
       <button type="button" class="arrow next" id="next" aria-label="Next"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
-      <button type="button" class="arrow prev" id="prev" aria-label="Previous"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+      <button type="button" class="arrow prev" id="prev" aria-label="Previous" disabled><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
     </div>
     </div>
   </main>
