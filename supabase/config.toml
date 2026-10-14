@@ -1,0 +1,3 @@
+[functions.marmullaku-access]
+# Visitor actions authenticate a random invitation token. Sibling actions verify an Auth JWT and ownership inside the handler.
+verify_jwt = false

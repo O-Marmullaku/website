@@ -1,0 +1,13 @@
+.access-dialog { box-sizing: border-box; width: min(460px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow: auto; padding: 32px; border: 1px solid #30445e; border-radius: 16px; background: #152238; color: #eef3fa; font: inherit; box-shadow: 0 24px 80px -24px #000; }
+.access-dialog::backdrop { background: rgba(6,12,22,.8); }
+.access-dialog[open] { animation: access-arrive .3s cubic-bezier(.2,.8,.2,1); }
+@keyframes access-arrive { from { opacity: 0; transform: translateY(12px); } }
+.access-dialog h2 { font-size: 30px; font-weight: 500; line-height: 1.2; margin: 18px 0 12px; padding-right: 44px; overflow-wrap: anywhere; }
+.access-dialog p { color: #b8c6d9; margin: 0 0 24px; line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
+.access-dialog .access-close { position: absolute; right: 20px; top: 20px; border: 0; background: transparent; color: #b8c6d9; width: 36px; height: 36px; display: grid; place-items: center; cursor: pointer; }
+.access-dialog .access-action { width: 100%; padding: 14px 20px; border: 0; border-radius: 8px; background: #6cb4ff; color: #0b1a2e; font: inherit; font-weight: 500; cursor: pointer; transition: background .2s; }
+.access-dialog .access-action:hover { background: #91c7ff; }
+.access-dialog .access-action:disabled { cursor: wait; opacity: .65; }
+.access-dialog [hidden] { display: none; }
+.access-dialog :focus-visible { outline: 2px solid #6cb4ff; outline-offset: 4px; }
+.access-dialog .access-error { color: #ffb4ab; margin-top: 16px; margin-bottom: 0; }

@@ -4,6 +4,8 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, noimageindex" />
+  <meta name="referrer" content="no-referrer" />
+  <link rel="stylesheet" href="main/private-access.css" />
   <title>Marmullaku</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -349,10 +351,18 @@
   <footer>
     <div class="container">
       <p>© 2026 Marmullaku</p>
+      <a href="admin/">Sibling sign-in</a>
       <p data-i18n="rights">All rights reserved.</p>
     </div>
   </footer>
 
+  <dialog class="access-dialog" id="access-dialog" aria-labelledby="access-title" aria-describedby="access-detail">
+    <button class="access-close" id="access-close" type="button" data-i18n-label="close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2 id="access-title">Private résumé</h2>
+    <p id="access-detail"></p>
+    <button class="access-action" id="access-continue" type="button" hidden>View CV</button>
+    <p class="access-error" id="access-error" role="alert"></p>
+  </dialog>
   <dialog class="sheet" id="sheet" aria-labelledby="cv-name">
     <div class="tools">
       <button class="tool" type="button" id="save" data-i18n-label="save" aria-label="Save as PDF"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
@@ -390,6 +400,10 @@
     </div><aside class="project-rail" id="project-rail" aria-label="Project previews" hidden></aside><aside class="playground" id="playground" aria-label="Project preview" popover="auto" tabindex="-1" hidden></aside></div>
   </dialog>
 
+  <script src="main/backend-config.js"></script>
+  <script src="main/access-api.js"></script>
+  <script src="main/private-access.js"></script>
+  <script src="main/cv-safe.js"></script>
   <script src="main/cv-playground.js"></script>
   <script>
     const T = {
@@ -445,6 +459,7 @@
       }
     };
 
+    const publicProfiles = new Map();
     const langBtns = document.querySelectorAll("#lang button");
     function setLang(lang) {
       const t = T[lang];
@@ -452,6 +467,10 @@
       langBtns.forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
       document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t[el.dataset.i18n]; });
       document.querySelectorAll("[data-i18n-label]").forEach(el => { el.setAttribute("aria-label", t[el.dataset.i18nLabel]); });
+      publicProfiles.forEach(p => {
+        const role = document.querySelector(`.role[data-i18n="${p.id}"]`);
+        if (role) { role.textContent = p.role || t.draft; role.closest('.card').querySelector('.open').textContent = p.display_name; }
+      });
       try { localStorage.setItem("lang", lang); } catch (e) {}
     }
     langBtns.forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
@@ -459,6 +478,10 @@
     try { saved = localStorage.getItem("lang"); } catch (e) {}
     const browser = (navigator.language || "en").slice(0, 2);
     setLang(T[saved] ? saved : T[browser] ? browser : "en");
+    window.marmullakuRequest('directory').then(({profiles}) => {
+      profiles.forEach(p => publicProfiles.set(p.id, p));
+      setLang(document.documentElement.lang);
+    }).catch(() => {});
 
     const track = document.querySelector(".people"), prev = document.getElementById("prev"), next = document.getElementById("next");
     const prevLeft = document.getElementById("prev-left");
@@ -518,30 +541,6 @@
     const draftHTML = cvBody.innerHTML;
     let card = null, busy = false, cardFade = null, pinned = null;
 
-    // Shared layout content until participant details are supplied.
-    const placeholderCV = {
-      contact: [["Lorem ipsum dolor"], ["Sit amet consectetur"], ["Adipiscing elit"]],
-      skills: [["Lorem ipsum", 92], ["Dolor sit amet", 88], ["Consectetur", 85], ["Adipiscing elit", 84], ["Sed do eiusmod", 80], ["Tempor incididunt", 78], ["Ut labore", 74], ["Dolore magna", 70]],
-      languages: [["Lorem", "Ipsum"], ["Dolor", "Sit amet"], ["Consectetur", "Elit"], ["Adipiscing", "Lorem"]],
-      profile: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
-      experience: [
-        { when: "Lorem – ipsum", title: "Dolor sit amet", org: "Consectetur adipiscing elit", tags: [],
-          demos: [["sample-one", "Lorem ipsum"], ["sample-two", "Dolor sit amet"]],
-          points: ["Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua", "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris", "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore"] },
-        { when: "Dolor – sit amet", title: "Sed do eiusmod", org: "Tempor incididunt ut labore", tags: [],
-          points: ["Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia", "Deserunt mollit anim id est laborum"] }
-      ],
-      education: [
-        { when: "Lorem – ipsum", title: "Dolor sit amet", org: "Consectetur adipiscing elit" },
-        { when: "Sed – eiusmod", title: "Tempor incididunt", org: "Ut labore et dolore magna" }
-      ],
-      certs: [
-        { when: "Lorem", title: "Ipsum dolor sit amet", org: "Consectetur adipiscing" },
-        { when: "Dolor", title: "Sed do eiusmod tempor", org: "Incididunt ut labore" }
-      ],
-      interests: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-    };
-    const CV = Object.fromEntries(["osman", "diellza", "drilona", "drenusha", "dredhza", "ali"].map(id => [id, placeholderCV]));
     // returns the two pages' bodies: page 1 the résumé proper, page 2 education and the rest
     function render(d) {
       const t = T[document.documentElement.lang], h = k => `<h3 data-i18n="${k}">${t[k]}</h3>`;
@@ -624,16 +623,17 @@
     // wide enough to let the paper's shadow through once it has landed
     const unclipped = { transform: "none", clipPath: "inset(-80px -80px -80px -80px round 2px)" };
     const key = c => c.querySelector(".role").dataset.i18n;
-    function open(c) {
+    function open(c, authorizedProfile) {
+      if (!authorizedProfile || authorizedProfile.id !== key(c)) return window.requestPrivateCV(c);
       if (busy) return;
       busy = true; card = c;
-      history.replaceState(null, "", "#" + key(c));
+      if (!window.marmullakuInvitationURL) history.replaceState(null, "", "#" + key(c));
       cvPhoto.replaceChildren(Object.assign(new Image(), { src: c.querySelector(".media .who").src, alt: "" }));
-      cvName.textContent = c.querySelector(".name").textContent;
-      cvRole.textContent = c.querySelector(".role").textContent;
+      cvName.textContent = authorizedProfile.display_name;
+      cvRole.textContent = authorizedProfile.role;
       cvLink.hidden = true;
       cvLink.removeAttribute("href");
-      const d = CV[key(c)];
+      const d = escapeDocument(authorizedProfile.cv);
       const playground = document.getElementById("playground");
       const interactive = !!d;
       if (playground.matches(":popover-open")) playground.hidePopover();
@@ -641,9 +641,9 @@
       clearTimeout(previewTimer);
       rail.hidden = !interactive;
       rail.innerHTML = interactive ? `
-        <section class="rail-section"><h3>Previews</h3><div class="sample-previews">${d.experience[0].demos.map(([id, label]) => `<button type="button" class="preview-thumb" data-project="${id}" aria-label="Preview ${label.toLowerCase()}" aria-expanded="false" aria-controls="playground"><img src="main/pictures/previews/${id}.svg" alt="${label} sample" /><span>${label}</span></button>`).join("")}</div></section>
-        <section class="rail-section"><h3>Links</h3><a class="project-website" href="https://example.com/#lorem" target="_blank" rel="noopener" aria-label="Lorem ipsum sample link">Lorem ipsum ↗</a><a class="project-website" href="https://example.com/#dolor" target="_blank" rel="noopener" aria-label="Dolor sit amet sample link">Dolor sit amet ↗</a></section>
-        <section class="rail-section"><h3>Facts</h3><dl class="sample-facts"><dt>Lorem</dt><dd>Ipsum dolor</dd><dt>Sit amet</dt><dd>Consectetur</dd><dt>Adipiscing</dt><dd>Elit</dd></dl></section>` : "";
+        <section class="rail-section"><h3>Previews</h3><div class="sample-previews">${(d.experience[0]?.demos || []).filter(([id]) => ["sample-one", "sample-two"].includes(id)).map(([id, label]) => `<button type="button" class="preview-thumb" data-project="${id}" aria-label="Preview ${label.toLowerCase()}" aria-expanded="false" aria-controls="playground"><img src="main/pictures/previews/${id}.svg" alt="${label} sample" /><span>${label}</span></button>`).join("")}</div></section>
+        ` : "";
+      rail.hidden = !rail.querySelector('.preview-thumb');
       selectProject = interactive ? mountPlayground(playground) : null;
       const [p1, p2] = d ? render(d) : [draftHTML];
       cvBody.innerHTML = p1;
@@ -680,11 +680,12 @@
       paper.animate([{ ...unclipped, opacity: 1 }, { offset: .5, backgroundColor: "#ffffff", opacity: 1 }, { ...fromCard(), backgroundColor: "#1a2a42", opacity: 0 }], timing).finished.then(() => {
         sheet.close();
         cardFade.cancel();
-        history.replaceState(null, "", location.pathname + location.search);
+        if (!window.marmullakuInvitationURL) history.replaceState(null, "", location.pathname + location.search);
         card.querySelector(".open").focus({ preventScroll: true });
         busy = false;
       });
     }
+    window.openPrivateCV = open;
     track.addEventListener("click", e => {
       const c = e.target.closest(".card");
       if (c) open(c);
@@ -700,7 +701,7 @@
     // phones get the native share sheet; elsewhere the link is copied and the button confirms it
     const shareBtn = document.getElementById("share");
     shareBtn.addEventListener("click", async () => {
-      const url = location.href, t = T[document.documentElement.lang];
+      const url = window.marmullakuInvitationURL || location.href, t = T[document.documentElement.lang];
       if (navigator.share && matchMedia("(pointer: coarse)").matches) return navigator.share({ title: `${cvName.textContent} – CV`, url }).catch(() => {});
       try { await navigator.clipboard.writeText(url); } catch (e) { prompt(t.share, url); return; }
       shareBtn.classList.add("done");

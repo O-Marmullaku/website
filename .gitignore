@@ -1,0 +1,4 @@
+/work/
+**/private-legacy.json
+.env
+.env.*
