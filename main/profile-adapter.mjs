@@ -1,4 +1,4 @@
-import { normalizeRows } from '../mockup/cv-rows.mjs?v=accounts-1';
+import { normalizeRows } from '../mockup/cv-rows.mjs?v=accounts-2';
 import { validatePDF } from '../mockup/pdf-store.mjs';
 
 // The editor's media are in-memory previews; only private asset IDs are saved.

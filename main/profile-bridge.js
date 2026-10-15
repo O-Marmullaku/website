@@ -37,6 +37,7 @@
     }
     edit.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();if(busy)return;if(role.isContentEditable){finish();return;}original=role.textContent;role.contentEditable='plaintext-only';role.setAttribute('role','textbox');role.setAttribute('aria-label','Professional title');edit.setAttribute('aria-pressed','true');role.focus();});
     role.addEventListener('input',()=>{if(role.textContent.length>160)role.textContent=role.textContent.slice(0,160);});
+    role.addEventListener('click',event=>{if(role.isContentEditable)event.stopPropagation();});
     role.addEventListener('blur',()=>finish());role.addEventListener('keydown',event=>{if(['Enter','Escape'].includes(event.key)){event.preventDefault();event.stopPropagation();finish(event.key!=='Escape');}});
     let field=role.closest('.card-title-field');
     if(!field){field=document.createElement('div');field.className='card-title-field';role.before(field);field.append(role);}

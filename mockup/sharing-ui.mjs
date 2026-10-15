@@ -3,7 +3,7 @@ import {
   companySections,
   visibleProfiles,
   summarizeActivity,
-} from "./sharing-model.mjs?v=accounts-1";
+} from "./sharing-model.mjs?v=accounts-2";
 
 const storageKey = "marmullaku-sharing-mockup-v1";
 const siblings = ["Diellza", "Drilona", "Drenusha", "Dredhza", "Ali"];

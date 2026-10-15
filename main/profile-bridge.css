@@ -8,7 +8,7 @@
 .footer-settings,.card-title-edit{display:inline-flex;align-items:center;justify-content:center;padding:4px;border:0;background:transparent;color:#acbbce;cursor:pointer;border-radius:4px}
 .footer-settings:hover,.card-title-edit:hover{color:#86c1ff;background:#20314b}
 .footer-settings svg,.card-title-edit svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-.card-title-field{display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0}
+.card-title-field{display:flex;align-items:flex-start;gap:6px;flex:1;min-width:0;position:relative;z-index:2}
 .card-title-field .role{flex:1;min-width:0}
 .card-title-edit{flex:none;align-self:flex-start;margin:0}
 .role[contenteditable=plaintext-only]{outline:1px solid #86c1ff;outline-offset:4px;cursor:text}

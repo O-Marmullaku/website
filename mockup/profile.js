@@ -1,13 +1,13 @@
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs";
-import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-1";
-import { createRowEditor } from "./cv-row-editor.mjs?v=accounts-1";
-import { createSharingUI } from "./sharing-ui.mjs?v=accounts-1";
+import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
+import { createRowEditor } from "./cv-row-editor.mjs?v=accounts-2";
+import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {
   const live = document.documentElement.dataset.live === 'true';
-  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=accounts-1')).createLiveAdapter() : null;
+  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=accounts-2')).createLiveAdapter() : null;
   const fileStore = adapter || {putPDF,getPDF,deletePDF};
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
@@ -1015,7 +1015,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-1";
       $("pdf-file").value = "";
     }
   });
-  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=accounts-1')).createLiveSharing(adapter,openResume) : createSharingUI({
+  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=accounts-2')).createLiveSharing(adapter,openResume) : createSharingUI({
     name: data.name,
     onOpenCV: openResume,
     beforePreview() {

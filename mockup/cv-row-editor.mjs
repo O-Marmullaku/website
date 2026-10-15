@@ -1,4 +1,4 @@
-import { rowLayouts, moveRow } from "./cv-rows.mjs?v=accounts-1";
+import { rowLayouts, moveRow } from "./cv-rows.mjs?v=accounts-2";
 
 export function createRowEditor({
   rows,
