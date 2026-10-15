@@ -293,90 +293,38 @@
 
     <dialog id="settings-panel" aria-labelledby="settings-title">
       <div class="panel-head">
-        <div>
-          <h2 id="settings-title">Settings</h2>
-          <p>Manage your links and family access.</p>
-        </div>
-        <button
-          class="icon-button"
-          data-close="settings-panel"
-          aria-label="Close profile settings"
-        >
-          <svg><use href="#close" /></svg>
-        </button>
+        <h2 id="settings-title">Settings</h2>
+        <button class="icon-button" data-close="settings-panel" aria-label="Close profile settings"><svg><use href="#close" /></svg></button>
       </div>
       <div class="settings-tabs" role="tablist" aria-label="Access settings">
-        <button
-          role="tab"
-          id="companies-tab"
-          aria-selected="true"
-          aria-controls="companies"
-        >
-          Company links</button
-        ><button
-          role="tab"
-          id="family-tab"
-          aria-selected="false"
-          aria-controls="family-panel"
-        >
-          Family
-        </button>
+        <button role="tab" id="companies-tab" aria-selected="true" aria-controls="companies">Company links</button>
+        <button role="tab" id="family-tab" aria-selected="false" aria-controls="family-panel" tabindex="-1">Family</button>
       </div>
-      <div id="companies" role="tabpanel" aria-labelledby="companies-tab">
-        <label class="field-label" for="company-name">Company</label>
-        <div class="company-search">
-          <input
-            id="company-name"
-            maxlength="120"
-            placeholder="Search or add a company"
-            autocomplete="off"
-            role="combobox"
-            aria-autocomplete="list"
-            aria-expanded="false"
-            aria-controls="company-suggestions"
-          />
-          <div
-            id="company-suggestions"
-            role="listbox"
-            aria-label="Companies"
-            hidden
-          ></div>
+      <div class="settings-content">
+        <div id="companies" role="tabpanel" aria-labelledby="companies-tab">
+          <form id="company-create-form">
+            <label class="field-label" for="company-name">Company</label>
+            <div class="company-composer">
+              <div class="company-search">
+                <input id="company-name" maxlength="120" placeholder="Search or enter a name" autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="company-suggestions" />
+                <div id="company-suggestions" role="listbox" aria-label="Companies" hidden></div>
+              </div>
+              <button class="primary" id="create-link" type="submit">Create link</button>
+            </div>
+            <p class="composer-note">Anyone with the link can view your full CV.</p>
+          </form>
+          <div class="links-heading"><h3>Links</h3><span id="link-total"></span></div>
+          <div id="company-links"></div>
         </div>
-        <p class="search-help">Choose a suggestion or add a company.</p>
-        <div class="sharing-actions">
-          <button class="secondary" id="preview-company">Preview</button
-          ><button class="primary" id="create-link">Create link</button>
+        <div id="family-panel" role="tabpanel" aria-labelledby="family-tab" hidden>
+          <h3 class="family-sharing-title">Share my CV with family</h3>
+          <p class="family-help">They can view your CV and include it in their company links.</p>
+          <div id="sibling-permissions"></div>
         </div>
-        <p class="context-help">
-          Each link opens your full CV, documents and extras.
-        </p>
-        <div class="section-label"><h3>Your links</h3></div>
-        <p class="context-help">
-          Anyone with a link can use it. Turn it off whenever you want.
-        </p>
-        <div id="company-links"></div>
-        <p class="context-help activity-help">
-          Activity belongs to the link. If someone forwards it, their visits
-          appear here too.
-        </p>
       </div>
-      <div
-        id="family-panel"
-        role="tabpanel"
-        aria-labelledby="family-tab"
-        hidden
-      >
-        <h3 class="family-sharing-title">Let family share my CV</h3>
-        <p class="family-help">
-          They can open your CV and include it in their company links. You can
-          turn this off at any time.
-        </p>
-        <div id="sibling-permissions"></div>
-      </div>
-      <p class="mockup-note" id="settings-status" role="status">
-        Preview only. Links and activity stay in this browser.
-      </p>
+      <div class="settings-footer"><button id="preview-sign-out" class="text-button">Sign out</button></div>
+      <div id="settings-status" class="settings-toast" role="status" hidden></div>
     </dialog>
-    <script type="module" src="editor-bootstrap.mjs?v=site-preview"></script>
+    <script type="module" src="editor-bootstrap.mjs?v=link-manager"></script>
   </body>
 </html>
