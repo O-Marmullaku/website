@@ -17,9 +17,11 @@ await window.marmullakuPreviewReady;
   }
   function signedFooter() {
     identity.replaceChildren();const text=document.createElement('span');text.textContent='Signed in as ';
-    const name=document.createElement('a');name.href=new URL('#settings',location.href);name.textContent=own.display_name;name.className='footer-account-name';name.addEventListener('click',event=>{event.preventDefault();open('settings',own.id);});
-    const settings=document.createElement('button');settings.className='footer-settings';settings.setAttribute('aria-label','Open settings');settings.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.7 4.3.6-2.3h3.4l.6 2.3 2.1 1.2 2.3-.6 1.7 2.9-1.7 1.7v2.5l1.7 1.7-1.7 2.9-2.3-.6-2.1 1.2-.6 2.3h-3.4l-.6-2.3-2.1-1.2-2.3.6-1.7-2.9 1.7-1.7V9.5L3.6 7.8l1.7-2.9 2.3.6z"/><circle cx="12" cy="11" r="3"/></svg>';settings.addEventListener('click',()=>open('settings',own.id));
-    identity.append(text,name,settings);
+    const settings=document.createElement('a');settings.href=new URL('#settings',location.href);settings.className='footer-account-control';settings.setAttribute('aria-label','Open settings');settings.title='Account settings';
+    const name=document.createElement('span');name.textContent=own.display_name;
+    const gear=document.createElement('span');gear.className='footer-account-gear';gear.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.7 4.3.6-2.3h3.4l.6 2.3 2.1 1.2 2.3-.6 1.7 2.9-1.7 1.7v2.5l1.7 1.7-1.7 2.9-2.3-.6-2.1 1.2-.6 2.3h-3.4l-.6-2.3-2.1-1.2-2.3.6-1.7-2.9 1.7-1.7V9.5L3.6 7.8l1.7-2.9 2.3.6z"/><circle cx="12" cy="11" r="3"/></svg>';
+    settings.append(name,gear);settings.addEventListener('click',event=>{event.preventDefault();open('settings',own.id);});
+    identity.classList.add('signed-account');identity.append(text,settings);
   }
   function ownTitle() {
     document.querySelectorAll('.card-title-edit').forEach(el=>el.remove());
