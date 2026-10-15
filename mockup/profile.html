@@ -34,6 +34,11 @@
         <symbol id="pdf-icon" viewBox="0 0 24 24">
           <path d="M14 3H5v18h14V8zM14 3v5h5M8 13h8M8 17h6" />
         </symbol>
+        <symbol id="more-icon" viewBox="0 0 24 24">
+          <circle cx="5" cy="12" r="1" />
+          <circle cx="12" cy="12" r="1" />
+          <circle cx="19" cy="12" r="1" />
+        </symbol>
       </defs>
     </svg>
     <header class="site-header">
@@ -137,6 +142,8 @@
       <div class="resume-toolbar">
         <span id="resume-mode">Your résumé</span
         ><span id="resume-status" role="status"></span
+        ><button class="text-button cv-owner" id="undo-row" hidden>
+          Undo row change</button
         ><button class="text-button" id="cancel-attachment" hidden>
           Cancel attachment</button
         ><button class="text-button" id="exit-preview" hidden>
@@ -247,6 +254,12 @@
         </aside>
       </div>
       <input id="pdf-file" type="file" accept="application/pdf,.pdf" hidden />
+      <input
+        id="row-logo"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        hidden
+      />
       <input
         id="extra-picture"
         type="file"

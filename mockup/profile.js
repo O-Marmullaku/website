@@ -1,6 +1,8 @@
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs";
+import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs";
+import { createRowEditor } from "./cv-row-editor.mjs";
 
 (() => {
   const key = "marmullaku-profile-mockup-v1",
@@ -48,9 +50,13 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
     documentURL = null,
     documentGeneration = 0,
     documentTrigger = null;
-  let viewerPromise;
+  let viewerPromise,
+    cvRows,
+    rowEditor,
+    uploadAnchor = null;
   try {
     const stored = JSON.parse(localStorage.getItem(key));
+    cvRows = stored?.cvRows;
     if (stored && typeof stored === "object")
       for (const field of Object.keys(initial))
         if (typeof stored[field] === "string") data[field] = stored[field];
@@ -66,6 +72,11 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
           typeof saved.quote === "string" ? saved.quote.slice(0, 5000) : "",
         before: typeof saved.before === "string" ? saved.before.slice(-32) : "",
         after: typeof saved.after === "string" ? saved.after.slice(0, 32) : "",
+        rowId:
+          typeof saved.rowId === "string" &&
+          /^[a-f0-9-]{36}$/i.test(saved.rowId)
+            ? saved.rowId
+            : null,
       };
     }
     if (Array.isArray(stored?.documents))
@@ -82,6 +93,11 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
           anchor: sections.some(([field]) => field === doc.anchor?.field)
             ? {
                 field: doc.anchor.field,
+                rowId:
+                  typeof doc.anchor.rowId === "string" &&
+                  /^[a-f0-9-]{36}$/i.test(doc.anchor.rowId)
+                    ? doc.anchor.rowId
+                    : null,
                 quote:
                   typeof doc.anchor.quote === "string"
                     ? doc.anchor.quote.slice(0, 5000)
@@ -98,6 +114,13 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
             : null,
         }));
   } catch {}
+  cvRows = normalizeRows(cvRows, data);
+  let rowIdentity = Object.values(cvRows)
+    .flat()
+    .map((row) => row.id)
+    .join(",");
+  for (const field of Object.keys(rowLayouts))
+    data[field] = rowText(cvRows[field]);
   data.name = initial.name;
   if (!/^data:image\/(png|jpeg|webp);base64,/.test(data.picture))
     data.picture = initial.picture;
@@ -120,7 +143,13 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
     try {
       localStorage.setItem(
         key,
-        JSON.stringify({ ...data, extraTypes, pictureAnchor, documents }),
+        JSON.stringify({
+          ...data,
+          extraTypes,
+          pictureAnchor,
+          documents,
+          cvRows,
+        }),
       );
     } catch {
       message = "Updated for this preview · browser storage unavailable";
@@ -145,13 +174,52 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
     const value = node("p", undefined, "section-copy");
     value.dataset.value = field;
     block.append(heading, value);
-    (["contact", "skills", "languages", "interests"].includes(field)
+    (["contact", "languages", "certificates"].includes(field)
       ? sidebar
       : mainColumn
     ).append(block);
   }
+  const portrait = document.querySelector(".paper-header > img");
+  portrait.className = "cv-portrait";
+  sidebar.prepend(portrait);
+  for (const field of ["contact", "languages", "certificates"])
+    sidebar.append(document.querySelector(`[data-section="${field}"]`));
+  for (const field of [
+    "profile",
+    "education",
+    "experience",
+    "skills",
+    "interests",
+  ])
+    mainColumn.append(document.querySelector(`[data-section="${field}"]`));
+  rowEditor = createRowEditor({
+    rows: cvRows,
+    onChange(rows) {
+      cvRows = rows;
+      const identity = Object.values(rows)
+        .flat()
+        .map((row) => row.id)
+        .join(",");
+      const structureChanged = identity !== rowIdentity;
+      rowIdentity = identity;
+      for (const field of Object.keys(rowLayouts))
+        data[field] = rowText(rows[field]);
+      save();
+      decoratePictureAnchor();
+      renderDocumentLinks();
+      if (structureChanged) renderDocumentLibrary();
+    },
+    beforeEdit: () => finish(true),
+    isReadOnly: () => previewing || pickingPicture,
+    attachPDF(field, rowId) {
+      finish(true);
+      uploadAnchor = { field, rowId, quote: "", before: "", after: "" };
+      $("pdf-file").click();
+    },
+  });
   Object.keys(initial).forEach(sync);
   function finish(keep) {
+    rowEditor?.finish(keep);
     if (!activeEditor) return;
     const { field, old, host, value, button, controller, timer } = activeEditor;
     activeEditor = null;
@@ -177,6 +245,10 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
   }
   function start(button) {
     if (previewing || pickingPicture || button.dataset.edit === "name") return;
+    if (rowLayouts[button.dataset.edit]) {
+      rowEditor.editFirst(button.dataset.edit);
+      return;
+    }
     const field = button.dataset.edit,
       host = button.closest("[data-field]"),
       value = host.querySelector(`[data-value="${field}"]`),
@@ -429,6 +501,8 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
     if (!pictureAnchor) return null;
     return (
       document.querySelector(".picture-anchor") ||
+      (pictureAnchor.rowId &&
+        document.querySelector(`[data-row-id="${pictureAnchor.rowId}"]`)) ||
       document.querySelector(`[data-section="${pictureAnchor.field}"] h3`)
     );
   }
@@ -454,11 +528,23 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
     }
     if (previewing && $("extras-rail").hidden) return;
     const section = document.querySelector(
-        `[data-section="${pictureAnchor.field}"]`,
-      ),
-      value = section?.querySelector("[data-value]");
-    if (!value || section.hidden) return;
-    const text = data[pictureAnchor.field],
+      `[data-section="${pictureAnchor.field}"]`,
+    );
+    if (!section || section.hidden) return;
+    const anchorHost =
+      (pictureAnchor.rowId &&
+        section.querySelector(`[data-row-id="${pictureAnchor.rowId}"]`)) ||
+      section;
+    const candidates = [
+      ...anchorHost.querySelectorAll("[data-row-text],[data-value]"),
+    ];
+    const matched = candidates.filter(
+      (el) =>
+        !el.isContentEditable &&
+        resolveQuote(el.textContent, pictureAnchor) >= 0,
+    );
+    const value = matched.length === 1 ? matched[0] : null;
+    const text = value?.textContent || "",
       start = resolveQuote(text, pictureAnchor);
     if (start >= 0) {
       const mark = node("mark", pictureAnchor.quote, "picture-anchor");
@@ -486,7 +572,10 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
       pin.innerHTML =
         '<svg aria-hidden="true"><use href="#picture-icon"/></svg>';
       pin.addEventListener("click", showPicture);
-      section.querySelector("h3").append(pin);
+      (
+        anchorHost.querySelector(".cv-cell-title") ||
+        section.querySelector("h3")
+      ).append(pin);
     }
     const label = document.querySelector(".picture-anchor-label");
     if (label) {
@@ -571,10 +660,16 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
     },
     true,
   );
-  function attachToSection(field, quote = "", before = "", after = "") {
+  function attachToSection(
+    field,
+    quote = "",
+    before = "",
+    after = "",
+    rowId = null,
+  ) {
     const doc = documents.find((doc) => doc.id === pendingDocument);
-    if (doc) doc.anchor = { field, quote, before, after };
-    else pictureAnchor = { field, quote, before, after };
+    if (doc) doc.anchor = { field, quote, before, after, rowId };
+    else pictureAnchor = { field, quote, before, after, rowId };
     cancelAttachment();
     getSelection()?.removeAllRanges();
     save();
@@ -587,14 +682,22 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
     const section = event.target.closest(".paper [data-section]");
     if (!section) return;
     const field = section.dataset.section,
-      value = section.querySelector("[data-value]"),
-      selection = getSelection();
+      selection = getSelection(),
+      row = event.target.closest("[data-row-id]");
+    const selectionNode = selection?.anchorNode;
+    const value =
+      (selectionNode?.nodeType === Node.ELEMENT_NODE
+        ? selectionNode
+        : selectionNode?.parentElement
+      )?.closest("[data-row-text],[data-value]") ||
+      section.querySelector("[data-value]");
     let quote = "",
       before = "",
       after = "";
     if (selection?.rangeCount && !selection.isCollapsed) {
       const range = selection.getRangeAt(0);
       if (
+        !value ||
         !value.contains(range.startContainer) ||
         !value.contains(range.endContainer)
       ) {
@@ -607,7 +710,7 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
       prefix.selectNodeContents(value);
       prefix.setEnd(range.startContainer, range.startOffset);
       const start = prefix.toString().length,
-        text = data[field];
+        text = value.textContent;
       if (!text.includes(quote)) {
         $("resume-status").textContent = "Choose the words again.";
         return;
@@ -615,7 +718,7 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
       before = text.slice(Math.max(0, start - 32), start);
       after = text.slice(start + quote.length, start + quote.length + 32);
     }
-    attachToSection(field, quote, before, after);
+    attachToSection(field, quote, before, after, row?.dataset.rowId || null);
   });
   addEventListener("resize", alignPicture);
   document.fonts.ready.then(alignPicture);
@@ -776,16 +879,22 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
       !previewing ||
       (documentAccess &&
         doc.anchor &&
+        (!doc.anchor.rowId ||
+          document.querySelector(`[data-row-id="${doc.anchor.rowId}"]`)) &&
         !document.querySelector(`[data-section="${doc.anchor.field}"]`)?.hidden)
     );
   }
   function renderDocumentLinks() {
     document.querySelectorAll(".document-attachment").forEach((item) => {
       const doc = documents.find((doc) => doc.id === item.dataset.documentId);
+      const expectedRow =
+        doc?.anchor?.rowId &&
+        document.querySelector(`[data-row-id="${doc.anchor.rowId}"]`);
       if (
         !doc?.anchor ||
         !documentVisible(doc) ||
-        item.closest("[data-section]").dataset.section !== doc.anchor.field
+        item.closest("[data-section]").dataset.section !== doc.anchor.field ||
+        (item.closest("[data-row-id]") || null) !== (expectedRow || null)
       )
         item.remove();
     });
@@ -795,10 +904,15 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
         `[data-section="${doc.anchor.field}"]`,
       );
       if (!section) continue;
-      let links = section.querySelector(".document-attachments");
+      const row =
+        doc.anchor.rowId &&
+        section.querySelector(`[data-row-id="${doc.anchor.rowId}"]`);
+      if (doc.anchor.rowId && !row) continue;
+      const host = row?.querySelector(".cv-row-content") || section;
+      let links = host.querySelector(":scope > .document-attachments");
       if (!links) {
         links = node("div", undefined, "document-attachments");
-        section.append(links);
+        host.append(links);
       }
       let item = links.querySelector(`[data-document-id="${doc.id}"]`);
       if (!item) {
@@ -838,7 +952,12 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
         open,
         node(
           "small",
-          doc.anchor ? sectionName(doc.anchor.field) : "Choose a section",
+          doc.anchor?.rowId &&
+            !document.querySelector(`[data-row-id="${doc.anchor.rowId}"]`)
+            ? "Reattach to a row"
+            : doc.anchor
+              ? sectionName(doc.anchor.field)
+              : "Choose a section",
         ),
       );
       const actions = node(
@@ -936,6 +1055,7 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
   });
   for (const id of ["add-pdf", "add-pdf-shortcut"])
     $(id).addEventListener("click", () => {
+      uploadAnchor = null;
       $("add-extra").open = false;
       $("pdf-file").click();
     });
@@ -945,10 +1065,15 @@ import { createPDFViewer } from "./pdf-viewer.mjs";
     $("resume-status").textContent = "Adding PDF…";
     try {
       const id = await putPDF(file);
-      documents.push({ id, name: file.name.slice(0, 180), anchor: null });
+      const anchor = uploadAnchor;
+      uploadAnchor = null;
+      documents.push({ id, name: file.name.slice(0, 180), anchor });
       save();
       renderDocumentLibrary();
-      pickAttachment(id);
+      if (anchor) {
+        renderDocumentLinks();
+        $("resume-status").textContent = "Document attached to this row";
+      } else pickAttachment(id);
     } catch (error) {
       $("resume-status").textContent = error.message;
     } finally {
