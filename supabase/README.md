@@ -1,9 +1,8 @@
 # Private résumés and sibling accounts
 
 The GitHub Pages frontend contains public family cards only. Supabase project
-`qacuixzgkcejlnsnjlhe` supplies Auth, `marmullaku_profiles`, `marmullaku_links`,
-`marmullaku_archive_chunks`, and the `marmullaku-access` Edge Function. It shares the existing project without
-changing other applications' tables. See the shared infrastructure registry in
+`vxokxjqhvmicdpxsjomv` (**Family Database**) supplies its separate Auth, `marmullaku_profiles`, `marmullaku_links`,
+`marmullaku_archive_chunks`, and the `marmullaku-access` Edge Function. Work applications use a different project. See the shared infrastructure registry in
 `../../Lexy/docs/SHARED_INFRASTRUCTURE.md` before changes to shared Auth.
 
 Only a confirmed email explicitly assigned to a sibling's `invite_email` can
@@ -14,7 +13,7 @@ and password reset verify an invited email code before the user chooses a passwo
 Neither passwords nor codes are retained in browser storage. The shared session
 is tab-local; the password is shared with any other apps using the same Auth account.
 No invitations are sent by deployment. The `app: marmullaku` signup routing marker
-prevents creating an unrelated Cards profile; it grants no Marmullaku access.
+is descriptive; it grants no Marmullaku access. Existing profiles and the private archive were copied; owners reclaim their assigned profile with a verified email code after the project move.
 
 Company links use 32 random bytes in a URL fragment. SHA-256 hashes authorize
 requests; an AES-GCM encrypted copy lets the owner copy a link again. The wrapping
@@ -27,15 +26,13 @@ Private responses use `Cache-Control: no-store`; the service key never enters
 frontend code. Edit text is escaped before HTML rendering; contact URL schemes
 are restricted to HTTP(S), mailto, and tel.
 
-Deploy `schema.sql` once with the Supabase migration tool, and apply the narrowly
-scoped routing update in `auth-routing.sql` after checking the current shared
-signup trigger. Run `node --test tests/private-access.test.mjs tests/session.test.mjs` before deployment.
+Deploy `schema.sql` once with the Supabase migration tool. `auth-routing.sql` is legacy shared-project setup and must not be applied to Family Database. Run `node --test tests/private-access.test.mjs tests/session.test.mjs` before deployment.
 Apply `migrations/20261015113520_inline_profiles_sharing_assets.sql` after the base
 schema. The Edge Function deployment includes `index.ts`, `handler.mjs` and
 `editor.mjs`. Run `node --test tests/*.test.mjs` and the rollback-only
 `tests/private-access.sql` checks before publishing account changes. The original
 archive is stored in service-only `marmullaku_archive_chunks`, covered by the
-shared PostgreSQL backups. The archive is **not** committed or served by Pages.
+Family PostgreSQL backups. The archive is **not** committed or served by Pages.
 A local recovery copy lives in ignored `work/private-legacy.json`.
 
 The `/legacy/` public route is a sign-in landing page. Original files are returned
