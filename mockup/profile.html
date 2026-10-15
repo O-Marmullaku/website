@@ -17,9 +17,6 @@
         <symbol id="pencil" viewBox="0 0 24 24">
           <path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z" />
         </symbol>
-        <symbol id="settings" viewBox="0 0 24 24">
-          <path d="M4 7h16M4 17h16M8 4v6M16 14v6" />
-        </symbol>
         <symbol id="close" viewBox="0 0 24 24">
           <path d="m6 6 12 12M18 6 6 18" />
         </symbol>
@@ -27,24 +24,20 @@
     </svg>
     <header class="site-header">
       <a href="../">Marmullaku</a>
-      <div class="account-actions">
-        <span class="demo-label">Interactive mockup</span
-        ><button id="settings-open">
-          <svg><use href="#settings" /></svg>Profile settings</button
-        ><span class="avatar" aria-label="Signed in as Osman">OM</span>
-      </div>
+      <p class="signed-in">
+        Signed in as
+        <a id="settings-open" href="#profile-settings" data-value="name"
+          >Osman Marmullaku</a
+        >
+      </p>
     </header>
     <main>
       <div class="intro">
         <div>
-          <h1>Make yourself at home.</h1>
-          <p>
-            Your profile, right where you left it. Edit anything with a pencil.
-          </p>
+          <h1>Welcome</h1>
+          <p>This is the digital résumé collection of the Marmullaku family.</p>
         </div>
-        <p id="save-status" role="status">
-          Sample content · saved only in this browser
-        </p>
+        <p id="save-status" role="status"></p>
       </div>
       <div class="family">
         <article class="profile-card own-card">
@@ -61,9 +54,6 @@
           <div class="card-content">
             <div class="editable name-field" data-field="name">
               <h2 data-value="name"></h2>
-              <button class="edit" data-edit="name" aria-label="Edit your name">
-                <svg><use href="#pencil" /></svg>
-              </button>
             </div>
             <div class="editable role-field" data-field="role">
               <p data-value="role"></p>
@@ -114,24 +104,10 @@
             <span class="sibling-note">Shared with you when invited</span>
           </div>
         </article>
-        <aside class="editing-note">
-          <span class="small-pencil"
-            ><svg><use href="#pencil" /></svg
-          ></span>
-          <h2>No separate editor.</h2>
-          <p>
-            Change your name on your card. Shape your experience on your résumé.
-          </p>
-          <p>What you see is what you’re editing.</p>
-          <button class="text-button" id="reset">Reset sample content</button>
-        </aside>
       </div>
     </main>
     <footer>
-      <span
-        >© 2026 Marmullaku <span aria-hidden="true">·</span> Signed in as
-        Osman</span
-      ><span>All rights reserved</span>
+      <span>© 2026 Marmullaku</span><span>All rights reserved</span>
     </footer>
 
     <dialog id="resume" aria-labelledby="resume-name">
@@ -148,35 +124,65 @@
           <svg><use href="#close" /></svg>
         </button>
       </div>
-      <article class="paper">
-        <header class="paper-header">
-          <img src="../main/pictures/portraits/osman.webp" alt="" />
-          <div>
-            <div class="editable" data-field="name">
-              <h2 id="resume-name" data-value="name"></h2>
-              <button
-                class="edit"
-                data-edit="name"
-                aria-label="Edit résumé name"
-              >
-                <svg><use href="#pencil" /></svg>
-              </button>
+      <div class="resume-workspace">
+        <article class="paper">
+          <header class="paper-header">
+            <img src="../main/pictures/portraits/osman.webp" alt="" />
+            <div>
+              <div class="editable" data-field="name">
+                <h2 id="resume-name" data-value="name"></h2>
+              </div>
+              <div class="editable" data-field="role">
+                <p data-value="role"></p>
+                <button
+                  class="edit"
+                  data-edit="role"
+                  aria-label="Edit résumé title"
+                >
+                  <svg><use href="#pencil" /></svg>
+                </button>
+              </div>
             </div>
-            <div class="editable" data-field="role">
-              <p data-value="role"></p>
-              <button
-                class="edit"
-                data-edit="role"
-                aria-label="Edit résumé title"
-              >
-                <svg><use href="#pencil" /></svg>
-              </button>
-            </div>
+          </header>
+          <div id="resume-sections" class="resume-sections"></div>
+          <div class="paper-foot">marmullaku.ch <span>Sample résumé</span></div>
+        </article>
+        <aside id="extras-rail" aria-label="Beyond the résumé">
+          <div class="extras-heading">
+            <h2>Beyond the résumé</h2>
+            <details id="add-extra" class="add-menu">
+              <summary>Add content</summary>
+              <div>
+                <button data-add="picture">Picture</button
+                ><button data-add="fact">Fun fact</button
+                ><button data-add="link">Link</button
+                ><button data-add="button">Button</button>
+              </div>
+            </details>
           </div>
-        </header>
-        <div id="resume-sections" class="resume-sections"></div>
-        <div class="paper-foot">marmullaku.ch <span>Sample résumé</span></div>
-      </article>
+          <div id="extra-blocks"></div>
+        </aside>
+      </div>
+      <input
+        id="extra-picture"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        hidden
+      />
+      <div id="link-editor" popover="auto">
+        <form id="link-form">
+          <label for="extra-url">Web address</label
+          ><input
+            id="extra-url"
+            type="url"
+            required
+            placeholder="https://"
+            maxlength="500"
+          />
+          <p id="link-error" role="alert"></p>
+          <button class="primary" type="submit">Save link</button>
+        </form>
+      </div>
     </dialog>
 
     <dialog id="settings-panel" aria-labelledby="settings-title">
