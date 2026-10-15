@@ -797,6 +797,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     renderExtras();
     $("link-editor").hidePopover();
   });
+  $('cancel-link')?.addEventListener('click',()=>{ $('link-editor').hidePopover();document.querySelector(`[data-url-type="${$('link-form').dataset.type}"]`)?.focus({preventScroll:true}); });
   function documentVisible(doc) {
     if (adapter) return !previewing || documentAccess;
     return (
@@ -971,7 +972,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       viewerPromise ||= createPDFViewer($("document-reader"));
       const viewer = await viewerPromise;
       if (generation !== documentGeneration) return;
-      await viewer.open(file);
+      try {await viewer.open(file);}
+      catch(error){throw new Error(error.name==='PasswordException'?'This PDF needs a password. Use Open PDF to read it.':'Could not display this PDF here. Use Open PDF to read the original.');}
     } catch (error) {
       if (generation === documentGeneration)
         $("document-status").textContent = error.message;
@@ -1015,7 +1017,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("pdf-file").value = "";
     }
   });
-  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=accounts-2')).createLiveSharing(adapter,openResume) : createSharingUI({
+  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=ui-review-final')).createLiveSharing(adapter,openResume) : createSharingUI({
     name: data.name,
     onOpenCV: openResume,
     beforePreview() {
@@ -1037,7 +1039,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     portrait.src = `../main/pictures/portraits/${adapter.profile.id}.webp`;
     document.querySelector('.paper-foot span').textContent = '';
     document.querySelector('.pdf-help').textContent = 'PDF · up to 10 MB';
-    const download=node('button','Download CV','text-button');
+    const download=node('button','Save as PDF','text-button');
     download.addEventListener('click',()=>window.print());
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     let closing=false;

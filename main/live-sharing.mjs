@@ -57,10 +57,16 @@ export async function createLiveSharing(adapter,openResume) {
       $('family-panel').querySelector('.family-help').textContent='They can open your CV and include it in their company links. Turn this off to remove that access.';
     } finally{refreshing=false;}
   }
-  for(const [tab,panel] of [['companies-tab','companies'],['family-tab','family-panel']])$(tab).addEventListener('click',()=>{
-    for(const [other,target] of [['companies-tab','companies'],['family-tab','family-panel']]){$(other).setAttribute('aria-selected',String(other===tab));$(target).hidden=target!==panel;}
+  const tabs=[['companies-tab','companies'],['family-tab','family-panel']];
+  function selectTab(tab,panel){
+    for(const [other,target] of tabs){const selected=other===tab;$(other).setAttribute('aria-selected',String(selected));$(other).tabIndex=selected?0:-1;$(target).hidden=target!==panel;}
     refresh().catch(error=>status(error.message));
-  });
+  }
+  for(const [tab,panel] of tabs){
+    $(tab).tabIndex=$(tab).getAttribute('aria-selected')==='true'?0:-1;
+    $(tab).addEventListener('click',()=>selectTab(tab,panel));
+    $(tab).addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?tabs[0]:event.key==='End'?tabs.at(-1):tabs.find(([id])=>id!==tab);selectTab(...next);$(next[0]).focus();}});
+  }
   $('preview-company').hidden=true;
   $('create-link').addEventListener('click',report(async()=>{
     const name=company();if(!name){status('Enter a company name.');$('company-name').focus();return;}

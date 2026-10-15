@@ -35,3 +35,16 @@
 .sign-in-secondary:hover { color: #eef3fa; text-decoration: underline; }
 .sign-in-dialog .access-error { font-size: 14px; margin: 0 0 16px; }
 .sign-in-dialog .access-error:empty { display: none; }
+@media(max-width:480px){
+  body .nav .container{height:auto;min-height:64px;display:grid;grid-template-columns:minmax(0,1fr);gap:8px;padding-block:12px}
+  body .nav .lang{justify-self:start;max-width:100%;gap:2px}
+  body .nav .lang button{min-width:44px;min-height:44px;padding:6px;font-size:12px}
+}
+@media(max-width:560px){
+  .access-dialog{padding:24px}
+  .access-dialog h2{font-size:26px}
+  .access-dialog .access-close{width:44px;height:44px;right:12px;top:12px}
+  .password-toggle{width:44px;height:44px}
+  .sign-in-secondary{min-height:44px;margin-top:12px}
+  body>footer .footer-sign-in,body>footer .footer-settings{min-height:44px}
+}

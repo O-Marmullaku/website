@@ -77,6 +77,12 @@
 .resume-reader .resume-toolbar button:focus-visible{outline:2px solid #86c1ff;outline-offset:4px}
 .resume-reader .resume-workspace{margin-top:32px}
 @media(max-width:600px){.resume-reader .resume-toolbar{inset:10px 10px auto auto;gap:8px}.resume-reader .resume-workspace{margin-top:68px}}
+@media(max-width:680px){
+  #settings-panel .icon-button,#settings-panel .link-more{width:44px;height:44px}
+  #settings-panel .copy-company-link{height:44px}
+  #settings-panel .activity-toggle,#settings-panel .link-options button{min-height:44px}
+  #settings-panel .settings-footer .text-button{min-height:44px}
+}
 .managed-activity .activity-note{font-size:11px;color:#a6b8cd;margin:12px 0 0;line-height:1.5;max-width:48ch}
 .link-options{position:fixed;inset:auto;margin:0;min-width:170px;padding:6px;background:#1b2c43;color:#edf4fc;border:1px solid #4a627d;border-radius:8px;box-shadow:0 10px 24px -8px #0009}
 .link-options button{display:flex;align-items:center;gap:9px;width:100%;min-height:38px;background:transparent;border:0;border-radius:4px;padding:8px 10px;color:inherit;text-align:left;font-size:13px}

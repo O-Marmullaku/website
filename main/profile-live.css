@@ -25,3 +25,31 @@ html[data-live] #created-link{display:block;width:100%;padding:10px 12px;margin:
 .cv-cell a.cv-row-text{text-decoration:underline;text-underline-offset:3px}
 html[data-live] #settings-panel>a.text-button{margin-left:20px}
 @media print{html[data-live] #resume{height:auto;position:static;overflow:visible}html[data-live] .resume-toolbar{display:none}}
+html[data-live] #resume .document-reader{position:fixed;inset:80px max(24px,calc((100vw - 1600px)/2)) 24px auto;width:min(calc((100vw - 80px)/2),784px);display:flex;flex-direction:column;overflow:hidden}
+html[data-live] .document-reader>header,html[data-live] .document-controls{flex:none}
+html[data-live] .document-pages{flex:1;min-height:0;height:auto}
+.link-form-actions{display:flex;align-items:center;gap:12px}
+#settings-panel input::placeholder{color:#aebfd3;opacity:1}
+@media(max-width:1000px){
+  html[data-live] #resume:has(.document-open)>.resume-toolbar{display:none}
+  html[data-live] #resume .document-reader{inset:0;width:100%;height:100dvh;border:0}
+  html[data-live] .document-reader>header{padding:8px 12px;gap:8px}
+  html[data-live] #close-document,html[data-live] #document-new-tab{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
+  html[data-live] .document-controls{flex-wrap:wrap;gap:6px;padding:6px 10px}
+  html[data-live] .document-controls button{min-width:44px;min-height:44px;padding:4px}
+  html[data-live] .document-controls select{min-height:44px;font-size:16px;max-width:110px}
+  html[data-live] #document-page{white-space:nowrap}
+}
+@media(max-width:680px){
+  #resume:not(.preview-view) .cv-row{padding-right:52px}
+  #resume:not(.preview-view) .cv-cell{min-height:44px;padding-right:46px}
+  #resume:not(.preview-view) .cv-cell .cv-edit{width:44px;height:44px}
+  #resume:not(.preview-view) .cv-row-options summary,#resume:not(.preview-view) .cv-add-row{min-width:44px;min-height:44px}
+  #resume:not(.preview-view) .cv-row-menu{top:48px}
+  #resume:not(.preview-view) .cv-row-menu button,#resume:not(.preview-view) .cv-language-level{min-height:44px}
+  #resume:not(.preview-view) .paper .edit{min-width:44px;min-height:44px}
+  .link-form-actions button{min-height:44px}
+  #settings-panel .settings-tabs button,#settings-panel .text-button,#settings-panel .link-activity summary{min-height:44px}
+  #settings-panel .link-actions{gap:8px;flex-wrap:wrap}
+  #settings-panel .link-actions .text-button{padding:8px}
+}

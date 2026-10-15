@@ -794,6 +794,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     renderExtras();
     $("link-editor").hidePopover();
   });
+  $('cancel-link')?.addEventListener('click',()=>{ $('link-editor').hidePopover();document.querySelector(`[data-url-type="${$('link-form').dataset.type}"]`)?.focus({preventScroll:true}); });
   function documentVisible(doc) {
     if (adapter) return !previewing || documentAccess;
     return (
@@ -968,7 +969,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       viewerPromise ||= createPDFViewer($("document-reader"));
       const viewer = await viewerPromise;
       if (generation !== documentGeneration) return;
-      await viewer.open(file);
+      try {await viewer.open(file);}
+      catch(error){throw new Error(error.name==='PasswordException'?'This PDF needs a password. Use Open PDF to read it.':'Could not display this PDF here. Use Open PDF to read the original.');}
     } catch (error) {
       if (generation === documentGeneration)
         $("document-status").textContent = error.message;
@@ -1035,8 +1037,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     portrait.src = `../main/pictures/portraits/${adapter.profile.id}.webp`;
     document.querySelector('.paper-foot span').textContent = '';
     document.querySelector('.pdf-help').textContent = 'PDF · up to 10 MB';
-    const download=node('button','','text-button cv-download');download.setAttribute('aria-label','Download CV');
-    download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Download CV</span>';
+    const download=node('button','','text-button cv-download');download.setAttribute('aria-label','Save as PDF');
+    download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Save as PDF</span>';
     $('resume').classList.toggle('resume-reader',adapter.guest);
     download.addEventListener('click',()=>window.print());
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
