@@ -2,7 +2,11 @@
 
 The GitHub Pages frontend contains public family cards only. Supabase project
 `vxokxjqhvmicdpxsjomv` (**Family Database**) supplies its separate Auth, `marmullaku_profiles`, `marmullaku_links`,
-`marmullaku_archive_chunks`, and the `marmullaku-access` Edge Function. Work applications use a different project. See the shared infrastructure registry in
+`marmullaku_archive_chunks`, and the `marmullaku-access` Edge Function. This is the
+personal category. Work apps use **CrazyEntertainment Database**
+(`qacuixzgkcejlnsnjlhe`); Family tables, function and bucket were removed from that
+project after the move. Family must not share work-app identities or be used as
+their rollback target. See the shared infrastructure registry in
 `../../Lexy/docs/SHARED_INFRASTRUCTURE.md` before changes to shared Auth.
 
 Only a confirmed email explicitly assigned to a sibling's `invite_email` can
@@ -13,7 +17,17 @@ and password reset verify an invited email code before the user chooses a passwo
 Neither passwords nor codes are retained in browser storage. The Family session
 is tab-local; Family credentials are independent of work-app accounts.
 No invitations are sent by deployment. The `app: marmullaku` signup routing marker
-is descriptive; it grants no Marmullaku access. Existing profiles and the private archive were copied; owners reclaim their assigned profile with a verified email code after the project move.
+is descriptive; it grants no Marmullaku access.
+
+The owner-requested 2026-10-15 purge, after the move, removed all six application
+tables' contents, including profiles and private archive chunks, plus this project's
+Auth users, identities, sessions, refresh tokens, one-time tokens and Storage objects.
+These were verified empty. Schema, functions, RLS,
+migrations, bucket definitions and mail configuration remain. Previously copied
+profiles are no longer available to reclaim: trusted provisioning must recreate
+an invited profile before sign-in can grant access. Offline backups, local recovery
+copies and public frontend files were not erased. Restoring a pre-reset backup
+reintroduces old data and requires a separate recovery decision.
 
 Auth email currently uses Supabase's built-in development sender. The owner's
 code request was accepted, but other recipients require a custom SMTP provider
@@ -36,8 +50,9 @@ Apply `migrations/20261015113520_inline_profiles_sharing_assets.sql` after the b
 schema. The Edge Function deployment includes `index.ts`, `handler.mjs` and
 `editor.mjs`. Run `node --test tests/*.test.mjs` and the rollback-only
 `tests/private-access.sql` checks before publishing account changes. The original
-archive is stored in service-only `marmullaku_archive_chunks`, covered by the
-Family PostgreSQL backups. The archive is **not** committed or served by Pages.
+archive storage is service-only `marmullaku_archive_chunks`, covered by the
+Family PostgreSQL backups; its rows were cleared by the reset above. The private
+archive must **not** be committed or served by Pages.
 A local recovery copy lives in ignored `work/private-legacy.json`.
 
 The `/legacy/` public route is a sign-in landing page. Original files are returned
