@@ -118,6 +118,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
             : null,
         }));
   } catch {}
+  if(document.documentElement.dataset.preview==='true') documents=await (await import('./document-duplicates.mjs')).collapseRedundantPDFs(documents,getPDF);
   const oldIntroduction =
     "Introduce yourself in a few sentences. What do you enjoy building, what are you good at, and what would you like to do next?";
   const oldDescription =
@@ -511,21 +512,9 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     requestAnimationFrame(alignPicture);
   }
   function alignPicture() {
-    const block = document.querySelector(".extra-picture"),
-      target = pictureTarget();
-    if (!block) {
-      $("extras-rail").classList.remove("has-attachment");
-      return;
-    }
-    block.style.paddingTop = "";
-    $("extras-rail").classList.toggle("has-attachment", !!target);
-    if (!target || innerWidth <= 1000 || $("extras-rail").hidden) return;
-    block.style.paddingTop =
-      Math.max(
-        0,
-        target.getBoundingClientRect().top -
-          block.querySelector("img").getBoundingClientRect().top,
-      ) + "px";
+    const block=document.querySelector('.extra-picture');
+    if(block)block.style.paddingTop='';
+    $('extras-rail').classList.remove('has-attachment');
   }
   function cancelAttachment() {
     pickingPicture = false;
@@ -672,9 +661,17 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       heading.append(remove);
       block.append(heading);
       if (type === "picture") {
+        const sample=document.documentElement.dataset.preview==='true'&&!data.picture&&data.pictureCaption==='A project in pictures';
+        const source=data.picture||(sample?'../main/pictures/previews/sample-one.svg':'');
+        if(!source&&adapter?.guest)continue;
         const image = node("img");
-        if(data.picture) image.src = data.picture;
+        if(source)image.src=source;else image.hidden=true;
         image.alt = data.pictureCaption;
+        image.addEventListener('error',()=>{
+          image.hidden=true;
+          if(adapter?.guest)block.remove();
+          else {change.textContent='Choose another picture';block.prepend(node('p','Picture unavailable.','picture-unavailable'));}
+        },{once:true});
         const change = node("button", data.picture ? "Change picture" : "Add picture", "text-button");
         change.addEventListener("click", () => $("extra-picture").click());
         const caption = node("div", undefined, "extra-field");

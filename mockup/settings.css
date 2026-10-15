@@ -61,6 +61,12 @@
 .section-timing-summary dd{margin:0;font-variant-numeric:tabular-nums;color:#eef3fa}
 .section-timing-summary+.activity-note{margin-bottom:16px}
 .cv-download{display:inline-flex;align-items:center;gap:8px}
+.resume-workspace #extras-rail{padding-top:0;top:80px}
+.resume-reader #extras-rail{position:static}
+.resume-reader .extra-picture{padding-top:0}
+.extra-picture .picture-unavailable{padding:20px 12px;background:#172a40;color:#bdcee2;border-radius:8px;font-size:13px;margin:0 0 12px}
+.extra-block img{border-radius:8px}
+.document-link{border-radius:16px;padding:6px 10px;font-size:12px;gap:6px}
 .resume-reader .resume-toolbar{position:fixed;inset:16px 16px auto auto;padding:0;gap:10px;border:0;background:transparent;z-index:5}
 .resume-reader .resume-toolbar>#resume-status,.resume-reader .cv-download>span,.resume-reader .extras-heading{display:none}
 .resume-reader .resume-toolbar .cv-download,.resume-reader .resume-toolbar [data-close=resume]{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#eef2f6;color:#162537;box-shadow:0 5px 16px -6px #0009;transition:transform .25s cubic-bezier(.2,.8,.2,1),background .2s}
