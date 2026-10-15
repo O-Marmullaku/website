@@ -29,6 +29,18 @@ an invited profile before sign-in can grant access. Offline backups, local recov
 copies and public frontend files were not erased. Restoring a pre-reset backup
 reintroduces old data and requires a separate recovery decision.
 
+After that reset, the six newly created, confirmed email/password accounts were
+linked to their corresponding canonical sibling profiles. These are fresh,
+blank CVs, not restored data. Normal sign-in uses the existing password directly;
+the email-code flow is only for password setup or recovery. Re-provision through
+`provision-family.sql` with the verified email/Auth-ID mapping supplied in the
+transaction-local `marmullaku.profile_accounts` setting, immediately after its
+`begin;` in a private operator copy. The script refuses
+conflicting ownership and preserves existing profile content. Account emails,
+Auth UUIDs and passwords are not committed as provisioning inputs.
+Run the rollback-only `tests/family-identities.sql` against Family Database to
+check all six real accounts' profile visibility and edit isolation.
+
 Auth email currently uses Supabase's built-in development sender. The owner's
 code request was accepted, but other recipients require a custom SMTP provider
 before invitations can be relied upon. Personal domain mail remains on Zoho;

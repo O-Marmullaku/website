@@ -15,7 +15,8 @@ do $$ begin
   assert to_regclass('public.account') is null, 'Work tables remain in Family Database';
   assert to_regclass('public.accounts') is null, 'Portica tables remain in Family Database';
 end $$;
-update public.marmullaku_profiles set owner_user_id=current_setting('marmullaku.test_owner')::uuid where id='diellza' and owner_user_id is null;
+-- Borrow this profile inside the rollback-only transaction, even after real accounts are provisioned.
+update public.marmullaku_profiles set owner_user_id=current_setting('marmullaku.test_owner')::uuid where id='diellza';
 set local role anon;
 do $$ begin
   begin perform * from public.marmullaku_profiles; raise exception 'Anonymous CV access allowed'; exception when insufficient_privilege then null; end;
