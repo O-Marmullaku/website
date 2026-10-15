@@ -60,6 +60,17 @@
 .section-timing-summary>div{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
 .section-timing-summary dd{margin:0;font-variant-numeric:tabular-nums;color:#eef3fa}
 .section-timing-summary+.activity-note{margin-bottom:16px}
+.cv-download{display:inline-flex;align-items:center;gap:8px}
+.resume-reader .resume-toolbar{position:fixed;inset:16px 16px auto auto;padding:0;gap:10px;border:0;background:transparent;z-index:5}
+.resume-reader .resume-toolbar>#resume-status,.resume-reader .cv-download>span,.resume-reader .extras-heading{display:none}
+.resume-reader .resume-toolbar .cv-download,.resume-reader .resume-toolbar [data-close=resume]{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#eef2f6;color:#162537;box-shadow:0 5px 16px -6px #0009;transition:transform .25s cubic-bezier(.2,.8,.2,1),background .2s}
+.resume-reader .resume-toolbar button:hover{transform:scale(1.06);background:#fff}
+.resume-reader .resume-toolbar button:active{transform:scale(.94)}
+.resume-reader .resume-toolbar button::after{content:attr(aria-label);position:absolute;top:calc(100% + 8px);right:0;padding:5px 10px;border-radius:6px;background:#1c3049;color:#eef3fa;font-size:12px;font-weight:400;white-space:nowrap;opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .18s,transform .18s}
+.resume-reader .resume-toolbar button:hover::after{opacity:1;transform:none}
+.resume-reader .resume-toolbar button:focus-visible{outline:2px solid #86c1ff;outline-offset:4px}
+.resume-reader .resume-workspace{margin-top:32px}
+@media(max-width:600px){.resume-reader .resume-toolbar{inset:10px 10px auto auto;gap:8px}.resume-reader .resume-workspace{margin-top:68px}}
 .managed-activity .activity-note{font-size:11px;color:#a6b8cd;margin:12px 0 0;line-height:1.5;max-width:48ch}
 .link-options{position:fixed;inset:auto;margin:0;min-width:170px;padding:6px;background:#1b2c43;color:#edf4fc;border:1px solid #4a627d;border-radius:8px;box-shadow:0 10px 24px -8px #0009}
 .link-options button{display:flex;align-items:center;gap:9px;width:100%;min-height:38px;background:transparent;border:0;border-radius:4px;padding:8px 10px;color:inherit;text-align:left;font-size:13px}
