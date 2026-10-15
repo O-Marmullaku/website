@@ -6,14 +6,19 @@ The GitHub Pages frontend contains public family cards only. Supabase project
 `../../Lexy/docs/SHARED_INFRASTRUCTURE.md` before changes to shared Auth.
 
 Only a confirmed email explicitly assigned to a sibling's `invite_email` can
-claim that profile. All other shared Auth users receive 403. Provision invitations
+claim that profile. All other Auth users receive 403. Provision invitations
 through trusted SQL; clients cannot assign email or ownership. One user owns one
 profile. The homepage Sign in dialog uses email and password. First-time setup
 and password reset verify an invited email code before the user chooses a password.
-Neither passwords nor codes are retained in browser storage. The shared session
-is tab-local; the password is shared with any other apps using the same Auth account.
+Neither passwords nor codes are retained in browser storage. The Family session
+is tab-local; Family credentials are independent of work-app accounts.
 No invitations are sent by deployment. The `app: marmullaku` signup routing marker
 is descriptive; it grants no Marmullaku access. Existing profiles and the private archive were copied; owners reclaim their assigned profile with a verified email code after the project move.
+
+Auth email currently uses Supabase's built-in development sender. The owner's
+code request was accepted, but other recipients require a custom SMTP provider
+before invitations can be relied upon. Personal domain mail remains on Zoho;
+no MX records were changed.
 
 Company links use 32 random bytes in a URL fragment. SHA-256 hashes authorize
 requests; an AES-GCM encrypted copy lets the owner copy a link again. The wrapping
@@ -57,8 +62,8 @@ unique people, and are capped at 60 events per minute per link. The overview
 loads the latest 1,000 events across the owner's latest 100 links.
 
 `marmullaku_assets` describes private PDFs and raster images. Storage bucket
-`marmullaku-private` denies direct access with a restrictive policy, including
-for other apps sharing this project. Only the Edge Function reads or uploads
+`marmullaku-private` denies direct client access with a restrictive policy.
+Only the Edge Function reads or uploads
 objects. File byte signatures, limits, ownership, exact storage paths and CV
 attachment IDs are checked. Removed PDFs are soft-deleted; detached files stay
 private and consume storage until an operator removes unused objects.

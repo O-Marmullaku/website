@@ -1,4 +1,4 @@
--- Run on the shared project. All fixtures and attempted changes roll back.
+-- Run on Family Database. All fixtures and attempted changes roll back.
 begin;
 select set_config('marmullaku.test_owner', gen_random_uuid()::text, true);
 select set_config('marmullaku.test_cards', gen_random_uuid()::text, true);
@@ -12,8 +12,8 @@ insert into auth.users (id, aud, role, raw_user_meta_data, is_anonymous, created
 values (current_setting('marmullaku.test_coach')::uuid,'authenticated','authenticated','{"app":"coach"}',true,now(),now()),
        (current_setting('marmullaku.test_tutor')::uuid,'authenticated','authenticated','{"app":"tutor"}',true,now(),now());
 do $$ begin
-  assert exists (select 1 from public.account where id=current_setting('marmullaku.test_cards')::uuid), 'Cards signup regression';
-  assert not exists (select 1 from public.account where id in (current_setting('marmullaku.test_owner')::uuid,current_setting('marmullaku.test_coach')::uuid,current_setting('marmullaku.test_tutor')::uuid)), 'Cross-app membership leak';
+  assert to_regclass('public.account') is null, 'Work tables remain in Family Database';
+  assert to_regclass('public.accounts') is null, 'Portica tables remain in Family Database';
 end $$;
 update public.marmullaku_profiles set owner_user_id=current_setting('marmullaku.test_owner')::uuid where id='diellza' and owner_user_id is null;
 set local role anon;

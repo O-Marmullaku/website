@@ -2,3 +2,4 @@
 **/private-legacy.json
 .env
 .env.*
+/supabase/.temp/
