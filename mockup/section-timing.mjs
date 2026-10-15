@@ -21,11 +21,6 @@ export function createSectionClock(record,now=()=>performance.now()) {
 export function mountSectionTiming(adapter) {
   if(!adapter.guest)return;
   const resume=document.getElementById('resume'),toolbar=resume.querySelector('.resume-toolbar');
-  const notice=document.createElement('details');notice.className='reading-feedback';
-  const label=document.createElement('summary');label.textContent='Viewing activity';
-  const help=document.createElement('p');
-  help.textContent='The CV owner can see link and PDF opens, and time sections are in view. Cursor movements are not recorded.';
-  notice.append(label,help);toolbar.after(notice);
   let lastInput=performance.now();
   const clock=createSectionClock((section,seconds)=>adapter.request('event',{kind:'section',section,seconds}).catch(()=>{}));
   function pulse() {
