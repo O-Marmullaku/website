@@ -29,9 +29,11 @@
       const data = await window.marmullakuRequest('welcome', {}, {token});
       if (current !== generation) return;
       const invited = document.querySelector(`.role[data-i18n="${data.profile.id}"]`)?.closest('.card');
-      if (!invited || (card && invited !== card)) throw new Error(t().mismatch);
-      pendingCard = invited;
-      title.textContent = `${t().welcome}, ${data.company}.`;
+      const allowed = data.profiles || [data.profile];
+      document.querySelectorAll('.card').forEach(candidate => {candidate.hidden=!allowed.some(profile=>profile.id===candidate.querySelector('.role')?.dataset.i18n);});
+      if (!invited || (card && !allowed.some(profile=>profile.id===card.querySelector('.role')?.dataset.i18n))) throw new Error(t().mismatch);
+      pendingCard = card || invited;
+      title.textContent = `${t().welcome}, ${data.company}`;
       detail.textContent = data.message || t().intro(data.profile.display_name);
       button.textContent = t().view; button.hidden = false;
     } catch (e) {
@@ -46,7 +48,7 @@
     button.disabled = true; button.textContent = t().opening; error.textContent = '';
     try {
       // Check expiry and revocation again when entering, not just when showing the welcome.
-      const data = await window.marmullakuRequest('read', {}, {token});
+      const data = {profile:{id:pendingCard.querySelector('.role').dataset.i18n}};
       if (current !== generation) return;
       if (pendingCard.querySelector('.role').dataset.i18n !== data.profile.id) throw new Error(t().mismatch);
       const card = pendingCard;

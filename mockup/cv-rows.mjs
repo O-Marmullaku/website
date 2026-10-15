@@ -52,6 +52,8 @@ export function normalizeRows(
             detail: text(row?.detail),
             body: text(row?.body),
             logo: image(row?.logo),
+            href: /^(https?:\/\/|mailto:|tel:)/i.test(row?.href || "") ? text(row.href).slice(0,500) : "",
+            score: Math.max(0, Math.min(100, Number(row?.score) || 0)),
             level: Math.max(0, Math.min(5, Number(row?.level) || 0)),
           };
         }),

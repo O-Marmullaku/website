@@ -1,11 +1,14 @@
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs";
-import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs";
-import { createRowEditor } from "./cv-row-editor.mjs";
-import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
+import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-1";
+import { createRowEditor } from "./cv-row-editor.mjs?v=accounts-1";
+import { createSharingUI } from "./sharing-ui.mjs?v=accounts-1";
 
-(() => {
+(async () => {
+  const live = document.documentElement.dataset.live === 'true';
+  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=accounts-1')).createLiveAdapter() : null;
+  const fileStore = adapter || {putPDF,getPDF,deletePDF};
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
   const sections = [
@@ -56,7 +59,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
     rowEditor,
     uploadAnchor = null;
   try {
-    const stored = JSON.parse(localStorage.getItem(key));
+    const stored = adapter ? adapter.state : JSON.parse(localStorage.getItem(key));
     cvRows = stored?.cvRows;
     if (stored && typeof stored === "object")
       for (const field of Object.keys(initial))
@@ -139,8 +142,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
     .join(",");
   for (const field of Object.keys(rowLayouts))
     data[field] = rowText(cvRows[field]);
-  data.name = initial.name;
-  if (!/^data:image\/(png|jpeg|webp);base64,/.test(data.picture))
+  if (!live) data.name = initial.name;
+  if (!live && !/^data:image\/(png|jpeg|webp);base64,/.test(data.picture))
     data.picture = initial.picture;
   const pencil = '<svg aria-hidden="true"><use href="#pencil"/></svg>';
   function node(tag, text, cls) {
@@ -157,6 +160,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
     renderDocumentLinks();
   }
   function save() {
+    if (adapter) {adapter.save({...data,extraTypes,pictureAnchor,documents,cvRows});return;}
     let message = "Saved in this browser";
     try {
       localStorage.setItem(
@@ -669,9 +673,9 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
       block.append(heading);
       if (type === "picture") {
         const image = node("img");
-        image.src = data.picture;
+        if(data.picture) image.src = data.picture;
         image.alt = data.pictureCaption;
-        const change = node("button", "Change picture", "text-button");
+        const change = node("button", data.picture ? "Change picture" : "Add picture", "text-button");
         change.addEventListener("click", () => $("extra-picture").click());
         const caption = node("div", undefined, "extra-field");
         extraField(caption, "pictureCaption", "p", "Edit picture caption");
@@ -707,6 +711,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
           });
           attachment.append(detach);
         }
+        image.addEventListener('click',()=>sharing?.track('picture'));
         block.append(image, caption, change, attachment);
       } else if (type === "fact") {
         extraField(block, "fact", "p", "Edit fun fact");
@@ -718,7 +723,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
             "a",
             "Edit " + type + " text",
           );
-        link.href = safeURL(data[type + "URL"]) || "https://example.com";
+        const addressURL=safeURL(data[type + 'URL']);
+        if(addressURL) link.href=addressURL;
         link.target = "_blank";
         link.rel = "noopener noreferrer";
         if (type === "button") link.className = "extra-cta";
@@ -792,6 +798,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
     $("link-editor").hidePopover();
   });
   function documentVisible(doc) {
+    if (adapter) return !previewing || documentAccess;
     return (
       !previewing ||
       (documentAccess &&
@@ -895,10 +902,20 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
       remove.addEventListener("click", async () => {
         remove.disabled = true;
         try {
-          await deletePDF(doc.id);
-          documents = documents.filter((value) => value.id !== doc.id);
+          const previous=documents;
+          if (adapter) {
+            documents = documents.filter((value) => value.id !== doc.id);
+            save();
+            try {await adapter.flush();}
+            catch(error){documents=previous;save();throw error;}
+            try {await fileStore.deletePDF(doc.id);}
+            catch {$("resume-status").textContent='Removed from CV. The stored file could not be removed.';}
+          } else {
+            await fileStore.deletePDF(doc.id);
+            documents = documents.filter((value) => value.id !== doc.id);
+            save();
+          }
           closeDocument();
-          save();
           renderDocumentLibrary();
           renderDocumentLinks();
         } catch (error) {
@@ -941,7 +958,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
     document.querySelector(".resume-workspace").classList.add("document-open");
     $("close-document").focus({ preventScroll: true });
     try {
-      const file = await getPDF(id);
+      const file = await fileStore.getPDF(id);
       if (generation !== documentGeneration) return;
       if (!file)
         throw new Error(
@@ -982,7 +999,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
     if (!file) return;
     $("resume-status").textContent = "Adding PDF…";
     try {
-      const id = await putPDF(file);
+      const id = await fileStore.putPDF(file);
       const anchor = uploadAnchor;
       uploadAnchor = null;
       documents.push({ id, name: file.name.slice(0, 180), anchor });
@@ -998,7 +1015,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
       $("pdf-file").value = "";
     }
   });
-  sharing = createSharingUI({
+  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=accounts-1')).createLiveSharing(adapter,openResume) : createSharingUI({
     name: data.name,
     onOpenCV: openResume,
     beforePreview() {
@@ -1016,4 +1033,26 @@ import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
       );
   });
   renderExtras();
-})();
+  if (adapter) {
+    portrait.src = `../main/pictures/portraits/${adapter.profile.id}.webp`;
+    document.querySelector('.paper-foot span').textContent = '';
+    document.querySelector('.pdf-help').textContent = 'PDF · up to 10 MB';
+    const download=node('button','Download CV','text-button');
+    download.addEventListener('click',()=>window.print());
+    document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
+    let closing=false;
+    for (const id of ['resume','settings-panel']) $(id).addEventListener('close',async()=>{
+      if(id==='settings-panel'&&$('resume').open)return;
+      if(closing)return;closing=true;
+      try {await adapter.close();}catch(error){$(id).showModal();$('resume-status').textContent=$('settings-status').textContent=error.message;}
+      finally{closing=false;}
+    });
+    addEventListener('beforeunload',event=>{if(adapter.dirty){event.preventDefault();event.returnValue='';}});
+    if(new URLSearchParams(location.search).get('view')==='settings'&&adapter.editable) $('settings-panel').showModal();
+    else openResume(adapter.editable ? null : ['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);
+    parent.postMessage({type:'marmullaku-ready'},location.origin);
+  }
+})().catch(error=>{
+  if(document.documentElement.dataset.live==='true') parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);
+  else console.error(error);
+});

@@ -1,4 +1,4 @@
-import { rowLayouts, moveRow } from "./cv-rows.mjs";
+import { rowLayouts, moveRow } from "./cv-rows.mjs?v=accounts-1";
 
 export function createRowEditor({
   rows,
@@ -39,6 +39,9 @@ export function createRowEditor({
     const editor = active;
     active = null;
     editor.controller.abort();
+    if (editor.key === 'href' && editor.row.href && !/^(https?:\/\/|mailto:|tel:)/i.test(editor.row.href)) {
+      keep=false; status.textContent='Use a web, email or phone link.';
+    }
     if (!keep) {
       editor.row[editor.key] = editor.old;
       editor.value.textContent = editor.old;
@@ -50,6 +53,7 @@ export function createRowEditor({
     editor.host.classList.remove("editing");
     editor.button.removeAttribute("aria-pressed");
     commit();
+    if (editor.key === 'href') paint(Object.keys(rows).find(key=>rows[key].includes(editor.row)));
   }
   function edit(value, button, row, key) {
     if (isReadOnly()) return;
@@ -68,7 +72,7 @@ export function createRowEditor({
     value.addEventListener(
       "input",
       () => {
-        row[key] = value.innerText.replace(/\r/g, "").slice(0, 5000);
+        row[key] = value.innerText.replace(/\r/g, "").slice(0, key==='body'?5000:key==='date'?100:key==='href'?500:1000);
         commit();
       },
       options,
@@ -99,7 +103,11 @@ export function createRowEditor({
   }
   function field(host, row, key, label, placeholder = "") {
     const wrapper = node("div", "cv-cell cv-cell-" + key);
-    const value = node(key === "title" ? "p" : "div", "cv-row-text", row[key]);
+    const value = node(key === "title" && row.href ? "a" : key === "title" ? "p" : "div", "cv-row-text", row[key]);
+    if (value.tagName === "A") {
+      value.href = row.href; value.rel = "noopener"; value.target = "_blank";
+      value.addEventListener("click", event => { if (value.isContentEditable) event.preventDefault(); });
+    }
     value.dataset.rowText = key;
     value.dataset.placeholder = placeholder;
     const button = node("button", "edit cv-edit");
@@ -156,7 +164,12 @@ export function createRowEditor({
         if (row.body)
           field(content, row, "body", `Edit description for ${label}`);
       }
+      if (fieldName === 'certificates') {
+        field(content,row,'detail',`Edit issuer for ${label}`,'Issuer');
+        field(content,row,'date',`Edit date for ${label}`,'Date');
+      }
       if (layout === "language") {
+        if (row.detail) content.append(node("span", "cv-language-description", row.detail));
         const level = node("select", "cv-language-level cv-owner");
         level.setAttribute("aria-label", `Language level for ${label}`);
         for (const [value, title] of [
@@ -181,6 +194,7 @@ export function createRowEditor({
           if (isReadOnly()) return;
           checkpoint();
           row.level = Number(level.value);
+          row.detail = "";
           paint(fieldName);
           commit();
         });
@@ -199,6 +213,13 @@ export function createRowEditor({
       summary.innerHTML =
         '<svg aria-hidden="true"><use href="#more-icon"/></svg>';
       const menu = node("div", "cv-row-menu");
+      if (fieldName === "contact") {
+        action(menu, "Edit link", () => {
+          let cell=content.querySelector('.cv-cell-href');
+          if (!cell) {field(content,row,'href',`Edit link for ${label}`,'https://, mailto: or tel:');cell=content.querySelector('.cv-cell-href');}
+          cell.querySelector('button').click();
+        });
+      }
       action(
         menu,
         "Move up",

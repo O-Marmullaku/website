@@ -16,10 +16,13 @@ is tab-local; the password is shared with any other apps using the same Auth acc
 No invitations are sent by deployment. The `app: marmullaku` signup routing marker
 prevents creating an unrelated Cards profile; it grants no Marmullaku access.
 
-Company links use 32 random bytes in a URL fragment. Only their SHA-256 hashes
-are stored. The token authorizes one sibling's current CV; both welcome and CV
-requests enforce expiry/revocation. URLs are shown once at creation, can be
-revoked, and can be forwarded by a recipient. Downloaded CVs cannot be recalled.
+Company links use 32 random bytes in a URL fragment. SHA-256 hashes authorize
+requests; an AES-GCM encrypted copy lets the owner copy a link again. The wrapping
+key is derived from the server service key, which never reaches the frontend.
+Rotating that key leaves existing URLs working, but owners must replace older
+links to copy them. New links have no expiry; old expiry dates are still enforced.
+Owners can turn links off or on. Anyone holding an active link can forward it.
+Downloaded CVs cannot be recalled.
 Private responses use `Cache-Control: no-store`; the service key never enters
 frontend code. Edit text is escaped before HTML rendering; contact URL schemes
 are restricted to HTTP(S), mailto, and tel.
@@ -27,7 +30,10 @@ are restricted to HTTP(S), mailto, and tel.
 Deploy `schema.sql` once with the Supabase migration tool, and apply the narrowly
 scoped routing update in `auth-routing.sql` after checking the current shared
 signup trigger. Run `node --test tests/private-access.test.mjs tests/session.test.mjs` before deployment.
-The Edge Function deployment includes `index.ts` and `handler.mjs`. The original
+Apply `migrations/20261015113520_inline_profiles_sharing_assets.sql` after the base
+schema. The Edge Function deployment includes `index.ts`, `handler.mjs` and
+`editor.mjs`. Run `node --test tests/*.test.mjs` and the rollback-only
+`tests/private-access.sql` checks before publishing account changes. The original
 archive is stored in service-only `marmullaku_archive_chunks`, covered by the
 shared PostgreSQL backups. The archive is **not** committed or served by Pages.
 A local recovery copy lives in ignored `work/private-legacy.json`.
@@ -40,5 +46,26 @@ service keys, or the private legacy bundle to Git.
 
 To invite another sibling, set their row's `invite_email` to their email through
 trusted SQL. Do not replace an existing `owner_user_id` casually. Their first
-verified email-code sign-in claims only that row. The admin UI edits CVs and
-creates/revokes links; it does not administer shared Auth users or other apps.
+verified email-code sign-in claims only that row. The homepage opens the CV editor
+and settings in the same page; `/admin/` redirects there. Owners edit their title
+and CV in place. Canonical editor rows live in `cv.editor`; legacy CV fields stay
+readable by older clients. Saves use `updated_at` to reject conflicting edits
+from another tab. Private content never uses the mockup's browser storage.
+
+`marmullaku_family` contains each CV owner's outgoing view/share grants. A
+company link includes its sender plus owners who have enabled a grant to that
+sender. Every read rechecks grants; links cannot grant access themselves.
+Only senders can read their link's activity. Counts describe link activity, not
+unique people, and are capped at 60 events per minute per link. The overview
+loads the latest 1,000 events across the owner's latest 100 links.
+
+`marmullaku_assets` describes private PDFs and raster images. Storage bucket
+`marmullaku-private` denies direct access with a restrictive policy, including
+for other apps sharing this project. Only the Edge Function reads or uploads
+objects. File byte signatures, limits, ownership, exact storage paths and CV
+attachment IDs are checked. Removed PDFs are soft-deleted; detached files stay
+private and consume storage until an operator removes unused objects.
+
+Company suggestions query the official Zefix dataset at `lindas.admin.ch/query`
+after a short delay. Search works without credentials; manual entry and local
+fuzzy suggestions remain available when the register is slow or unavailable.

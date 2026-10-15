@@ -35,7 +35,8 @@
       await this.request('profile');
       await auth('user', {password}, {method: 'PUT', jwt: session.access_token});
     },
-    async request(action, data) {
+    async request(action, data, options={}) {
+      try { session=JSON.parse(sessionStorage.getItem(key)||'null'); } catch {}
       if (!session) throw Object.assign(new Error('Please sign in.'), {status: 401});
       if (Date.now() > session.expires_at - 60000) {
         try {
@@ -43,7 +44,7 @@
           store({...next, expires_at: Date.now() + next.expires_in * 1000});
         } catch { store(null); throw Object.assign(new Error('Your session has expired. Please sign in again.'), {status: 401}); }
       }
-      return window.marmullakuRequest(action, data, {jwt: session.access_token});
+      return window.marmullakuRequest(action, data, {...options,jwt: session.access_token});
     },
     get active() { return !!session; },
     async signOut() {

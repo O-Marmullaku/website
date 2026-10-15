@@ -34,9 +34,22 @@ do $$ declare changed integer; begin
   begin insert into public.marmullaku_links(profile_id,token_hash,company,expires_at) values('osman',repeat('f',64),'Probe',now()+interval '1 day'); raise exception 'Other sibling link allowed'; exception when insufficient_privilege then null; end;
   insert into public.marmullaku_links(profile_id,token_hash,company,expires_at) values('diellza',repeat('e',64),'Probe',now()+interval '1 day');
   assert (select count(*) from public.marmullaku_links)=1, 'Link isolation failed';
+  insert into public.marmullaku_family(owner_id,recipient_id) values('diellza','osman');
+  assert (select count(*) from public.marmullaku_family)=1, 'Family grant isolation failed';
+  begin insert into public.marmullaku_family(owner_id,recipient_id) values('osman','diellza'); raise exception 'Other owner sharing allowed'; exception when insufficient_privilege then null; end;
+  begin insert into public.marmullaku_assets(profile_id,path,name,mime,bytes) values('diellza','../../another-app/private.pdf','Probe','application/pdf',10); raise exception 'Direct asset insertion allowed'; exception when insufficient_privilege then null; end;
+  assert not has_table_privilege('authenticated','public.marmullaku_activity','INSERT'), 'Activity spoofing allowed';
+  assert not has_table_privilege('anon','public.marmullaku_family','SELECT'), 'Public family access allowed';
+  assert not has_table_privilege('anon','public.marmullaku_assets','SELECT'), 'Public asset access allowed';
+  assert not has_table_privilege('anon','public.marmullaku_activity','SELECT'), 'Public activity access allowed';
   begin perform * from public.marmullaku_archive_chunks; raise exception 'Direct archive access allowed'; exception when insufficient_privilege then null; end;
 end $$;
 reset role;
+do $$ begin
+  assert exists(select 1 from storage.buckets where id='marmullaku-private' and public=false), 'Private bucket missing';
+  assert exists(select 1 from pg_policies where schemaname='storage' and tablename='objects' and policyname='Marmullaku files require the application gateway' and permissive='RESTRICTIVE'), 'Storage gateway isolation missing';
+  begin insert into public.marmullaku_assets(profile_id,path,name,mime,bytes) values('diellza','../../another-app/private.pdf','Probe','application/pdf',10); raise exception 'Unsafe storage path accepted'; exception when check_violation then null; end;
+end $$;
 select set_config('request.jwt.claims',jsonb_build_object('sub',current_setting('marmullaku.test_owner'),'role','authenticated','is_anonymous',true)::text,true);
 set local role authenticated;
 do $$ begin

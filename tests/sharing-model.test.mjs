@@ -8,6 +8,7 @@ import {
 } from "../mockup/sharing-model.mjs";
 test("company search tolerates typos, accents and pasted domains", () => {
   assert.equal(findCompanies("Siemns")[0].name, "Siemens");
+  assert.equal(findCompanies("Waldr Wys", [{name:'Walder Wyss AG',domain:'Bern'}])[0].name,'Walder Wyss AG');
   assert.equal(findCompanies("eth zurich")[0].name, "ETH Zürich");
   assert.equal(findCompanies("https://www.siemens.com")[0].name, "Siemens");
   assert.deepEqual(findCompanies("no such company xyz"), []);

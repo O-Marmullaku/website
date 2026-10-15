@@ -16,7 +16,10 @@
     submit.textContent = ({'sign-in':'Sign in', email:'Send code', code:'Continue', password:'Save password'})[next];
     submit.disabled = false;
   }
-  async function finish() { location.assign(destination()); }
+  async function finish() {
+    if (new URLSearchParams(location.search).get('return')==='legacy') {location.assign(destination());return;}
+    dialog.close();dispatchEvent(new Event('marmullaku-signed-in'));
+  }
   window.showSignIn = async () => {
     if (session.active) {
       try { await session.request('profile'); await finish(); return; }
@@ -30,7 +33,7 @@
   $('sign-in-trigger').addEventListener('click', window.showSignIn);
   $('sign-in-close').addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', e => { if (e.target === dialog) dialog.close(); });
-  dialog.addEventListener('close', () => { generation++; password.value = ''; code.value = ''; $('sign-in-trigger').focus({preventScroll:true}); });
+  dialog.addEventListener('close', () => { generation++; password.value = ''; code.value = ''; $('sign-in-trigger')?.focus({preventScroll:true}); });
   $('sign-in-setup').addEventListener('click', () => { password.value = ''; setMode('email'); email.focus(); });
   $('sign-in-back').addEventListener('click', () => { generation++; password.value = ''; code.value = ''; setMode('sign-in'); email.focus(); });
   $('password-toggle').addEventListener('click', () => {

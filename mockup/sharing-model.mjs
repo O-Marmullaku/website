@@ -61,6 +61,9 @@ export function findCompanies(query, recent = []) {
             score = Math.min(score, 3 + diff / word.length);
         }
       }
+      const terms=String(query).trim().split(/\s+/).map(normalize).filter(Boolean);
+      const nameWords=company.name.split(/\s+/).map(normalize).filter(Boolean);
+      if (terms.length>1 && terms.every(term=>term.length>=3 && nameWords.some(word=>word.startsWith(term)||distance(term,word)<=1))) score=Math.min(score,3.5);
       return { company, score, index };
     })
     .filter((item) => Number.isFinite(item.score))
