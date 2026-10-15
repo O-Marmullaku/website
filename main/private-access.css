@@ -14,6 +14,15 @@
 .footer-identity { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
 .footer-sign-in { border: 0; background: none; padding: 8px 0; color: var(--muted); font: inherit; cursor: pointer; text-underline-offset: 4px; }
 .footer-sign-in:hover { color: var(--text); text-decoration: underline; }
+@media(max-width:560px){
+  body>footer .container{display:grid;grid-template-columns:minmax(0,1fr);gap:2px;padding-block:14px;font-size:13px}
+  body>footer .footer-identity{width:100%;min-width:0;gap:8px;justify-content:space-between;flex-wrap:nowrap}
+  body>footer .footer-identity>span[aria-hidden=true]{display:none}
+  body>footer .footer-sign-in{min-height:40px;padding:8px 0 8px 12px;white-space:nowrap}
+  body>footer [data-i18n=rights]{font-size:12px;line-height:1.5;margin:0;color:#acbbce}
+  body>footer .footer-identity:has(.footer-account-name),body>footer .footer-identity.signed-account{justify-content:flex-start;gap:5px;flex-wrap:wrap}
+  body>footer .footer-settings{min-width:36px;min-height:40px}
+}
 .sign-in-dialog { width: min(420px, calc(100% - 32px)); }
 .sign-in-dialog h2 { margin-top: 0; margin-bottom: 28px; }
 .sign-in-dialog label { display: block; color: #d8e4f3; font-size: 15px; margin-bottom: 20px; }

@@ -10,7 +10,7 @@ if (window===parent) {
   for(const link of template.head.querySelectorAll('link'))document.head.append(document.importNode(link,true));
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
-  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=accounts-2';document.head.append(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=mobile-editing';document.head.append(style);
   for(const path of ['../main/backend-config.js','../main/access-api.js?v=accounts-2','../admin/session.js?v=accounts-2'])await new Promise((resolve,reject)=>{
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
