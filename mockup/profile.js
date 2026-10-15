@@ -1,3 +1,5 @@
+import { resolveQuote } from "./picture-anchor.mjs";
+
 (() => {
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
@@ -35,7 +37,9 @@
   let data = { ...initial },
     activeEditor = null,
     previewing = false,
-    extraTypes = ["picture", "fact", "link", "button"];
+    extraTypes = ["picture", "fact", "link", "button"],
+    pictureAnchor = null,
+    pickingPicture = false;
   try {
     const stored = JSON.parse(localStorage.getItem(key));
     if (stored && typeof stored === "object")
@@ -45,6 +49,16 @@
       extraTypes = [...new Set(stored.extraTypes)].filter((type) =>
         ["picture", "fact", "link", "button"].includes(type),
       );
+    if (sections.some(([field]) => field === stored?.pictureAnchor?.field)) {
+      const saved = stored.pictureAnchor;
+      pictureAnchor = {
+        field: saved.field,
+        quote:
+          typeof saved.quote === "string" ? saved.quote.slice(0, 5000) : "",
+        before: typeof saved.before === "string" ? saved.before.slice(-32) : "",
+        after: typeof saved.after === "string" ? saved.after.slice(0, 32) : "",
+      };
+    }
   } catch {}
   data.name = initial.name;
   if (!/^data:image\/(png|jpeg|webp);base64,/.test(data.picture))
@@ -60,11 +74,15 @@
     document.querySelectorAll(`[data-value="${field}"]`).forEach((el) => {
       if (el !== except) el.textContent = data[field];
     });
+    decoratePictureAnchor();
   }
   function save() {
     let message = "Saved in this browser";
     try {
-      localStorage.setItem(key, JSON.stringify({ ...data, extraTypes }));
+      localStorage.setItem(
+        key,
+        JSON.stringify({ ...data, extraTypes, pictureAnchor }),
+      );
     } catch {
       message = "Updated for this preview · browser storage unavailable";
     }
@@ -111,13 +129,14 @@
     value.removeAttribute("aria-multiline");
     button.removeAttribute("aria-pressed");
     host.classList.remove("editing");
+    decoratePictureAnchor();
     if (document.activeElement === value) button.focus({ preventScroll: true });
     if (!keep)
       $("resume-status").textContent = $("save-status").textContent =
         "Changes cancelled";
   }
   function start(button) {
-    if (previewing || button.dataset.edit === "name") return;
+    if (previewing || pickingPicture || button.dataset.edit === "name") return;
     const field = button.dataset.edit,
       host = button.closest("[data-field]"),
       value = host.querySelector(`[data-value="${field}"]`),
@@ -134,6 +153,7 @@
     finish(true);
     const controller = new AbortController(),
       options = { signal: controller.signal };
+    value.textContent = data[field];
     activeEditor = { field, old: data[field], host, value, button, controller };
     value.contentEditable = "plaintext-only";
     value.setAttribute("role", "textbox");
@@ -190,6 +210,7 @@
   });
   function openResume(allowed = null, company = "") {
     finish(true);
+    cancelAttachment();
     previewing = !!allowed;
     $("resume").classList.toggle("preview-view", previewing);
     $("resume-mode").textContent = previewing
@@ -207,6 +228,8 @@
       );
     $("extras-rail").hidden = !!allowed && !allowed.includes("extras");
     if (!$("resume").open) $("resume").showModal();
+    decoratePictureAnchor();
+    requestAnimationFrame(alignPicture);
   }
   $("resume-open").addEventListener("click", () => openResume());
   $("exit-preview").addEventListener("click", () => openResume());
@@ -218,6 +241,7 @@
   document.querySelectorAll("[data-close]").forEach((button) =>
     button.addEventListener("click", () => {
       finish(true);
+      cancelAttachment();
       $(button.dataset.close).close();
     }),
   );
@@ -351,6 +375,199 @@
     host.append(value, edit);
     return value;
   }
+  function sectionName(field) {
+    return sections.find(([key]) => key === field)?.[1] || "";
+  }
+  function pictureTarget() {
+    if (!pictureAnchor) return null;
+    return (
+      document.querySelector(".picture-anchor") ||
+      document.querySelector(`[data-section="${pictureAnchor.field}"] h3`)
+    );
+  }
+  function showPicture() {
+    const block = document.querySelector(".extra-picture");
+    if (!block) return;
+    block.scrollIntoView({ behavior: "smooth", block: "center" });
+    block.classList.remove("attachment-focus");
+    requestAnimationFrame(() => block.classList.add("attachment-focus"));
+  }
+  function decoratePictureAnchor() {
+    document.querySelectorAll(".picture-pin").forEach((el) => el.remove());
+    document
+      .querySelectorAll(".picture-anchor")
+      .forEach((el) => el.replaceWith(document.createTextNode(el.textContent)));
+    if (
+      !pictureAnchor ||
+      !extraTypes.includes("picture") ||
+      activeEditor?.field === pictureAnchor.field
+    ) {
+      requestAnimationFrame(alignPicture);
+      return;
+    }
+    if (previewing && $("extras-rail").hidden) return;
+    const section = document.querySelector(
+        `[data-section="${pictureAnchor.field}"]`,
+      ),
+      value = section?.querySelector("[data-value]");
+    if (!value || section.hidden) return;
+    const text = data[pictureAnchor.field],
+      start = resolveQuote(text, pictureAnchor);
+    if (start >= 0) {
+      const mark = node("mark", pictureAnchor.quote, "picture-anchor");
+      mark.tabIndex = 0;
+      mark.setAttribute("role", "button");
+      mark.setAttribute("aria-label", `Show picture: ${pictureAnchor.quote}`);
+      mark.addEventListener("click", showPicture);
+      mark.addEventListener("keydown", (event) => {
+        if (["Enter", " "].includes(event.key)) {
+          event.preventDefault();
+          showPicture();
+        }
+      });
+      value.replaceChildren(
+        document.createTextNode(text.slice(0, start)),
+        mark,
+        document.createTextNode(text.slice(start + pictureAnchor.quote.length)),
+      );
+    } else {
+      const pin = node("button", undefined, "picture-pin");
+      pin.setAttribute(
+        "aria-label",
+        `Show picture attached to ${sectionName(pictureAnchor.field)}`,
+      );
+      pin.innerHTML =
+        '<svg aria-hidden="true"><use href="#picture-icon"/></svg>';
+      pin.addEventListener("click", showPicture);
+      section.querySelector("h3").append(pin);
+    }
+    const label = document.querySelector(".picture-anchor-label");
+    if (label) {
+      label.textContent =
+        sectionName(pictureAnchor.field) +
+        (start >= 0 ? " · “" + pictureAnchor.quote.slice(0, 48) + "”" : "");
+      label.title =
+        pictureAnchor.quote && start < 0
+          ? "The linked words changed. The picture remains attached to this section."
+          : "Find attached text";
+    }
+    requestAnimationFrame(alignPicture);
+  }
+  function alignPicture() {
+    const block = document.querySelector(".extra-picture"),
+      target = pictureTarget();
+    if (!block) {
+      $("extras-rail").classList.remove("has-attachment");
+      return;
+    }
+    block.style.paddingTop = "";
+    $("extras-rail").classList.toggle("has-attachment", !!target);
+    if (!target || innerWidth <= 1000 || $("extras-rail").hidden) return;
+    block.style.paddingTop =
+      Math.max(
+        0,
+        target.getBoundingClientRect().top -
+          block.querySelector("img").getBoundingClientRect().top,
+      ) + "px";
+  }
+  function cancelAttachment() {
+    pickingPicture = false;
+    $("resume").classList.remove("picking-picture");
+    $("cancel-attachment").hidden = true;
+    document.querySelectorAll(".paper [data-section]").forEach((section) => {
+      section.removeAttribute("tabindex");
+      section.removeAttribute("role");
+      section.removeAttribute("aria-label");
+    });
+  }
+  function pickAttachment() {
+    finish(true);
+    cancelAttachment();
+    // Flatten edited paragraphs before measuring a text selection.
+    sections.forEach(([field]) => sync(field));
+    pickingPicture = true;
+    $("resume").classList.add("picking-picture");
+    $("cancel-attachment").hidden = false;
+    document.querySelectorAll(".paper [data-section]").forEach((section) => {
+      section.tabIndex = 0;
+      section.setAttribute("role", "button");
+      section.setAttribute(
+        "aria-label",
+        `Attach picture to ${sectionName(section.dataset.section)}`,
+      );
+    });
+    $("resume-status").textContent =
+      "Click a section, or highlight the words to attach this picture to.";
+  }
+  $("cancel-attachment").addEventListener("click", () => {
+    cancelAttachment();
+    $("resume-status").textContent = "Attachment unchanged";
+  });
+  document.addEventListener(
+    "keydown",
+    (event) => {
+      if (pickingPicture && event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        cancelAttachment();
+        $("resume-status").textContent = "Attachment unchanged";
+      } else if (
+        pickingPicture &&
+        event.key === "Enter" &&
+        event.target.matches(".paper [data-section]")
+      ) {
+        event.preventDefault();
+        attachPicture(event.target.dataset.section);
+      }
+    },
+    true,
+  );
+  function attachPicture(field, quote = "", before = "", after = "") {
+    pictureAnchor = { field, quote, before, after };
+    cancelAttachment();
+    getSelection()?.removeAllRanges();
+    save();
+    renderExtras();
+    $("resume-status").textContent =
+      `Picture attached to ${sectionName(field)}`;
+  }
+  document.addEventListener("pointerup", (event) => {
+    if (!pickingPicture || event.target.closest("button,a")) return;
+    const section = event.target.closest(".paper [data-section]");
+    if (!section) return;
+    const field = section.dataset.section,
+      value = section.querySelector("[data-value]"),
+      selection = getSelection();
+    let quote = "",
+      before = "",
+      after = "";
+    if (selection?.rangeCount && !selection.isCollapsed) {
+      const range = selection.getRangeAt(0);
+      if (
+        !value.contains(range.startContainer) ||
+        !value.contains(range.endContainer)
+      ) {
+        $("resume-status").textContent =
+          "Highlight words within a single section.";
+        return;
+      }
+      quote = range.toString();
+      const prefix = range.cloneRange();
+      prefix.selectNodeContents(value);
+      prefix.setEnd(range.startContainer, range.startOffset);
+      const start = prefix.toString().length,
+        text = data[field];
+      if (!text.includes(quote)) {
+        $("resume-status").textContent = "Choose the words again.";
+        return;
+      }
+      before = text.slice(Math.max(0, start - 32), start);
+      after = text.slice(start + quote.length, start + quote.length + 32);
+    }
+    attachPicture(field, quote, before, after);
+  });
+  addEventListener("resize", alignPicture);
+  document.fonts.ready.then(alignPicture);
   function renderExtras() {
     $("extra-blocks").replaceChildren();
     for (const type of extraTypes) {
@@ -373,6 +590,7 @@
       remove.addEventListener("click", () => {
         finish(true);
         extraTypes = extraTypes.filter((value) => value !== type);
+        if (type === "picture") pictureAnchor = null;
         save();
         renderExtras();
       });
@@ -386,7 +604,39 @@
         change.addEventListener("click", () => $("extra-picture").click());
         const caption = node("div", undefined, "extra-field");
         extraField(caption, "pictureCaption", "p", "Edit picture caption");
-        block.append(image, caption, change);
+        const attachment = node("div", undefined, "picture-attachment");
+        if (pictureAnchor) {
+          const label = node(
+            "button",
+            sectionName(pictureAnchor.field),
+            "text-button picture-anchor-label",
+          );
+          label.addEventListener("click", () =>
+            pictureTarget()?.scrollIntoView({
+              behavior: "smooth",
+              block: "center",
+            }),
+          );
+          attachment.append(label);
+        }
+        const attach = node(
+          "button",
+          pictureAnchor ? "Reattach" : "Attach to résumé",
+          "text-button",
+        );
+        attach.addEventListener("click", pickAttachment);
+        attachment.append(attach);
+        if (pictureAnchor) {
+          const detach = node("button", "Detach", "text-button");
+          detach.addEventListener("click", () => {
+            pictureAnchor = null;
+            cancelAttachment();
+            save();
+            renderExtras();
+          });
+          attachment.append(detach);
+        }
+        block.append(image, caption, change, attachment);
       } else if (type === "fact") {
         extraField(block, "fact", "p", "Edit fun fact");
       } else {
@@ -423,6 +673,7 @@
       .forEach(
         (button) => (button.disabled = extraTypes.includes(button.dataset.add)),
       );
+    decoratePictureAnchor();
   }
   document.querySelectorAll("[data-add]").forEach((button) =>
     button.addEventListener("click", () => {

@@ -816,6 +816,77 @@ textarea {
 .extra-block .text-button {
   font-size: 11px;
 }
+.picture-attachment {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin-top: 14px;
+}
+.picture-anchor-label {
+  flex-basis: 100%;
+  text-align: left;
+}
+.picture-anchor {
+  background: transparent;
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: #457da9;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.picture-anchor:hover {
+  background: #e4eff8;
+}
+.picture-pin {
+  display: inline-flex;
+  vertical-align: middle;
+  padding: 0;
+  margin-left: 8px;
+  border: 0;
+  background: none;
+  color: #3a719f;
+}
+.picture-pin svg {
+  width: 14px;
+  height: 14px;
+}
+.picking-picture .resume-section {
+  cursor: crosshair;
+  outline: 1px dashed #abc5df;
+  outline-offset: 5px;
+}
+.picking-picture .resume-section:hover {
+  background: #f0f6fc;
+  outline-color: #3b79ad;
+}
+#extras-rail.has-attachment {
+  position: static;
+}
+.attachment-focus img {
+  animation: picture-focus 1.4s ease-out;
+}
+@keyframes picture-focus {
+  from {
+    outline: 3px solid #93c7ff;
+    outline-offset: 5px;
+  }
+  to {
+    outline: 3px solid transparent;
+    outline-offset: 10px;
+  }
+}
+.preview-view .picture-attachment {
+  display: none;
+}
+@media print {
+  .picture-pin {
+    display: none;
+  }
+  .picture-anchor {
+    text-decoration: none;
+  }
+}
 .preview-view #add-extra,
 .preview-view .extra-remove,
 .preview-view .extra-block > .text-button {
