@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Marmullaku · CV</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Sans+Condensed:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="editor.css?v=preview-split" />
+  </head>
+  <body>
+    <svg class="symbols" aria-hidden="true">
+      <defs>
+        <symbol id="pencil" viewBox="0 0 24 24">
+          <path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z" />
+        </symbol>
+        <symbol id="close" viewBox="0 0 24 24">
+          <path d="m6 6 12 12M18 6 6 18" />
+        </symbol>
+        <symbol id="picture-icon" viewBox="0 0 24 24">
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <circle cx="8" cy="9" r="1.5" />
+          <path d="m4 17 5-5 4 4 3-3 5 5" />
+        </symbol>
+        <symbol id="settings-icon" viewBox="0 0 24 24">
+          <path
+            d="m9.7 4.3.6-2.3h3.4l.6 2.3 2.1 1.2 2.3-.6 1.7 2.9-1.7 1.7v2.5l1.7 1.7-1.7 2.9-2.3-.6-2.1 1.2-.6 2.3h-3.4l-.6-2.3-2.1-1.2-2.3.6-1.7-2.9 1.7-1.7V9.5L3.6 7.8l1.7-2.9 2.3.6z"
+          />
+          <circle cx="12" cy="11" r="3" />
+        </symbol>
+        <symbol id="pdf-icon" viewBox="0 0 24 24">
+          <path d="M14 3H5v18h14V8zM14 3v5h5M8 13h8M8 17h6" />
+        </symbol>
+        <symbol id="more-icon" viewBox="0 0 24 24">
+          <circle cx="5" cy="12" r="1" />
+          <circle cx="12" cy="12" r="1" />
+          <circle cx="19" cy="12" r="1" />
+        </symbol>
+      </defs>
+    </svg>
+    <header class="site-header">
+      <a href="../">Marmullaku</a>
+    </header>
+    <main id="family-home">
+      <div class="intro">
+        <div>
+          <h1>Welcome</h1>
+          <p>CVs from the Marmullaku family.</p>
+        </div>
+        <p id="save-status" role="status"></p>
+      </div>
+      <div class="family">
+        <article class="profile-card own-card">
+          <div class="portrait">
+            <img
+              class="office"
+              src="../main/pictures/offices/office_01.webp"
+              alt=""
+            /><img
+              src="../main/pictures/portraits/osman.webp"
+              alt="Osman Marmullaku"
+            />
+          </div>
+          <div class="card-content">
+            <div class="editable name-field" data-field="name">
+              <h2 data-value="name"></h2>
+            </div>
+            <div class="editable role-field" data-field="role">
+              <p data-value="role"></p>
+              <button
+                class="edit"
+                data-edit="role"
+                aria-label="Edit your title"
+              >
+                <svg><use href="#pencil" /></svg>
+              </button>
+            </div>
+            <button class="resume-button" id="resume-open">
+              View CV <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+        </article>
+        <article class="profile-card sibling-card">
+          <div class="portrait">
+            <img
+              class="office"
+              src="../main/pictures/offices/office_01.webp"
+              alt=""
+            /><img
+              src="../main/pictures/portraits/diellza.webp"
+              alt="Diellza Marmullaku"
+            />
+          </div>
+          <div class="card-content">
+            <h2>Diellza Marmullaku</h2>
+            <p>Private CV</p>
+            <span class="sibling-note">Shared with you when invited</span>
+          </div>
+        </article>
+        <article class="profile-card sibling-card">
+          <div class="portrait">
+            <img
+              class="office"
+              src="../main/pictures/offices/office_01.webp"
+              alt=""
+            /><img
+              src="../main/pictures/portraits/drilona.webp"
+              alt="Drilona Marmullaku"
+            />
+          </div>
+          <div class="card-content">
+            <h2>Drilona Marmullaku</h2>
+            <p>Private CV</p>
+            <span class="sibling-note">Shared with you when invited</span>
+          </div>
+        </article>
+      </div>
+    </main>
+    <main id="company-view" hidden>
+      <div id="company-preview-bar" hidden>
+        <span>Company preview</span
+        ><button class="text-button" id="back-to-settings">
+          Back to settings
+        </button>
+      </div>
+      <div class="intro">
+        <div>
+          <h1 id="company-welcome"></h1>
+          <p id="company-message">Choose a CV.</p>
+        </div>
+      </div>
+      <div class="family" id="company-profiles"></div>
+    </main>
+    <footer>
+      <div class="footer-identity">
+        <p class="signed-in">
+          Signed in as
+          <a id="settings-open" href="#profile-settings" data-value="name"
+            >Osman Marmullaku</a
+          ><button
+            id="settings-icon-open"
+            class="footer-settings"
+            aria-label="Open profile settings"
+          >
+            <svg aria-hidden="true"><use href="#settings-icon" /></svg>
+          </button>
+        </p>
+      </div>
+      <span>All rights reserved</span>
+    </footer>
+
+    <dialog id="resume" aria-labelledby="resume-name">
+      <div class="resume-toolbar">
+        <span id="resume-mode">Your CV</span
+        ><span id="resume-status" role="status"></span
+        ><button class="text-button cv-owner" id="undo-row" hidden>
+          Undo row change</button
+        ><button class="text-button" id="cancel-attachment" hidden>
+          Cancel attachment</button
+        ><button class="text-button" id="exit-preview" hidden>
+          Back to editing</button
+        ><button class="icon-button" data-close="resume" aria-label="Close CV">
+          <svg><use href="#close" /></svg>
+        </button>
+      </div>
+      <div class="resume-workspace">
+        <article class="paper">
+          <header class="paper-header">
+            <img src="../main/pictures/portraits/osman.webp" alt="" />
+            <div>
+              <div class="editable" data-field="name">
+                <h2 id="resume-name" data-value="name"></h2>
+              </div>
+              <div class="editable" data-field="role">
+                <p data-value="role"></p>
+                <button
+                  class="edit"
+                  data-edit="role"
+                  aria-label="Edit CV title"
+                >
+                  <svg><use href="#pencil" /></svg>
+                </button>
+              </div>
+            </div>
+          </header>
+          <div id="resume-sections" class="resume-sections"></div>
+          <div class="paper-foot">marmullaku.ch <span>Sample CV</span></div>
+        </article>
+        <aside id="extras-rail" aria-label="More about me">
+          <div class="extras-heading">
+            <h2>More about me</h2>
+            <details id="add-extra" class="add-menu">
+              <summary>Add content</summary>
+              <div>
+                <button data-add="picture">Picture</button
+                ><button data-add="fact">Fun fact</button
+                ><button data-add="link">Link</button
+                ><button data-add="button">Button</button
+                ><button id="add-pdf">PDF document</button>
+              </div>
+            </details>
+          </div>
+          <div id="extra-blocks"></div>
+          <section class="pdf-library">
+            <div class="extra-heading">
+              <h3>Supporting documents</h3>
+              <button class="text-button" id="add-pdf-shortcut">Add PDF</button>
+            </div>
+            <div id="pdf-list"></div>
+            <p class="pdf-help">PDF · up to 10 MB · stored in this browser</p>
+          </section>
+        </aside>
+        <aside
+          id="document-reader"
+          class="document-reader"
+          aria-label="Supporting document"
+          hidden
+        >
+          <header>
+            <div>
+              <h2 id="document-title"></h2>
+            </div>
+            <a id="document-new-tab" target="_blank" rel="noopener">Open PDF</a
+            ><button
+              id="close-document"
+              class="icon-button"
+              aria-label="Close supporting document"
+            >
+              <svg aria-hidden="true"><use href="#close" /></svg>
+            </button>
+          </header>
+          <p id="document-status" role="status"></p>
+          <div class="document-controls" hidden>
+            <button
+              id="document-previous"
+              class="text-button"
+              aria-label="Previous PDF page"
+            >
+              Previous
+            </button>
+            <span id="document-page" role="status"></span>
+            <button
+              id="document-next"
+              class="text-button"
+              aria-label="Next PDF page"
+            >
+              Next
+            </button>
+            <select id="document-zoom" aria-label="PDF zoom">
+              <option value="fit">Fit width</option>
+              <option value="1">100%</option>
+              <option value="1.5">150%</option>
+              <option value="2">200%</option>
+            </select>
+          </div>
+          <div class="document-pages">
+            <canvas hidden role="img" aria-label="PDF page"></canvas>
+            <p id="document-text" class="document-accessible-text"></p>
+          </div>
+        </aside>
+      </div>
+      <input id="pdf-file" type="file" accept="application/pdf,.pdf" hidden />
+      <input
+        id="row-logo"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        hidden
+      />
+      <input
+        id="extra-picture"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        hidden
+      />
+      <div id="link-editor" popover="auto">
+        <form id="link-form">
+          <label for="extra-url">Web address</label
+          ><input
+            id="extra-url"
+            type="url"
+            required
+            placeholder="https://"
+            maxlength="500"
+          />
+          <p id="link-error" role="alert"></p>
+          <button class="primary" type="submit">Save link</button>
+        </form>
+      </div>
+    </dialog>
+
+    <dialog id="settings-panel" aria-labelledby="settings-title">
+      <div class="panel-head">
+        <div>
+          <h2 id="settings-title">Settings</h2>
+          <p>Manage your links and family access.</p>
+        </div>
+        <button
+          class="icon-button"
+          data-close="settings-panel"
+          aria-label="Close profile settings"
+        >
+          <svg><use href="#close" /></svg>
+        </button>
+      </div>
+      <div class="settings-tabs" role="tablist" aria-label="Access settings">
+        <button
+          role="tab"
+          id="companies-tab"
+          aria-selected="true"
+          aria-controls="companies"
+        >
+          Company links</button
+        ><button
+          role="tab"
+          id="family-tab"
+          aria-selected="false"
+          aria-controls="family-panel"
+        >
+          Family
+        </button>
+      </div>
+      <div id="companies" role="tabpanel" aria-labelledby="companies-tab">
+        <label class="field-label" for="company-name">Company</label>
+        <div class="company-search">
+          <input
+            id="company-name"
+            maxlength="120"
+            placeholder="Search or add a company"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="company-suggestions"
+          />
+          <div
+            id="company-suggestions"
+            role="listbox"
+            aria-label="Companies"
+            hidden
+          ></div>
+        </div>
+        <p class="search-help">Choose a suggestion or add a company.</p>
+        <div class="sharing-actions">
+          <button class="secondary" id="preview-company">Preview</button
+          ><button class="primary" id="create-link">Create link</button>
+        </div>
+        <p class="context-help">
+          Each link opens your full CV, documents and extras.
+        </p>
+        <div class="section-label"><h3>Your links</h3></div>
+        <p class="context-help">
+          Anyone with a link can use it. Turn it off whenever you want.
+        </p>
+        <div id="company-links"></div>
+        <p class="context-help activity-help">
+          Activity belongs to the link. If someone forwards it, their visits
+          appear here too.
+        </p>
+      </div>
+      <div
+        id="family-panel"
+        role="tabpanel"
+        aria-labelledby="family-tab"
+        hidden
+      >
+        <h3 class="family-sharing-title">Let family share my CV</h3>
+        <p class="family-help">
+          They can open your CV and include it in their company links. You can
+          turn this off at any time.
+        </p>
+        <div id="sibling-permissions"></div>
+      </div>
+      <p class="mockup-note" id="settings-status" role="status">
+        Preview only. Links and activity stay in this browser.
+      </p>
+    </dialog>
+    <script type="module" src="editor.js?v=preview-split"></script>
+  </body>
+</html>

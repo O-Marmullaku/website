@@ -4,7 +4,7 @@ if (window===parent) {
   if(params.get('view')==='settings'){destination.searchParams.set('settings','1');destination.searchParams.set('sign-in','1');}
   location.replace(destination);
 } else try {
-  const response=await fetch('../mockup/profile.html',{cache:'no-store'});
+  const response=await fetch('../profile/editor.html',{cache:'no-store'});
   if(!response.ok)throw new Error('Could not load the CV. Please try again.');
   const template=new DOMParser().parseFromString(await response.text(),'text/html');
   for(const link of template.head.querySelectorAll('link'))document.head.append(document.importNode(link,true));
@@ -14,5 +14,5 @@ if (window===parent) {
   for(const path of ['../main/backend-config.js','../main/access-api.js?v=accounts-2','../admin/session.js?v=accounts-2'])await new Promise((resolve,reject)=>{
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
-  await import('../mockup/profile.js?v=accounts-2');
+  await import('../profile/editor.js?v=preview-split');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

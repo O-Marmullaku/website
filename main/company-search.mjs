@@ -1,4 +1,4 @@
-import { findCompanies } from '../mockup/sharing-model.mjs';
+import { findCompanies } from '../profile/sharing-model.mjs';
 
 // Official Swiss register data. Manual entry remains available for all companies.
 export async function searchSwissCompanies(value,signal) {

@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="../">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, noimageindex" />
+  <meta name="referrer" content="no-referrer" />
+  <link rel="stylesheet" href="main/private-access.css?v=signin2" />
+  <link rel="stylesheet" href="main/profile-bridge.css?v=accounts-2" />
+  <title>Marmullaku · Mockup</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Sans+Condensed:wght@400;500&family=Instrument+Serif&display=swap" rel="stylesheet" />
+  <style>
+    /* night-blue glass: navy desk with faint light sweeps, frosted navy cards, one blue accent, gold for the card you're on */
+    :root {
+      color-scheme: dark;
+      --desk: #0c1524; --paper: #ffffff; --print: #141414; --print-muted: #5c5c5c; --tray: #eceef1;
+      --text: #eef3fa; --muted: #a3b1c4; --line: rgba(160,190,230,.14); --line-strong: rgba(160,190,230,.24);
+      --ink: #3d8bf2; --ink-hi: #6cb4ff; /* blue accent; lighter for text on navy */
+      --gold: #f2c46d;
+      --card: linear-gradient(180deg, rgba(30,46,70,.92), rgba(18,30,48,.95));
+      --ease: cubic-bezier(.2,.8,.2,1);
+      --paper-shadow: 0 1px 1px rgba(0,0,0,.35), 0 14px 30px -12px rgba(0,0,0,.7);
+      --paper-lift: 0 2px 3px rgba(0,0,0,.3), 0 30px 50px -18px rgba(0,0,0,.8);
+      --display: "Fira Sans", system-ui, sans-serif;
+      --names: "Fira Sans Condensed", "Fira Sans", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html:has(dialog[open]) { overflow: hidden; }
+    body {
+      margin: 0; color: var(--text); min-height: 100vh; display: flex; flex-direction: column;
+      /* light sweeps: faint arcs across the top right and lower left, over a navy glow */
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1600 900' preserveAspectRatio='none'%3E%3Cg fill='none' stroke='%2390b4e6'%3E%3Cpath d='M1500 -40C1380 160 1100 260 760 300' stroke-opacity='.10' stroke-width='1.5'/%3E%3Cpath d='M1600 40C1450 220 1180 330 900 380' stroke-opacity='.06'/%3E%3Cpath d='M-40 640C200 560 420 520 700 540' stroke-opacity='.07' stroke-width='1.5'/%3E%3Cpath d='M-40 700C240 610 520 600 820 640' stroke-opacity='.04'/%3E%3C/g%3E%3C/svg%3E") center / 100% 100% no-repeat fixed,
+        radial-gradient(60% 50% at 85% 0%, rgba(70,110,170,.22), transparent 70%) fixed,
+        radial-gradient(50% 50% at 0% 70%, rgba(50,80,130,.18), transparent 70%) fixed,
+        linear-gradient(180deg, #13213a, var(--desk) 70%) fixed var(--desk);
+      font: 16px/1.5 "Fira Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Thai", "Noto Sans SC", sans-serif;
+      -webkit-font-smoothing: antialiased; scrollbar-color: #2a3c56 var(--desk); accent-color: var(--ink); caret-color: var(--ink-hi);
+    }
+    ::selection { background: var(--ink); color: #fff; }
+    a { color: inherit; }
+    main { flex: 1; width: 100%; }
+    :focus-visible { outline: 2px solid var(--ink-hi); outline-offset: 3px; border-radius: 4px; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
+    .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+    @keyframes up { from { opacity: 0; transform: translateY(18px); } }
+    .in { animation: up .8s var(--ease) backwards; animation-delay: calc(var(--d, 0) * 80ms); }
+    @keyframes reveal { from { transform: translateY(105%); } }
+    @keyframes nudge { 0%, 70%, 100% { transform: none; } 80% { transform: translateX(4px); } 90% { transform: translateX(-1px); } }
+
+    /* nav */
+    /* inherits the body's fixed background, so the bar and the page under it are one surface */
+    .nav { position: sticky; top: 0; z-index: 10; background: inherit; border-bottom: 1px solid var(--line); }
+    .nav .container { height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+    .wordmark { font-family: var(--display); font-weight: 500; font-size: 26px; line-height: 1; letter-spacing: -.005em; text-decoration: none; }
+    .lang { display: inline-flex; border: 1px solid var(--line-strong); border-radius: 999px; padding: 4px; background: rgba(255,255,255,.03); }
+    .lang button {
+      font: inherit; font-size: 15px; padding: 6px 14px; border: 0; border-radius: 999px; cursor: pointer;
+      background: transparent; color: var(--muted); transition: background-color .2s, color .2s;
+    }
+    .lang button:hover { color: var(--text); background: rgba(255,255,255,.06); }
+    .lang button[aria-pressed="true"] { background: linear-gradient(180deg, #7cc0ff, #4f9df5); color: #0b1a2e; font-weight: 500;
+      box-shadow: 0 0 0 1px rgba(124,192,255,.4), 0 4px 14px -4px rgba(79,157,245,.6); }
+
+    /* hero */
+    .hero { padding-block: 56px 36px; }
+    h1 { font-family: var(--display); font-weight: 600; font-size: clamp(40px, 4.2vw, 64px); line-height: 1.05; letter-spacing: -.01em; margin: 0 0 14px; overflow: hidden; color: #e6edf7; }
+    h1 span { display: inline-block; animation: reveal 1s var(--ease) backwards; }
+    .lead { font-size: 20px; font-weight: 300; color: var(--muted); margin: 0; max-width: 35em; text-wrap: pretty; }
+
+    /* people: one swipeable row; padding keeps the lifted cards' shadows from being clipped.
+       Cards never shrink below --card-min (the longest name on one line): narrow screens show fewer cards, not smaller ones.
+       fit() sets --visible to the whole cards that fit plus .3, so the next card always peeks in */
+    .people { --gap: 22px; --visible: 4.3; --card-min: 240px; --fade: 80px; --fl: 0px; --fr: 0px; list-style: none; margin: -24px -12px 0; padding: 24px 12px 48px; display: grid; gap: var(--gap);
+      grid-auto-flow: column; grid-auto-columns: max(var(--card-min), calc((100% - (var(--visible) - 1) * var(--gap)) / var(--visible)));
+      overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 12px; scrollbar-width: none; }
+    .people::-webkit-scrollbar { display: none; }
+    /* fractional --visible leaves the next card peeking; each edge fades by how far there is left to scroll (set in ends()) */
+    .people { -webkit-mask-image: linear-gradient(to right, transparent, #000 var(--fl), #000 calc(100% - var(--fr)), transparent);
+      mask-image: linear-gradient(to right, transparent, #000 var(--fl), #000 calc(100% - var(--fr)), transparent); }
+    /* Roomy desktops and single-card layouts use a right-hand pair; intermediate layouts flank the cards. */
+    .carousel { --gutter: 0px; position: relative; }
+    .arrows { position: absolute; left: -72px; right: -72px; top: calc((100% - 24px) / 2); transform: translateY(-50%); z-index: 2;
+      display: flex; flex-direction: row-reverse; justify-content: space-between; pointer-events: none; }
+    .arrow { width: 60px; height: 60px; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(20,34,54,.85); color: var(--muted);
+      box-shadow: var(--paper-shadow); display: grid; place-items: center; cursor: pointer; pointer-events: auto;
+      transition: background .15s, color .15s, border-color .2s, opacity .3s, transform .3s var(--ease), visibility .3s; }
+    .arrow:not(:disabled) { color: var(--ink-hi); border-color: rgba(108,180,255,.55); box-shadow: var(--paper-shadow), inset 0 0 18px -6px rgba(108,180,255,.5); }
+    .arrow:hover:not(:disabled) { transform: scale(1.06); }
+    .arrow:active:not(:disabled) { background: var(--ink); color: #fff; transform: scale(.94); transition-duration: .08s; }
+    .arrow:disabled { opacity: 0; visibility: hidden; pointer-events: none; }
+    /* idle hint until the visitor first pages */
+    .people:not(.touched) ~ .arrows .next:not(:disabled) svg { animation: nudge 2.4s ease-in-out 1.5s infinite; }
+    /* once the side margin can't hold them, the arrows get their own gutter so the teased card fades out beside them, not under them */
+    @media (max-width: 1279px) { .carousel { --gutter: 72px; padding-inline: var(--gutter); } .arrows { left: 0; right: 0; } }
+    @media (max-width: 720px) { .carousel { --gutter: 56px; } .arrow { width: 48px; height: 48px; } }
+    .carousel.single-card { padding-left: 0; }
+    .single-card .arrows { left: auto; flex-direction: column; gap: 14px; }
+    .single-card .arrow:disabled { opacity: .45; visibility: visible; }
+    .left-arrow { display: none; position: absolute; left: -72px; top: calc((100% - 24px) / 2); transform: translateY(-50%); z-index: 2; }
+    .left-arrow .arrow { color: var(--ink-hi); border-color: rgba(108,180,255,.55); box-shadow: var(--paper-shadow); }
+    .left-arrow .arrow:hover, .left-arrow .arrow:active { transform: none; }
+    .left-arrow .arrow:disabled { opacity: 0; visibility: hidden; }
+    @media (min-width: 1280px) {
+      .left-arrow { display: block; }
+      .arrows { left: auto; flex-direction: column; gap: 14px; }
+      .arrow:disabled { opacity: .45; visibility: visible; }
+    }
+
+    /* cards: frosted navy panels; the portrait bleeds to the edge, the one you're on lights up gold along its foot */
+    .card { scroll-snap-align: start; background: var(--card); color: var(--text); border: 1px solid var(--line-strong); border-radius: 8px; overflow: hidden;
+      box-shadow: var(--paper-shadow), inset 0 1px 0 rgba(255,255,255,.06); display: flex; flex-direction: column; position: relative; cursor: pointer;
+      transition: box-shadow .45s var(--ease), transform .6s var(--ease), opacity .6s var(--ease), border-color .3s; }
+    .card::before { content: ""; position: absolute; left: 12%; right: 12%; bottom: 0; height: 2px; z-index: 1; pointer-events: none;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity .35s; }
+    .card.away { transform: scale(.96); }
+    .card:hover, .card:focus-within { border-color: rgba(242,196,109,.35); transform: translateY(-8px);
+      box-shadow: var(--paper-lift), 0 18px 40px -20px rgba(242,180,80,.45), inset 0 1px 0 rgba(255,255,255,.08); }
+    .card:hover::before, .card:focus-within::before { opacity: 1; }
+    /* the gradient only shows while the office and portrait load */
+    .media { aspect-ratio: 6 / 7; overflow: hidden; position: relative; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #8d9fb6, #4c5d75); }
+    /* office and cutout portrait are separate layers; the office gets a light blur, scaled up so its edges stay sharp */
+    .media img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .9s var(--ease); }
+    .media .bg { filter: blur(2px) contrast(.9); transform: scale(1.04); }
+    /* cool blue-gray wash over the office only; the portrait sits above it untouched */
+    .media::after { content: ""; position: absolute; inset: 0; background: rgba(70,90,120,.1); pointer-events: none; }
+    .media .who { z-index: 1; object-position: 50% 0; } /* 6:7 frame crops the 4:5 cutout at the chest, never the headroom */
+    .card:hover .media .who { transform: scale(1.04); }
+    .card:hover .media .bg { transform: scale(1.08); }
+    .content { padding: 18px 20px 18px; display: flex; flex-direction: column; flex: 1; }
+    .name { font-family: var(--names); font-size: 22px; font-weight: 400; line-height: 1.1; margin: 0 0 8px; text-wrap: balance; }
+    /* the name is the button that opens the résumé; it covers the whole card */
+    .open { all: unset; cursor: pointer; }
+    .open::after { content: ""; position: absolute; inset: 0; z-index: 1; }
+    .open:focus-visible { outline: none; }
+    .card:has(.open:focus-visible) { outline: 2px solid var(--ink-hi); outline-offset: 4px; }
+    .role { font-size: 16px; font-weight: 400; line-height: 1.3; color: #c3cedc; margin: 0; flex: 1; text-wrap: pretty; }
+    .footer-row { margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--line-strong); display: flex; align-items: center; gap: 12px; }
+    .cta { font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 8px; color: var(--ink-hi); transition: gap .3s var(--ease), color .2s; }
+    .cta svg { transition: transform .3s var(--ease); }
+    .card:hover .cta, .card:focus-within .cta { color: var(--gold); }
+    .card:hover .cta svg { transform: translateX(4px); }
+
+
+    /* footer */
+    footer { border-top: 1px solid var(--line); }
+    footer .container { display: flex; align-items: center; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap;
+      padding-block: 28px; font-size: 15px; font-weight: 300; color: var(--muted); }
+    footer p { margin: 0; }
+    @media (min-width: 1280px) { footer [data-i18n="rights"] { margin-right: -72px; } }
+
+    /* the opened résumé: the sheet comes off the desk and unrolls into a full paper document that scrolls in the window */
+    .sheet { padding: 0; border: 0; background: none; width: 100%; height: 100%; max-width: none; max-height: none; color: var(--print);
+      overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #4a4a4d transparent; }
+    .sheet.unrolling { overflow: hidden; }
+    .sheet::backdrop { background: rgba(6,12,22,.78); transition: opacity .5s var(--ease); }
+    .sheet.closing::backdrop { opacity: 0; }
+    @starting-style { .sheet[open]::backdrop { opacity: 0; } }
+    .paper { --w: min(794px, 100vw - 32px); position: relative; background: var(--paper); border-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,.3), 0 40px 80px -20px rgba(0,0,0,.8);
+      width: var(--w); height: calc(var(--w) * 1.4142); margin: 48px auto 0; transform-origin: 50% 0; display: flex; flex-direction: column;
+      padding: 3.6em 4.4em 2.4em; font-size: calc(var(--w) * 15 / 794); line-height: 1.55; }
+    /* A4 pages like a PDF viewer: fixed ratio, type scales with the page width so the layout never reflows; a gap between pages */
+    .paper + .paper { margin-top: 24px; }
+    .sheet { padding-bottom: 64px; }
+    .page2 { transition: opacity .4s var(--ease); }
+    .sheet:not(.settled) .page2 { opacity: 0; }
+    .paper:focus { outline: none; }
+    /* save / share / close: stays put in the window corner while the paper scrolls under it; labels drop down on hover */
+    .tools { position: fixed; top: 16px; right: 16px; z-index: 1; display: flex; gap: 10px; transition: opacity .3s; }
+    .sheet:not(.settled) .tools { opacity: 0; pointer-events: none; }
+    .tool { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--paper); color: var(--print);
+      box-shadow: var(--paper-shadow); display: grid; place-items: center; cursor: pointer; transition: transform .3s var(--ease), background-color .2s, color .2s; }
+    .tool:hover { transform: scale(1.06); }
+    .tool:active { background: var(--ink); color: #fff; transform: scale(.94); }
+    .tool::after { content: attr(aria-label); position: absolute; top: calc(100% + 8px); right: 0; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
+      background: #0b1a2e; color: var(--text); font: 500 13px/1.4 var(--display); opacity: 0; transform: translateY(-4px); pointer-events: none;
+      transition: opacity .2s, transform .2s var(--ease); }
+    .tool:hover::after, .tool:focus-visible::after, .tool.done::after { opacity: 1; transform: none; }
+    .tool.done { background: var(--ink); color: #fff; }
+    /* links out to the work itself, beside each job */
+    .job { display: grid; grid-template-columns: 1fr auto; column-gap: 1em; }
+    .job > ul { grid-column: 1 / -1; }
+    .job .when, .job b, .job .org { grid-column: 1; }
+    .proj { grid-column: 2; grid-row: 1 / 4; align-self: start; display: grid; gap: .35em; justify-items: end; }
+    .proj a { font-size: .78em; line-height: 1.3; padding: .2em .7em; border: 1px solid #d8d8d8; border-radius: 999px; color: var(--print); text-decoration: none;
+      white-space: nowrap; transition: border-color .2s, color .2s, background-color .2s; }
+    .proj a:hover { border-color: var(--ink); color: var(--ink); background: #f2f7ff; }
+    /* Save as PDF prints just the pages, edge to edge on A4 */
+    @page { size: A4; margin: 0; }
+    @media print {
+      body > :not(.sheet), .tools, .sheet::backdrop { display: none !important; }
+      html { overflow: visible !important; }
+      body { background: none; }
+      .sheet { position: static; overflow: visible; height: auto; padding: 0; }
+      .paper { --w: 210mm; margin: 0; box-shadow: none; border-radius: 0; break-after: page; }
+      .filtering .job:not(.hit) { opacity: 1; }
+    }
+    .cv-head { display: flex; align-items: center; gap: 1.6em; padding-bottom: 1.4em; border-bottom: 2px solid var(--print); }
+    .cv-photo { width: 7.5em; aspect-ratio: 1; flex: none; background: var(--tray); overflow: hidden; display: grid; place-items: center;
+      font-family: var(--display); font-weight: 500; font-size: 1em; }
+    .cv-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; display: block; filter: grayscale(1) contrast(1.05); }
+    .cv-name { font-family: var(--display); font-weight: 500; font-size: 2.6em; line-height: 1.05; margin: 0 0 .2em; }
+    .cv-role { margin: 0; color: var(--print-muted); font-size: 1.1em; }
+    .cv-body { display: grid; grid-template-columns: 1fr 2fr; gap: 2.2em; padding: 1.6em 0; }
+    .cv-body h3 { font-family: var(--display); font-weight: 500; font-size: .95em; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 .8em; }
+    .cv-body section + section { margin-top: 1.6em; }
+    /* unwritten lines, printed as faint rules until the content arrives */
+    .draft { display: grid; gap: .7em; }
+    .draft i { display: block; height: .55em; background: #ebebeb; border-radius: 1px; }
+    .draft i:nth-child(3n) { width: 72%; } .draft i:nth-child(4n) { width: 88%; } .draft i:nth-child(5n) { width: 54%; }
+    .cv-note { margin: 1.4em 0 0; color: var(--print-muted); font-style: italic; }
+    .cv-foot { margin-top: auto; padding-top: .8em; border-top: 1px solid #dcdcdc; display: flex; justify-content: space-between; gap: 1em; color: var(--print-muted); font-size: .9em; }
+    .cv-foot a { color: var(--print); font-weight: 600; text-underline-offset: 3px; }
+    .cv-foot a:hover { color: var(--ink); }
+    /* sections print in one after another as the page unrolls (re-rendered on every open, so it replays) */
+    .cv-body section { animation: up .7s var(--ease) backwards; animation-delay: calc(450ms + var(--i, 0) * 90ms); }
+    .cv-body p { margin: 0; }
+    .cv-body ul { list-style: none; margin: 0; padding: 0; }
+    .contact { display: grid; gap: .3em; }
+    .contact a { color: var(--print); text-underline-offset: 3px; text-decoration-color: #c8c8c8; }
+    .contact a:hover { color: var(--ink); text-decoration-color: currentColor; }
+    .hint { color: var(--print-muted); font-size: .85em; margin: -.4em 0 .8em !important; }
+    /* skills: a level bar under each; hover or select one to trace it through the experience column */
+    .skills { display: grid; gap: .2em; }
+    .skill { all: unset; box-sizing: border-box; display: block; width: 100%; cursor: pointer; position: relative; padding: .25em 0 .6em; transition: color .2s; }
+    .skill::before, .skill::after { content: ""; position: absolute; left: 0; bottom: .2em; height: 3px; border-radius: 2px; }
+    .skill::before { right: 0; background: #ececec; }
+    .skill::after { width: var(--lvl); background: var(--print); transform-origin: 0 50%; transition: background-color .2s;
+      animation: fill 1.1s var(--ease) backwards; animation-delay: calc(900ms + var(--n) * 70ms); }
+    @keyframes fill { from { transform: scaleX(0); } }
+    .skill:hover, .skill.on { color: var(--ink); }
+    .skill:hover::after, .skill.on::after { background: var(--ink); }
+    .skill[aria-pressed="true"] { font-weight: 600; }
+    .skill:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+    .langs { display: grid; grid-template-columns: auto 1fr; gap: .3em 1em; margin: 0; }
+    .langs dd { margin: 0; color: var(--print-muted); text-align: right; }
+    /* experience: each job folds open; jobs that don't use the traced skill step back */
+    .job, .edu { border-left: 2px solid #e4e4e4; padding: .1em 0 .1em 1em; transition: opacity .3s, border-color .3s; }
+    .job + .job, .edu + .edu { margin-top: 1em; }
+    .filtering .job:not(.hit) { opacity: .3; }
+    .job.hit { border-color: var(--ink); }
+    .job.hit b { color: var(--ink); }
+    .when { display: block; color: var(--print-muted); font-size: .85em; letter-spacing: .04em; }
+    .org { display: block; color: var(--print-muted); }
+    .job ul { margin-top: .4em; display: grid; gap: .2em; }
+    .job li { padding-left: 1em; position: relative; }
+    .job li::before { content: ""; position: absolute; left: 0; top: .7em; width: .35em; height: 1px; background: var(--print); }
+
+    @media (max-width: 720px) {
+      .people { --gap: 14px; --fade: 40px; }
+    }
+    @media (max-width: 560px) {
+      .container { padding: 0 16px; }
+      .nav .container { height: 64px; }
+      .wordmark { font-size: 22px; }
+      .lang { padding: 3px; }
+      .lang button { font-size: 12px; padding: 5px 8px; white-space: nowrap; }
+      .hero { padding-block: 28px 24px; }
+      .lead { font-size: 16px; }
+      /* an A4 page at phone width would mean 7px type, so here the pages reflow into one column and grow to fit */
+      .paper { --w: calc(100vw - 24px); height: auto; min-height: calc(var(--w) * 1.4142); margin-top: 72px; padding: 40px 22px 32px; font-size: 14px; }
+      .cv-body { grid-template-columns: 1fr; gap: 0; }
+      .cv-body > div + div { margin-top: 2em; }
+      .cv-head { flex-direction: column; align-items: flex-start; gap: 1em; }
+    }
+  </style>
+  <link rel="stylesheet" href="main/cv-playground.css" />
+</head>
+<body>
+  <header class="nav" id="nav">
+    <div class="container">
+      <a class="wordmark" href="mockup/">Marmullaku</a>
+      <nav class="lang" id="lang" aria-label="Language" data-i18n-label="language">
+        <button type="button" data-lang="en" lang="en">EN</button><button type="button" data-lang="de" lang="de">DE</button><button type="button" data-lang="fr" lang="fr">FR</button><button type="button" data-lang="th" lang="th">ไทย</button><button type="button" data-lang="zh" lang="zh">中文</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <h1><span data-i18n="welcome">Welcome</span></h1>
+      <p class="lead in" style="--d:1" data-i18n="intro">This is the digital résumé collection of the Marmullaku family. Please click on your candidate to proceed.</p>
+    </section>
+
+    <div class="carousel">
+    <ul class="people">
+      <li class="card t1 in" style="--d:2" data-link="https://crazyentertainment.ch/">
+        <div class="media"><img class="bg" src="main/pictures/offices/office_01.webp" alt="" /><img class="who" src="main/pictures/portraits/osman.webp" alt="" width="800" height="1000" /></div>
+        <div class="content">
+          <h2 class="name"><button class="open" type="button">Osman Marmullaku</button></h2>
+          <p class="role" data-i18n="osman">Lorem ipsum dolor</p>
+          <div class="footer-row">
+            <span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+          </div>
+        </div>
+      </li>
+      <li class="card t2 in" style="--d:3">
+        <div class="media"><img class="bg" src="main/pictures/offices/office_02.webp" alt="" /><img class="who" src="main/pictures/portraits/diellza.webp" alt="" width="800" height="1000" /></div>
+        <div class="content">
+          <h2 class="name"><button class="open" type="button">Diellza Marmullaku</button></h2>
+          <p class="role" data-i18n="diellza">Lorem ipsum dolor</p>
+          <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        </div>
+      </li>
+      <li class="card t3 in" style="--d:4">
+        <div class="media"><img class="bg" src="main/pictures/offices/office_03.webp" alt="" /><img class="who" src="main/pictures/portraits/drilona.webp" alt="" width="800" height="1000" /></div>
+        <div class="content">
+          <h2 class="name"><button class="open" type="button">Drilona Marmullaku</button></h2>
+          <p class="role" data-i18n="drilona">Lorem ipsum dolor</p>
+          <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        </div>
+      </li>
+      <li class="card t4 in" style="--d:5">
+        <div class="media"><img class="bg" src="main/pictures/offices/office_04.webp" alt="" /><img class="who" src="main/pictures/portraits/woman.png" alt="" width="1143" height="1376" /></div>
+        <div class="content">
+          <h2 class="name"><button class="open" type="button">Drenusha Marmullaku</button></h2>
+          <p class="role" data-i18n="drenusha">Lorem ipsum dolor</p>
+          <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        </div>
+      </li>
+      <li class="card t5 in" style="--d:6">
+        <div class="media"><img class="bg" src="main/pictures/offices/office_05.webp" alt="" /><img class="who" src="main/pictures/portraits/woman.png" alt="" width="1143" height="1376" /></div>
+        <div class="content">
+          <h2 class="name"><button class="open" type="button">Dredhza Marmullaku</button></h2>
+          <p class="role" data-i18n="dredhza">Lorem ipsum dolor</p>
+          <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        </div>
+      </li>
+      <li class="card t6 in" style="--d:7">
+        <div class="media"><img class="bg" src="main/pictures/offices/office_06.webp" alt="" /><img class="who" src="main/pictures/portraits/man.png" alt="" width="1146" height="1372" /></div>
+        <div class="content">
+          <h2 class="name"><button class="open" type="button">Ali Marmullaku</button></h2>
+          <p class="role" data-i18n="ali">Lorem ipsum dolor</p>
+          <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
+        </div>
+      </li>
+    </ul>
+    <div class="left-arrow">
+      <button type="button" class="arrow" id="prev-left" aria-label="Previous" disabled><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+    </div>
+    <div class="arrows">
+      <button type="button" class="arrow next" id="next" aria-label="Next"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      <button type="button" class="arrow prev" id="prev" aria-label="Previous" disabled><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+    </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-identity"><p>© 2026 Marmullaku</p><span aria-hidden="true">·</span><button type="button" class="footer-sign-in" id="sign-in-trigger">Sign in</button></div>
+      <p data-i18n="rights">All rights reserved</p>
+    </div>
+  </footer>
+
+  <dialog class="access-dialog sign-in-dialog" id="sign-in-dialog" aria-labelledby="sign-in-title">
+    <button class="access-close" id="sign-in-close" type="button" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2 id="sign-in-title">Sign in</h2>
+    <p id="sign-in-help" hidden></p>
+    <form id="sign-in-form">
+      <label id="sign-in-email-label">Email<input id="sign-in-email" name="email" type="email" autocomplete="username" required maxlength="254" autofocus></label>
+      <label id="sign-in-password-label">Password<span class="password-field"><input id="sign-in-password" name="password" type="password" autocomplete="current-password" required maxlength="128"><button type="button" class="password-toggle" id="password-toggle" aria-label="Show password" aria-pressed="false"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></span></label>
+      <label id="sign-in-code-label" hidden>Email code<input id="sign-in-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" disabled></label>
+      <p class="access-error" id="sign-in-status" role="alert"></p>
+      <button class="access-action" id="sign-in-submit" type="submit">Sign in</button>
+    </form>
+    <button type="button" class="sign-in-secondary" id="sign-in-setup">Set up or reset password</button>
+    <button type="button" class="sign-in-secondary" id="sign-in-back" hidden>Back to sign in</button>
+  </dialog>
+  <dialog class="access-dialog" id="access-dialog" aria-labelledby="access-title" aria-describedby="access-detail">
+    <button class="access-close" id="access-close" type="button" data-i18n-label="close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <h2 id="access-title">Private résumé</h2>
+    <p id="access-detail"></p>
+    <button class="access-action" id="access-continue" type="button" hidden>View CV</button>
+    <p class="access-error" id="access-error" role="alert"></p>
+  </dialog>
+  <dialog class="sheet" id="sheet" aria-labelledby="cv-name">
+    <div class="tools">
+      <button class="tool" type="button" id="save" data-i18n-label="save" aria-label="Save as PDF"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
+      <button class="tool" type="button" id="share" data-i18n-label="share" aria-label="Share link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
+      <button class="tool" type="button" id="close" data-i18n-label="close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="cv-workspace"><div class="cv-pages">
+    <article class="paper" tabindex="-1" autofocus>
+      <header class="cv-head">
+        <div class="cv-photo" id="cv-photo"></div>
+        <div>
+          <h2 class="cv-name" id="cv-name"></h2>
+          <p class="cv-role" id="cv-role"></p>
+        </div>
+      </header>
+      <p class="cv-note" id="cv-note" data-i18n="draft">Résumé in preparation</p>
+      <div class="cv-body">
+        <div>
+          <section><h3 data-i18n="cvContact">Contact</h3><div class="draft"><i></i><i></i><i></i></div></section>
+          <section><h3 data-i18n="cvSkills">Skills</h3><div class="draft"><i></i><i></i><i></i><i></i><i></i></div></section>
+          <section><h3 data-i18n="cvLanguages">Languages</h3><div class="draft"><i></i><i></i><i></i></div></section>
+        </div>
+        <div>
+          <section><h3 data-i18n="cvProfile">Profile</h3><div class="draft"><i></i><i></i><i></i><i></i></div></section>
+          <section><h3 data-i18n="cvExperience">Experience</h3><div class="draft"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></section>
+          <section><h3 data-i18n="cvEducation">Education</h3><div class="draft"><i></i><i></i><i></i><i></i></div></section>
+        </div>
+      </div>
+      <div class="cv-foot"><span>marmullaku.ch</span><a id="cv-link" target="_blank" rel="noopener" hidden><span data-i18n="projects">Projects</span> ↗</a><span id="cv-pg">1 / 1</span></div>
+    </article>
+    <article class="paper page2" id="page2" hidden>
+      <div class="cv-body"></div>
+      <div class="cv-foot"><span>marmullaku.ch</span><span>2 / 2</span></div>
+    </article>
+    </div><aside class="project-rail" id="project-rail" aria-label="Project previews" hidden></aside><aside class="playground" id="playground" aria-label="Project preview" popover="auto" tabindex="-1" hidden></aside></div>
+  </dialog>
+
+  <script>
+    window.marmullakuPreviewReady=import('./mockup/preview-session.mjs?v=site-preview').then(module=>module.bootstrapPreview());
+    window.marmullakuRequest=(...args)=>window.marmullakuPreviewReady.then(api=>api.request(...args));
+  </script>
+  <script src="main/private-access.js?v=accounts-2"></script>
+  <script src="main/cv-safe.js"></script>
+  <script src="main/cv-playground.js"></script>
+  <script>
+    const T = {
+      en: {
+        language: "Language", welcome: "Welcome", view: "View résumé",
+        intro: "This is the digital résumé collection of the Marmullaku family. Please click on your candidate to proceed.",
+        osman: "Lorem ipsum dolor", projects: "Projects",
+        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
+        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
+        rights: "All rights reserved",
+        close: "Close", draft: "Résumé in preparation", cvContact: "Contact", cvSkills: "Skills", cvLanguages: "Languages",
+        cvProfile: "Profile", cvExperience: "Experience", cvEducation: "Education", cvCerts: "Certifications", cvInterests: "Interests", save: "Save as PDF", share: "Share link", copied: "Link copied", cvHint: "Select a skill to trace it through the experience."
+      },
+      de: {
+        language: "Sprache", welcome: "Willkommen", view: "Lebenslauf ansehen",
+        intro: "Dies ist die digitale Lebenslaufsammlung der Familie Marmullaku. Bitte wählen Sie Ihre Kandidatin oder Ihren Kandidaten aus.",
+        osman: "Lorem ipsum dolor", projects: "Projekte",
+        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
+        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
+        rights: "Alle Rechte vorbehalten",
+        close: "Schliessen", draft: "Lebenslauf in Vorbereitung", cvContact: "Kontakt", cvSkills: "Kompetenzen", cvLanguages: "Sprachen",
+        cvProfile: "Profil", cvExperience: "Berufserfahrung", cvEducation: "Ausbildung", cvCerts: "Zertifikate", cvInterests: "Interessen", save: "Als PDF speichern", share: "Link teilen", copied: "Link kopiert", cvHint: "Kompetenz wählen, um sie in der Berufserfahrung hervorzuheben."
+      },
+      fr: {
+        language: "Langue", welcome: "Bienvenue", view: "Voir le CV",
+        intro: "Voici la collection de CV numériques de la famille Marmullaku. Veuillez cliquer sur le profil qui vous intéresse.",
+        osman: "Lorem ipsum dolor", projects: "Projets",
+        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
+        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
+        rights: "Tous droits réservés",
+        close: "Fermer", draft: "CV en préparation", cvContact: "Contact", cvSkills: "Compétences", cvLanguages: "Langues",
+        cvProfile: "Profil", cvExperience: "Expérience", cvEducation: "Formation", cvCerts: "Certifications", cvInterests: "Centres d’intérêt", save: "Enregistrer en PDF", share: "Partager le lien", copied: "Lien copié", cvHint: "Choisissez une compétence pour la retrouver dans l’expérience."
+      },
+      th: {
+        language: "ภาษา", welcome: "ยินดีต้อนรับ", view: "ดูประวัติ",
+        intro: "นี่คือคลังประวัติดิจิทัลของครอบครัว Marmullaku กรุณาคลิกเลือกผู้สมัครที่คุณสนใจ",
+        osman: "Lorem ipsum dolor", projects: "ผลงาน",
+        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
+        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
+        rights: "สงวนลิขสิทธิ์",
+        close: "ปิด", draft: "กำลังจัดทำประวัติย่อ", cvContact: "ติดต่อ", cvSkills: "ทักษะ", cvLanguages: "ภาษา",
+        cvProfile: "ประวัติโดยย่อ", cvExperience: "ประสบการณ์ทำงาน", cvEducation: "การศึกษา", cvCerts: "ใบรับรอง", cvInterests: "ความสนใจ", save: "บันทึกเป็น PDF", share: "แชร์ลิงก์", copied: "คัดลอกลิงก์แล้ว", cvHint: "เลือกทักษะเพื่อดูว่าใช้ในงานใดบ้าง"
+      },
+      zh: {
+        language: "语言", welcome: "欢迎", view: "查看简历",
+        intro: "这里是马尔穆拉库家族的数字简历集。请点击您感兴趣的候选人。",
+        osman: "Lorem ipsum dolor", projects: "项目",
+        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
+        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
+        rights: "版权所有",
+        close: "关闭", draft: "简历准备中", cvContact: "联系方式", cvSkills: "技能", cvLanguages: "语言",
+        cvProfile: "个人简介", cvExperience: "工作经历", cvEducation: "教育背景", cvCerts: "证书", cvInterests: "兴趣爱好", save: "保存为 PDF", share: "分享链接", copied: "链接已复制", cvHint: "选择一项技能，查看它在工作经历中的应用。"
+      }
+    };
+
+    const publicProfiles = new Map();
+    const langBtns = document.querySelectorAll("#lang button");
+    function setLang(lang) {
+      const t = T[lang];
+      document.documentElement.lang = lang;
+      langBtns.forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+      document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t[el.dataset.i18n]; });
+      document.querySelectorAll("[data-i18n-label]").forEach(el => { el.setAttribute("aria-label", t[el.dataset.i18nLabel]); });
+      publicProfiles.forEach(p => {
+        const role = document.querySelector(`.role[data-i18n="${p.id}"]`);
+        if (role) { role.textContent = p.role || t.draft; role.closest('.card').querySelector('.open').textContent = p.display_name; }
+      });
+      try { localStorage.setItem("lang", lang); } catch (e) {}
+    }
+    langBtns.forEach(b => b.addEventListener("click", () => setLang(b.dataset.lang)));
+    let saved = null;
+    try { saved = localStorage.getItem("lang"); } catch (e) {}
+    const browser = (navigator.language || "en").slice(0, 2);
+    setLang(T[saved] ? saved : T[browser] ? browser : "en");
+    window.marmullakuRequest('directory').then(({profiles}) => {
+      profiles.forEach(p => publicProfiles.set(p.id, p));
+      setLang(document.documentElement.lang);
+    }).catch(() => {});
+
+    const track = document.querySelector(".people"), prev = document.getElementById("prev"), next = document.getElementById("next");
+    const prevLeft = document.getElementById("prev-left");
+    // page by whole visible cards so the peeking one becomes the first; with fewer than three in view, one at a time reads better
+    // animated by hand: browsers drop behavior:"smooth" when the OS animation setting is off, and the site animates regardless
+    let anim = 0;
+    function page(dir) {
+      const c = track.firstElementChild, step = c.offsetWidth + parseFloat(getComputedStyle(track).columnGap);
+      const from = track.scrollLeft, max = track.scrollWidth - track.clientWidth;
+      const whole = Math.floor(track.clientWidth / step), to = Math.max(0, Math.min(max, from + dir * (whole >= 3 ? whole : 1) * step));
+      const start = performance.now(), dur = 650;
+      cancelAnimationFrame(anim);
+      track.style.scrollSnapType = "none"; // snapping would yank each intermediate frame back to a card edge
+      (function frame(now) {
+        const t = Math.min(1, (now - start) / dur), e = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        track.scrollLeft = from + (to - from) * e;
+        if (t < 1) anim = requestAnimationFrame(frame);
+        else track.style.scrollSnapType = "";
+      })(start);
+    }
+    prev.addEventListener("click", () => page(-1));
+    prevLeft.addEventListener("click", () => page(-1));
+    next.addEventListener("click", () => page(1));
+    track.addEventListener("scroll", () => track.classList.add("touched"), { once: true, passive: true });
+    // cards only partly in the row (the faded peeks) sit back slightly and grow in as they arrive
+    const seen = new IntersectionObserver(es => es.forEach(e => e.target.classList.toggle("away", e.intersectionRatio < .9)),
+      { root: track, threshold: [.9] });
+    [...track.children].forEach(c => seen.observe(c));
+    function ends() {
+      prev.disabled = track.scrollLeft < 4;
+      prevLeft.disabled = prev.disabled;
+      next.disabled = track.scrollLeft + track.clientWidth > track.scrollWidth - 4;
+      const fade = parseFloat(getComputedStyle(track).getPropertyValue("--fade")), rest = track.scrollWidth - track.clientWidth - track.scrollLeft;
+      track.style.setProperty("--fl", Math.min(fade, track.scrollLeft) + "px");
+      track.style.setProperty("--fr", Math.min(fade, rest) + "px");
+    }
+    track.addEventListener("scroll", ends, { passive: true });
+    function fit() {
+      const cs = getComputedStyle(track), gap = parseFloat(cs.columnGap), min = parseFloat(cs.getPropertyValue("--card-min"));
+      const carousel = track.parentElement, gutter = parseFloat(getComputedStyle(carousel).getPropertyValue("--gutter"));
+      // Use the two-sided width so moving the controls cannot toggle the layout back and forth.
+      const single = (carousel.clientWidth - 2 * gutter + gap) / (min + gap) < 2.3;
+      carousel.classList.toggle("single-card", single);
+      const w = track.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+      track.style.setProperty("--visible", single ? 1.3 : Math.max(1, Math.floor((w + gap) / (min + gap) - .3)) + .3);
+      ends();
+    }
+    new ResizeObserver(fit).observe(track); // also runs once on load
+
+    // résumé sheet: the clicked card is lifted off the desk and grows into a full A4 page (FLIP via the Web Animations API,
+    // which runs whatever the OS animation setting is)
+    const sheet = document.getElementById("sheet"), paper = sheet.querySelector(".paper");
+    const cvPhoto = document.getElementById("cv-photo"), cvName = document.getElementById("cv-name"),
+      cvRole = document.getElementById("cv-role"), cvLink = document.getElementById("cv-link"),
+      cvNote = document.getElementById("cv-note"), cvBody = paper.querySelector(".cv-body"),
+      page2 = document.getElementById("page2"), cvBody2 = page2.querySelector(".cv-body"), cvPg = document.getElementById("cv-pg");
+    const draftHTML = cvBody.innerHTML;
+    let card = null, busy = false, cardFade = null, pinned = null;
+
+    // returns the two pages' bodies: page 1 the résumé proper, page 2 education and the rest
+    function render(d) {
+      const t = T[document.documentElement.lang], h = k => `<h3 data-i18n="${k}">${t[k]}</h3>`;
+      const when = x => `<span class="when">${x.when}</span><b>${x.title}</b><span class="org">${x.org}</span>`;
+      return [`<div>
+        <section style="--i:0">${h("cvContact")}<ul class="contact">${d.contact.map(([s, href]) =>
+          `<li>${href ? `<a href="${href}"${href.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${s}</a>` : s}</li>`).join("")}</ul></section>
+        <section style="--i:2">${h("cvSkills")}<ul class="skills">${d.skills.map(([s, lvl], n) =>
+          `<li><span class="skill" style="--lvl:${lvl}%;--n:${n}">${s}</span></li>`).join("")}</ul></section>
+        <section style="--i:4">${h("cvLanguages")}<dl class="langs">${d.languages.map(([l, lvl]) => `<dt>${l}</dt><dd>${lvl}</dd>`).join("")}</dl></section>
+      </div><div>
+        <section style="--i:1">${h("cvProfile")}<p>${d.profile}</p></section>
+        <section style="--i:3">${h("cvExperience")}${d.experience.map(x =>
+          `<div class="job" data-tags="${x.tags.join("|")}">${when(x)}<ul>${x.points.map(p => `<li>${p}</li>`).join("")}</ul></div>`).join("")}</section>
+      </div>`, `<div>
+        <section>${h("cvInterests")}<p>${d.interests}</p></section>
+      </div><div>
+        <section>${h("cvEducation")}${d.education.map(x => `<div class="edu">${when(x)}</div>`).join("")}</section>
+        <section style="--i:1">${h("cvCerts")}${d.certs.map(x => `<div class="edu">${when(x)}</div>`).join("")}</section>
+      </div>`];
+    }
+    let selectProject = null, previewTimer = null;
+    const preview = document.getElementById("playground"), rail = document.getElementById("project-rail");
+    function positionRail() {
+      const job = cvBody.children[1]?.querySelector("section"), workspace = sheet.querySelector(".cv-workspace");
+      if (job) rail.style.top = (job.getBoundingClientRect().top - workspace.getBoundingClientRect().top) + "px";
+    }
+    new ResizeObserver(positionRail).observe(paper);
+    function openPreview(button) {
+      if (!selectProject) return;
+      clearTimeout(previewTimer);
+      selectProject(button.dataset.project);
+      preview.hidden = false;
+      const rect = button.getBoundingClientRect();
+      preview.style.left = Math.max(16, Math.min(rect.left, innerWidth - 376)) + "px";
+      preview.style.top = Math.max(16, Math.min(rect.top, innerHeight - 700)) + "px";
+      if (!preview.matches(":popover-open")) preview.showPopover();
+      preview.style.top = Math.max(16, Math.min(rect.top, innerHeight - preview.offsetHeight - 16)) + "px";
+      rail.querySelectorAll("[data-project]").forEach(b => b.setAttribute("aria-expanded", String(b === button)));
+    }
+    function collapsePreview() {
+      clearTimeout(previewTimer);
+      previewTimer = setTimeout(() => {
+        if (preview.matches(":popover-open")) preview.hidePopover();
+      }, 220);
+    }
+    rail.addEventListener("pointerover", e => {
+      const button = e.target.closest("[data-project]");
+      if (e.pointerType === "mouse" && button && !button.contains(e.relatedTarget)) openPreview(button);
+    });
+    rail.addEventListener("pointerleave", collapsePreview);
+    rail.addEventListener("focusin", e => { const button = e.target.closest("[data-project]"); if (button) openPreview(button); });
+    rail.addEventListener("click", e => {
+      const button = e.target.closest("[data-project]"); if (button) openPreview(button);
+
+    });
+    preview.addEventListener("pointerenter", () => clearTimeout(previewTimer));
+    preview.addEventListener("pointerleave", collapsePreview);
+    preview.addEventListener("focusin", () => clearTimeout(previewTimer));
+    function blurPreview(e) {
+      if (!rail.contains(e.relatedTarget) && !preview.contains(e.relatedTarget)) collapsePreview();
+    }
+    rail.addEventListener("focusout", blurPreview);
+    preview.addEventListener("focusout", blurPreview);
+    preview.addEventListener("toggle", e => {
+      if (e.newState === "closed") rail.querySelectorAll("[data-project]").forEach(b => b.setAttribute("aria-expanded", "false"));
+    });
+
+    // keyframe that lays the paper exactly over the card it came from (optionally lifted off it): scaled down to the card's
+    // width around its top edge, with everything below the card's height clipped away; the open animation then unclips it
+    // downwards, so the sheet unrolls into the full-length document
+    function fromCard(lift = 0, grow = 1) {
+      const r = card.getBoundingClientRect(), p = paper.getBoundingClientRect();
+      const k = grow * r.width / p.width;
+      const dx = r.left + r.width / 2 - (p.left + p.width / 2), dy = r.top - p.top - lift - (grow - 1) * r.height / 2;
+      // rounded like the card (6px on screen, so 6/k before the scale), easing into square paper corners
+      return { transform: `translate(${dx}px, ${dy}px) scale(${k})`,
+        clipPath: `inset(0px 0px ${Math.max(0, p.height - r.height / k)}px 0px round ${6 / k}px)` };
+    }
+    // wide enough to let the paper's shadow through once it has landed
+    const unclipped = { transform: "none", clipPath: "inset(-80px -80px -80px -80px round 2px)" };
+    const key = c => c.querySelector(".role").dataset.i18n;
+    function open(c, authorizedProfile) {
+      if (!authorizedProfile || authorizedProfile.id !== key(c)) return window.requestPrivateCV(c);
+      if (busy) return;
+      busy = true; card = c;
+      if (!window.marmullakuInvitationURL) history.replaceState(null, "", "#" + key(c));
+      cvPhoto.replaceChildren(Object.assign(new Image(), { src: c.querySelector(".media .who").src, alt: "" }));
+      cvName.textContent = authorizedProfile.display_name;
+      cvRole.textContent = authorizedProfile.role;
+      cvLink.hidden = true;
+      cvLink.removeAttribute("href");
+      const d = escapeDocument(authorizedProfile.cv);
+      const playground = document.getElementById("playground");
+      const interactive = !!d;
+      if (playground.matches(":popover-open")) playground.hidePopover();
+      playground.hidden = true;
+      clearTimeout(previewTimer);
+      rail.hidden = !interactive;
+      rail.innerHTML = interactive ? `
+        <section class="rail-section"><h3>Previews</h3><div class="sample-previews">${(d.experience[0]?.demos || []).filter(([id]) => ["sample-one", "sample-two"].includes(id)).map(([id, label]) => `<button type="button" class="preview-thumb" data-project="${id}" aria-label="Preview ${label.toLowerCase()}" aria-expanded="false" aria-controls="playground"><img src="main/pictures/previews/${id}.svg" alt="${label} sample" /><span>${label}</span></button>`).join("")}</div></section>
+        ` : "";
+      rail.hidden = !rail.querySelector('.preview-thumb');
+      selectProject = interactive ? mountPlayground(playground) : null;
+      const [p1, p2] = d ? render(d) : [draftHTML];
+      cvBody.innerHTML = p1;
+      cvBody2.innerHTML = p2 || "";
+      page2.hidden = !p2;
+      cvPg.textContent = p2 ? "1 / 2" : "1 / 1";
+      cvNote.hidden = !!d;
+      pinned = null;
+      cvBody.classList.remove("filtering");
+      sheet.classList.remove("settled", "closing");
+      sheet.classList.add("unrolling");
+      sheet.showModal();
+      sheet.scrollTop = 0;
+      positionRail();
+      // the card dissolves into the paper as it lifts, rather than vanishing in one frame
+      cardFade = card.animate([{ opacity: 1 }, { opacity: 0, offset: .2 }, { opacity: 0 }], { duration: 1100, fill: "forwards" });
+      paper.animate([
+        { ...fromCard(), backgroundColor: "#1a2a42", opacity: 0, boxShadow: "0 1px 1px rgba(0,0,0,.3), 0 12px 28px -10px rgba(0,0,0,.6)" },
+        { ...fromCard(36, 1.08), opacity: 1, boxShadow: "0 2px 3px rgba(0,0,0,.25), 0 36px 60px -18px rgba(0,0,0,.8)", offset: .25 }, // up off the pile
+        { transform: "none", clipPath: `inset(0px 0px ${Math.max(0, paper.offsetHeight - innerHeight + 64)}px 0px round 2px)`, offset: .7 }, // fills the window
+        unclipped // and keeps unrolling past the bottom edge
+      ], { duration: 1100, easing: "cubic-bezier(.3,.7,.2,1)" }).finished.then(() => { sheet.classList.remove("unrolling"); sheet.classList.add("settled"); busy = false; positionRail(); });
+    }
+    function close() {
+      if (busy || !sheet.open) return;
+      busy = true;
+      if (preview.matches(":popover-open")) preview.hidePopover();
+      sheet.classList.remove("settled");
+      sheet.classList.add("closing");
+      // paper folds back down onto the card and crossfades into it over the second half, so it lands as the card itself
+      const timing = { duration: 800, easing: "cubic-bezier(.5,0,.2,1)" };
+      cardFade.cancel();
+      cardFade = card.animate([{ opacity: 0 }, { opacity: 0, offset: .5 }, { opacity: 1 }], { ...timing, fill: "forwards" });
+      paper.animate([{ ...unclipped, opacity: 1 }, { offset: .5, backgroundColor: "#ffffff", opacity: 1 }, { ...fromCard(), backgroundColor: "#1a2a42", opacity: 0 }], timing).finished.then(() => {
+        sheet.close();
+        cardFade.cancel();
+        if (!window.marmullakuInvitationURL) history.replaceState(null, "", location.pathname + location.search);
+        card.querySelector(".open").focus({ preventScroll: true });
+        busy = false;
+      });
+    }
+    window.openPrivateCV = open;
+    track.addEventListener("click", e => {
+      const c = e.target.closest(".card");
+      if (c) open(c);
+    });
+    document.getElementById("close").addEventListener("click", close);
+    // Save as PDF: the browser's print-to-PDF, with the title as the suggested file name
+    document.getElementById("save").addEventListener("click", () => {
+      const title = document.title;
+      document.title = `${cvName.textContent} – CV`;
+      print();
+      document.title = title;
+    });
+    // phones get the native share sheet; elsewhere the link is copied and the button confirms it
+    const shareBtn = document.getElementById("share");
+    shareBtn.addEventListener("click", async () => {
+      const url = window.marmullakuInvitationURL || location.href, t = T[document.documentElement.lang];
+      if (navigator.share && matchMedia("(pointer: coarse)").matches) return navigator.share({ title: `${cvName.textContent} – CV`, url }).catch(() => {});
+      try { await navigator.clipboard.writeText(url); } catch (e) { prompt(t.share, url); return; }
+      shareBtn.classList.add("done");
+      shareBtn.setAttribute("aria-label", t.copied);
+      setTimeout(() => { shareBtn.classList.remove("done"); shareBtn.setAttribute("aria-label", t.share); }, 1800);
+    });
+    // opened from a shared link: unroll that résumé once the page has laid out
+    addEventListener("load", () => {
+      const c = [...track.children].find(c => "#" + key(c) === location.hash);
+      if (c) open(c);
+    });
+    sheet.addEventListener("cancel", e => { e.preventDefault(); close(); }); // Esc
+    sheet.addEventListener("click", e => { if (e.target === sheet) close(); }); // click on the desk around the page
+  </script>
+  <script type="module" src="mockup/site-bridge.mjs?v=site-preview"></script>
+</body>
+</html>

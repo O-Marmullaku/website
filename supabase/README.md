@@ -69,3 +69,11 @@ private and consume storage until an operator removes unused objects.
 Company suggestions query the official Zefix dataset at `lindas.admin.ch/query`
 after a short delay. Search works without credentials; manual entry and local
 fuzzy suggestions remain available when the register is slow or unavailable.
+
+The full-site design preview is `/mockup/`. It mirrors the shipped homepage but
+uses `mockup/preview-session.mjs` and browser storage for sample accounts, CVs,
+files, links and activity. Its first load carries over the previous mockup draft.
+It does not load production account configuration or call the live backend.
+Production editor markup, styles and components live under `/profile/`; the
+PDF.js vendor files are shared static assets. Keep design experiments in the
+mockup until they are explicitly approved for the live site.

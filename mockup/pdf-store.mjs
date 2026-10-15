@@ -39,9 +39,13 @@ async function transact(mode, action) {
 
 export async function putPDF(file) {
   await validatePDF(file);
+  return putPreviewAsset(new Blob([file], { type: "application/pdf" }));
+}
+
+export async function putPreviewAsset(file) {
   const id = crypto.randomUUID();
   await transact("readwrite", (store) =>
-    store.put(new Blob([file], { type: "application/pdf" }), id),
+    store.put(file, id),
   );
   return id;
 }
