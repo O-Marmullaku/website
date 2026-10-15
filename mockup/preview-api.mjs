@@ -1,5 +1,6 @@
 import {validateCV} from '../supabase/functions/marmullaku-access/handler.mjs';
 import {decodeUpload,editorAssets} from '../supabase/functions/marmullaku-access/editor.mjs';
+import {sectionLabels} from './section-timing.mjs';
 
 // Same request contract as the site, backed only by browser-owned sample data.
 export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset}) {
@@ -10,7 +11,7 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset}) {
     const available=sender=>[sender,...state.family.filter(grant=>grant.recipient_id===sender&&grant.enabled).map(grant=>grant.owner_id)];
     const publicProfile=profile=>({id:profile.id,display_name:profile.display_name,role:profile.role});
     let link,allowed=available(own.id);
-    const record=(profile_id,kind,label)=>{const current=load();current.events.unshift({link_id:link.id,profile_id,kind,label,created_at:new Date().toISOString()});current.events=current.events.slice(0,1000);save(current);};
+    const record=(profile_id,kind,label,details={})=>{const current=load();current.events.unshift({link_id:link.id,profile_id,kind,label,...details,created_at:new Date().toISOString()});current.events=current.events.slice(0,1000);save(current);};
     if(options.token||['welcome','read','event'].includes(action)) {
       link=state.links.find(link=>link.token===options.token&&!link.revoked);
       if(!link)fail('This preview link is unavailable.',404);
@@ -24,6 +25,10 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset}) {
       const profile=state.profiles.find(profile=>profile.id===target);
       if(action==='welcome'){record(target,'visit','Opened link');return {profile:publicProfile(profile),profiles:state.profiles.filter(profile=>allowed.includes(profile.id)).map(publicProfile),company:link.company,message:link.message};}
       if(action==='event'){
+        if(body.kind==='section'){
+          if(body.consent!==true||!Object.hasOwn(sectionLabels,body.section)||!Number.isInteger(body.seconds)||body.seconds<2||body.seconds>3600)fail('Invalid section timing.');
+          record(target,'section',sectionLabels[body.section]+' in view',{section:body.section,seconds:body.seconds});return {recorded:true};
+        }
         if(!['picture','link','button'].includes(body.kind))fail('Invalid activity.');
         const data=profile.cv.editor?.data||{};record(target,body.kind,body.kind==='picture'?'Viewed photo: '+(data.pictureCaption||''):('Opened '+(data[body.kind+'Label']||body.kind)));return {recorded:true};
       }

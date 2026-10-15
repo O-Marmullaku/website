@@ -34,3 +34,16 @@ test('mockup starts from the actual homepage without loading production account 
   const loader=readFileSync(new URL('../main/profile-loader.mjs',import.meta.url),'utf8');
   assert(!loader.includes('../mockup/index.html'));assert(!loader.includes('../mockup/profile.js'));
 });
+
+test('preview section timing validates consent, section identity and duration',async()=>{
+  const f=fixture(),created=await f.request('create',{company:'Timing test'}),guest={token:created.token};
+  const event={kind:'section',section:'experience',seconds:18,consent:true};
+  for(const invalid of [{consent:false},{section:'__proto__'},{seconds:-1},{seconds:1.5},{seconds:3601}]){
+    await assert.rejects(f.request('event',{...event,...invalid},guest),error=>error.status===400);
+  }
+  assert.equal(f.state.events.length,0);
+  await f.request('event',event,guest);
+  const saved=(await f.request('links')).events[0];
+  assert.equal(saved.label,'Experience in view');assert.equal(saved.seconds,18);
+  assert.equal(saved.link_id,created.link.id);assert.equal(saved.profile_id,'osman');
+});

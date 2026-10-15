@@ -55,6 +55,16 @@
 .managed-activity li+li{border-top:1px solid #28394e}
 .managed-activity time{font-size:11px;color:#a6b8cd;font-variant-numeric:tabular-nums}
 .managed-activity p{margin:0}
+.section-timing-title{font-size:13px;font-weight:500;margin:0 0 10px}
+.section-timing-summary{margin:0}
+.section-timing-summary>div{display:flex;justify-content:space-between;gap:16px;padding:5px 0}
+.section-timing-summary dd{margin:0;font-variant-numeric:tabular-nums;color:#eef3fa}
+.section-timing-summary+.activity-note{margin-bottom:16px}
+.reading-feedback{padding:12px max(24px,calc((100vw - 1100px)/2));background:#13253b;border-bottom:1px solid #344b68;font-size:13px;color:#d3e2f2}
+.reading-feedback label{display:flex;align-items:center;gap:8px;width:fit-content;cursor:pointer}
+.reading-feedback input{width:16px;height:16px;margin:0;accent-color:#8ec5ff}
+.reading-feedback p{font-size:12px;color:#b6c8dd;margin:6px 0 0;line-height:1.5}
+@media print{.reading-feedback{display:none}}
 .managed-activity .activity-note{font-size:11px;color:#a6b8cd;margin:12px 0 0;line-height:1.5;max-width:48ch}
 .link-options{position:fixed;inset:auto;margin:0;min-width:170px;padding:6px;background:#1b2c43;color:#edf4fc;border:1px solid #4a627d;border-radius:8px;box-shadow:0 10px 24px -8px #0009}
 .link-options button{display:flex;align-items:center;gap:9px;width:100%;min-height:38px;background:transparent;border:0;border-radius:4px;padding:8px 10px;color:inherit;text-align:left;font-size:13px}

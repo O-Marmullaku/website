@@ -1,4 +1,5 @@
 import {companyCombobox} from './company-search.mjs?v=link-manager';
+import {sectionLabels} from './section-timing.mjs';
 const $=id=>document.getElementById(id);
 const node=(tag,text='',cls='')=>{const el=document.createElement(tag);el.textContent=text;el.className=cls;return el;};
 const paths={copy:'M9 8V4h11v13h-4M4 8h12v13H4z',more:'M5 12h.01M12 12h.01M19 12h.01',chevron:'m8 10 4 4 4-4',check:'m5 12 4 4 10-10',external:'M14 3h7v7M21 3l-9 9M10 3H3v18h18v-7'};
@@ -69,7 +70,13 @@ export async function createLiveSharing(adapter) {
       const trigger=node('button',visits.length?`${visits.length} ${visits.length===1?'visit':'visits'}`:'Not opened yet','activity-toggle');trigger.type='button';trigger.setAttribute('aria-label',trigger.textContent+'. Activity for '+link.company);trigger.append(icon('chevron'));trigger.setAttribute('aria-expanded',String(!activity.hidden));trigger.setAttribute('aria-controls',activity.id);
       trigger.addEventListener('click',()=>{activity.hidden=!activity.hidden;trigger.setAttribute('aria-expanded',String(!activity.hidden));});
       if(history.length){
-        const list=node('ol');for(const event of history){const row=node('li'),time=node('time',stamp(event.created_at));time.dateTime=event.created_at;row.append(node('span',event.label),time);list.append(row);}activity.append(list);
+        const timings=new Map();for(const event of history)if(event.kind==='section')timings.set(event.section,(timings.get(event.section)||0)+event.seconds);
+        if(timings.size){
+          activity.append(node('h5','Sections in view','section-timing-title'));
+          const summary=node('dl','','section-timing-summary');
+          for(const [section,seconds] of timings){const row=node('div');row.append(node('dt',sectionLabels[section]),node('dd',seconds<60?`${seconds}s`:`${Math.floor(seconds/60)}m ${seconds%60}s`));summary.append(row);}activity.append(summary,node('p','Visible time, not proof of reading. Sections can overlap.','activity-note'));
+        }
+        const list=node('ol');for(const event of history.filter(event=>event.kind!=='section')){const row=node('li'),time=node('time',stamp(event.created_at));time.dateTime=event.created_at;row.append(node('span',event.label),time);list.append(row);}activity.append(list);
       }
       activity.append(node('p','Includes visits from forwarded links.','activity-note'));
       item.append(trigger,activity);host.append(item);
