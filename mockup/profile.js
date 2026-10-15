@@ -3,6 +3,7 @@ import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs";
 import { createRowEditor } from "./cv-row-editor.mjs";
+import { createSharingUI } from "./sharing-ui.mjs";
 
 (() => {
   const key = "marmullaku-profile-mockup-v1",
@@ -19,18 +20,17 @@ import { createRowEditor } from "./cv-row-editor.mjs";
   ];
   const initial = {
     name: "Osman Marmullaku",
-    role: "Your professional title",
+    role: "Job title",
     contact: "Email address\nPortfolio website",
     skills: "Interface design\nWeb development\nCreative technology",
     languages: "Add your languages",
-    profile:
-      "Introduce yourself in a few sentences. What do you enjoy building, what are you good at, and what would you like to do next?",
+    profile: "Write a short introduction and what you want to do next.",
     experience:
-      "Your latest role or project\nCompany or organisation · Dates\n\nDescribe what you built, your contribution, and the difference it made. Keep it specific and in your own words.",
+      "Your latest role or project\nCompany or organisation · Dates\n\nDescribe your work and what you achieved.",
     education: "Qualification or programme\nInstitution · Dates",
     certificates: "Add a relevant certification",
-    interests: "What keeps you curious outside work?",
-    fact: "A small detail beyond the résumé.",
+    interests: "Add your interests",
+    fact: "Something about you.",
     linkLabel: "Portfolio",
     linkURL: "https://example.com",
     buttonLabel: "See my work",
@@ -50,6 +50,7 @@ import { createRowEditor } from "./cv-row-editor.mjs";
     documentURL = null,
     documentGeneration = 0,
     documentTrigger = null;
+  let sharing;
   let viewerPromise,
     cvRows,
     rowEditor,
@@ -114,7 +115,24 @@ import { createRowEditor } from "./cv-row-editor.mjs";
             : null,
         }));
   } catch {}
+  const oldIntroduction =
+    "Introduce yourself in a few sentences. What do you enjoy building, what are you good at, and what would you like to do next?";
+  const oldDescription =
+    "Describe what you built, your contribution, and the difference it made. Keep it specific and in your own words.";
+  if (data.profile === oldIntroduction) data.profile = initial.profile;
+  if (data.role === "Your professional title") data.role = initial.role;
+  if (
+    data.fact === "One detail that makes this profile yours." ||
+    data.fact === "A small detail beyond the résumé."
+  )
+    data.fact = "Add a fun fact";
   cvRows = normalizeRows(cvRows, data);
+  for (const row of cvRows.experience)
+    if (row.body.trim() === oldDescription)
+      row.body = "Describe your work and what you achieved.";
+  for (const row of cvRows.interests)
+    if (row.title === "What keeps you curious outside work?")
+      row.title = initial.interests;
   let rowIdentity = Object.values(cvRows)
     .flat()
     .map((row) => row.id)
@@ -327,13 +345,13 @@ import { createRowEditor } from "./cv-row-editor.mjs";
     documentAccess = !allowed || allowed.includes("documents");
     closeDocument();
     $("resume").classList.toggle("preview-view", previewing);
-    $("resume-mode").textContent = previewing
-      ? `${company || "Company"}’s view`
-      : "Your résumé";
-    $("resume-status").textContent = previewing
-      ? "Only selected sections are shown"
-      : "";
-    $("exit-preview").hidden = !previewing;
+    $("resume-mode").textContent = sharing?.isGuest
+      ? "CV"
+      : previewing
+        ? `${company || "Company"} preview`
+        : "Your CV";
+    $("resume-status").textContent = "";
+    $("exit-preview").hidden = !previewing || sharing?.isGuest;
     document
       .querySelectorAll("[data-section]")
       .forEach(
@@ -353,6 +371,7 @@ import { createRowEditor } from "./cv-row-editor.mjs";
     $(id).addEventListener("click", (event) => {
       event.preventDefault();
       finish(true);
+      sharing?.refresh();
       $("settings-panel").showModal();
     });
   document.querySelectorAll("[data-close]").forEach((button) =>
@@ -371,109 +390,6 @@ import { createRowEditor } from "./cv-row-editor.mjs";
       }
     });
     $(id).addEventListener("cancel", () => finish(true));
-  }
-  const defaults = [
-    "profile",
-    "experience",
-    "education",
-    "skills",
-    "languages",
-    "certificates",
-  ];
-  function permissions(host, selected, prefix) {
-    for (const [field, title] of [
-      ...sections,
-      ["extras", "Beyond the résumé"],
-      ["documents", "Supporting documents"],
-    ]) {
-      const label = node("label", title),
-        check = document.createElement("input");
-      check.type = "checkbox";
-      check.value = field;
-      check.checked = selected.includes(field);
-      check.setAttribute("aria-label", `${prefix}: ${title}`);
-      label.append(check);
-      host.append(label);
-    }
-  }
-  permissions($("company-sections"), defaults, "Company access");
-  $("standard").addEventListener("click", () => {
-    $("company-sections")
-      .querySelectorAll("input")
-      .forEach((input) => (input.checked = defaults.includes(input.value)));
-  });
-  const selected = () =>
-    [...$("company-sections").querySelectorAll("input:checked")].map(
-      (el) => el.value,
-    );
-  $("preview-company").addEventListener("click", () => {
-    $("settings-panel").close();
-    openResume(selected(), $("company-name").value.trim());
-  });
-  $("create-link").addEventListener("click", () => {
-    const company = $("company-name").value.trim();
-    if (!company) {
-      $("company-name").focus();
-      $("settings-status").textContent = "Enter a company name first.";
-      return;
-    }
-    const row = node("div", undefined, "link-row"),
-      info = node("div");
-    info.append(
-      node("strong", company),
-      node("small", `${selected().length} sections · ${$("expiry").value}`),
-    );
-    const revoke = node("button", "Revoke", "text-button");
-    revoke.addEventListener("click", () => {
-      row.remove();
-      $("settings-status").textContent = `Demo access for ${company} revoked.`;
-    });
-    row.append(info, revoke);
-    $("company-links").prepend(row);
-    $("settings-status").textContent =
-      "Demo link created. No real link or access has been issued.";
-  });
-  for (const name of ["Diellza", "Drilona", "Drenusha", "Dredhza", "Ali"]) {
-    const row = node("div", undefined, "sibling-access"),
-      line = node("div"),
-      select = document.createElement("select");
-    select.setAttribute("aria-label", `${name}’s access`);
-    for (const choice of ["No access", "Can view", "Can edit"]) {
-      const option = node("option", choice);
-      select.append(option);
-    }
-    line.append(node("span", name + " Marmullaku"), select);
-    const details = node("details");
-    details.hidden = true;
-    details.append(node("summary", "Choose sections"));
-    const list = node("div", undefined, "permission-list");
-    permissions(list, defaults, `${name} access`);
-    details.append(list);
-    select.addEventListener("change", () => {
-      details.hidden = select.selectedIndex === 0;
-      $("settings-status").textContent =
-        `${name}: ${select.value.toLowerCase()} · mockup only`;
-    });
-    row.append(line, details);
-    $("sibling-permissions").append(row);
-  }
-  for (const [tab, panel, other, otherPanel] of [
-    ["companies-tab", "companies", "family-tab", "family-panel"],
-    ["family-tab", "family-panel", "companies-tab", "companies"],
-  ]) {
-    $(tab).addEventListener("click", () => {
-      $(tab).setAttribute("aria-selected", "true");
-      $(other).setAttribute("aria-selected", "false");
-      $(panel).hidden = false;
-      $(otherPanel).hidden = true;
-    });
-    $(tab).addEventListener("keydown", (e) => {
-      if (["ArrowLeft", "ArrowRight"].includes(e.key)) {
-        e.preventDefault();
-        $(other).click();
-        $(other).focus();
-      }
-    });
   }
   function safeURL(value) {
     try {
@@ -507,6 +423,7 @@ import { createRowEditor } from "./cv-row-editor.mjs";
     );
   }
   function showPicture() {
+    sharing?.track("picture", "Viewed photo: " + data.pictureCaption);
     const block = document.querySelector(".extra-picture");
     if (!block) return;
     block.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -731,10 +648,10 @@ import { createRowEditor } from "./cv-row-editor.mjs";
         node(
           "h3",
           {
-            picture: "In pictures",
+            picture: "Photos",
             fact: "Fun fact",
-            link: "Elsewhere",
-            button: "Explore",
+            link: "Links",
+            button: "Button",
           }[type],
         ),
       );
@@ -775,7 +692,7 @@ import { createRowEditor } from "./cv-row-editor.mjs";
         }
         const attach = node(
           "button",
-          pictureAnchor ? "Reattach" : "Attach to résumé",
+          pictureAnchor ? "Reattach" : "Attach to CV",
           "text-button",
         );
         attach.addEventListener("click", pickAttachment);
@@ -967,7 +884,7 @@ import { createRowEditor } from "./cv-row-editor.mjs";
         ),
         attach = node(
           "button",
-          doc.anchor ? "Reattach" : "Attach to résumé",
+          doc.anchor ? "Reattach" : "Attach to CV",
           "text-button",
         ),
         remove = node("button", "Remove", "text-button");
@@ -1033,6 +950,7 @@ import { createRowEditor } from "./cv-row-editor.mjs";
       documentURL = URL.createObjectURL(file);
       $("document-new-tab").href = documentURL;
       $("document-new-tab").hidden = false;
+      sharing?.track("document", "Opened PDF: " + doc.name);
       viewerPromise ||= createPDFViewer($("document-reader"));
       const viewer = await viewerPromise;
       if (generation !== documentGeneration) return;
@@ -1079,6 +997,23 @@ import { createRowEditor } from "./cv-row-editor.mjs";
     } finally {
       $("pdf-file").value = "";
     }
+  });
+  sharing = createSharingUI({
+    name: data.name,
+    onOpenCV: openResume,
+    beforePreview() {
+      finish(true);
+      cancelAttachment();
+      closeDocument();
+    },
+  });
+  document.addEventListener("click", (event) => {
+    const link = event.target.closest("#extra-blocks a");
+    if (link)
+      sharing.track(
+        link.classList.contains("extra-cta") ? "button" : "link",
+        "Opened " + link.textContent.trim(),
+      );
   });
   renderExtras();
 })();

@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="robots" content="noindex" />
-    <title>Your profile · Marmullaku</title>
+    <title>Marmullaku · CV</title>
     <link
       href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Sans+Condensed:wght@400;500&display=swap"
       rel="stylesheet"
@@ -44,11 +44,11 @@
     <header class="site-header">
       <a href="../">Marmullaku</a>
     </header>
-    <main>
+    <main id="family-home">
       <div class="intro">
         <div>
           <h1>Welcome</h1>
-          <p>This is the digital résumé collection of the Marmullaku family.</p>
+          <p>CVs from the Marmullaku family.</p>
         </div>
         <p id="save-status" role="status"></p>
       </div>
@@ -79,7 +79,7 @@
               </button>
             </div>
             <button class="resume-button" id="resume-open">
-              View résumé <span aria-hidden="true">↗</span>
+              View CV <span aria-hidden="true">↗</span>
             </button>
           </div>
         </article>
@@ -96,7 +96,7 @@
           </div>
           <div class="card-content">
             <h2>Diellza Marmullaku</h2>
-            <p>Private résumé</p>
+            <p>Private CV</p>
             <span class="sibling-note">Shared with you when invited</span>
           </div>
         </article>
@@ -113,11 +113,26 @@
           </div>
           <div class="card-content">
             <h2>Drilona Marmullaku</h2>
-            <p>Private résumé</p>
+            <p>Private CV</p>
             <span class="sibling-note">Shared with you when invited</span>
           </div>
         </article>
       </div>
+    </main>
+    <main id="company-view" hidden>
+      <div id="company-preview-bar" hidden>
+        <span>Company preview</span
+        ><button class="text-button" id="back-to-settings">
+          Back to settings
+        </button>
+      </div>
+      <div class="intro">
+        <div>
+          <h1 id="company-welcome"></h1>
+          <p id="company-message">Choose a CV.</p>
+        </div>
+      </div>
+      <div class="family" id="company-profiles"></div>
     </main>
     <footer>
       <div class="footer-identity">
@@ -140,7 +155,7 @@
 
     <dialog id="resume" aria-labelledby="resume-name">
       <div class="resume-toolbar">
-        <span id="resume-mode">Your résumé</span
+        <span id="resume-mode">Your CV</span
         ><span id="resume-status" role="status"></span
         ><button class="text-button cv-owner" id="undo-row" hidden>
           Undo row change</button
@@ -148,11 +163,7 @@
           Cancel attachment</button
         ><button class="text-button" id="exit-preview" hidden>
           Back to editing</button
-        ><button
-          class="icon-button"
-          data-close="resume"
-          aria-label="Close résumé"
-        >
+        ><button class="icon-button" data-close="resume" aria-label="Close CV">
           <svg><use href="#close" /></svg>
         </button>
       </div>
@@ -169,7 +180,7 @@
                 <button
                   class="edit"
                   data-edit="role"
-                  aria-label="Edit résumé title"
+                  aria-label="Edit CV title"
                 >
                   <svg><use href="#pencil" /></svg>
                 </button>
@@ -177,11 +188,11 @@
             </div>
           </header>
           <div id="resume-sections" class="resume-sections"></div>
-          <div class="paper-foot">marmullaku.ch <span>Sample résumé</span></div>
+          <div class="paper-foot">marmullaku.ch <span>Sample CV</span></div>
         </article>
-        <aside id="extras-rail" aria-label="Beyond the résumé">
+        <aside id="extras-rail" aria-label="More about me">
           <div class="extras-heading">
-            <h2>Beyond the résumé</h2>
+            <h2>More about me</h2>
             <details id="add-extra" class="add-menu">
               <summary>Add content</summary>
               <div>
@@ -211,7 +222,6 @@
         >
           <header>
             <div>
-              <span class="reader-label">Supporting document</span>
               <h2 id="document-title"></h2>
             </div>
             <a id="document-new-tab" target="_blank" rel="noopener">Open PDF</a
@@ -285,8 +295,8 @@
     <dialog id="settings-panel" aria-labelledby="settings-title">
       <div class="panel-head">
         <div>
-          <h2 id="settings-title">Profile settings</h2>
-          <p>Choose who gets a closer look.</p>
+          <h2 id="settings-title">Settings</h2>
+          <p>Manage your links and family access.</p>
         </div>
         <button
           class="icon-button"
@@ -303,7 +313,7 @@
           aria-selected="true"
           aria-controls="companies"
         >
-          Companies</button
+          Company links</button
         ><button
           role="tab"
           id="family-tab"
@@ -314,32 +324,53 @@
         </button>
       </div>
       <div id="companies" role="tabpanel" aria-labelledby="companies-tab">
-        <label class="field-label" for="company-name">Company</label
-        ><input id="company-name" maxlength="120" value="Example company" />
-        <div class="section-label">
-          <h3>What they can see</h3>
-          <button class="text-button" id="standard">
-            Standard application
-          </button>
+        <label class="field-label" for="company-name">Company</label>
+        <div class="company-search">
+          <input
+            id="company-name"
+            maxlength="120"
+            placeholder="Search or add a company"
+            autocomplete="off"
+            role="combobox"
+            aria-autocomplete="list"
+            aria-expanded="false"
+            aria-controls="company-suggestions"
+          />
+          <div
+            id="company-suggestions"
+            role="listbox"
+            aria-label="Companies"
+            hidden
+          ></div>
         </div>
-        <div id="company-sections" class="permission-list"></div>
-        <div class="expiry">
-          <label for="expiry">Link expires</label
-          ><select id="expiry">
-            <option>After 30 days</option>
-            <option>After 7 days</option>
-            <option>After 90 days</option>
-          </select>
-        </div>
+        <p class="search-help">Choose a suggestion or add a company.</p>
         <div class="sharing-actions">
-          <button class="secondary" id="preview-company">
-            Preview their view</button
+          <button class="secondary" id="preview-company">Preview</button
           ><button class="primary" id="create-link">Create link</button>
         </div>
+        <details class="sharing-defaults">
+          <summary>Shared view <span id="sharing-summary"></span></summary>
+          <label class="field-label" for="share-mode">What to share</label>
+          <select id="share-mode">
+            <option value="cv">CV</option>
+            <option value="documents">CV and documents</option>
+            <option value="all">CV, documents and extras</option>
+          </select>
+          <p class="context-help">
+            Applies to all your links. Your CV is always included. Other CVs
+            appear when their owners let you share them.
+          </p>
+          <div id="included-profiles"></div>
+        </details>
+        <div class="section-label"><h3>Your links</h3></div>
         <p class="context-help">
-          Anyone with the link can open it. You can revoke it at any time.
+          Anyone with a link can use it. Turn it off whenever you want.
         </p>
         <div id="company-links"></div>
+        <p class="context-help activity-help">
+          Activity belongs to the link. If someone forwards it, their visits
+          appear here too.
+        </p>
       </div>
       <div
         id="family-panel"
@@ -347,13 +378,15 @@
         aria-labelledby="family-tab"
         hidden
       >
+        <h3 class="family-sharing-title">Let family share my CV</h3>
         <p class="family-help">
-          Family access belongs to their signed-in account.
+          They can open your CV and include it in their company links. You can
+          turn this off at any time.
         </p>
         <div id="sibling-permissions"></div>
       </div>
       <p class="mockup-note" id="settings-status" role="status">
-        Mockup only. No real access is granted.
+        Preview only. Links and activity stay in this browser.
       </p>
     </dialog>
     <script type="module" src="profile.js"></script>
