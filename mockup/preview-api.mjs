@@ -26,7 +26,7 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset}) {
       if(action==='welcome'){record(target,'visit','Opened link');return {profile:publicProfile(profile),profiles:state.profiles.filter(profile=>allowed.includes(profile.id)).map(publicProfile),company:link.company,message:link.message};}
       if(action==='event'){
         if(body.kind==='section'){
-          if(body.consent!==true||!Object.hasOwn(sectionLabels,body.section)||!Number.isInteger(body.seconds)||body.seconds<2||body.seconds>3600)fail('Invalid section timing.');
+          if(!Object.hasOwn(sectionLabels,body.section)||!Number.isInteger(body.seconds)||body.seconds<2||body.seconds>3600)fail('Invalid section timing.');
           record(target,'section',sectionLabels[body.section]+' in view',{section:body.section,seconds:body.seconds});return {recorded:true};
         }
         if(!['picture','link','button'].includes(body.kind))fail('Invalid activity.');

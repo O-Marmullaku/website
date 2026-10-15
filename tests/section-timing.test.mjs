@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createSectionClock} from '../mockup/section-timing.mjs';
 
-test('section times overlap and stop when focus, consent or visibility is lost',()=>{
+test('section times overlap and stop when focus or visibility is lost',()=>{
   let now=0;const records=[],clock=createSectionClock((section,seconds)=>records.push({section,seconds}),()=>now);
   clock.update(['profile','skills']);now=5000;clock.update(['skills']);
   now=8000;clock.update([]);now=50000;clock.update([]);

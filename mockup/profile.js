@@ -1033,7 +1033,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       );
   });
   renderExtras();
-  if(adapter?.guest&&document.documentElement.dataset.preview==='true') (await import('./section-timing.mjs')).mountSectionTiming(adapter);
+  if(adapter?.guest&&document.documentElement.dataset.preview==='true') (await import('./section-timing.mjs?v=automatic')).mountSectionTiming(adapter);
   if (adapter) {
     portrait.src = `../main/pictures/portraits/${adapter.profile.id}.webp`;
     document.querySelector('.paper-foot span').textContent = '';

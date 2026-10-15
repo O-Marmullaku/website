@@ -35,10 +35,10 @@ test('mockup starts from the actual homepage without loading production account 
   assert(!loader.includes('../mockup/index.html'));assert(!loader.includes('../mockup/profile.js'));
 });
 
-test('preview section timing validates consent, section identity and duration',async()=>{
+test('preview section timing validates section identity and duration',async()=>{
   const f=fixture(),created=await f.request('create',{company:'Timing test'}),guest={token:created.token};
-  const event={kind:'section',section:'experience',seconds:18,consent:true};
-  for(const invalid of [{consent:false},{section:'__proto__'},{seconds:-1},{seconds:1.5},{seconds:3601}]){
+  const event={kind:'section',section:'experience',seconds:18};
+  for(const invalid of [{section:'__proto__'},{seconds:-1},{seconds:1.5},{seconds:3601}]){
     await assert.rejects(f.request('event',{...event,...invalid},guest),error=>error.status===400);
   }
   assert.equal(f.state.events.length,0);
