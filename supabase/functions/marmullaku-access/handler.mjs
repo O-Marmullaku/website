@@ -136,7 +136,7 @@ export function createHandler({url, serviceKey}, fetcher = fetch) {
       }
       const profiles = await db(`marmullaku_profiles?owner_user_id=eq.${encodeURIComponent(user.id)}&select=id,display_name,role,cv,updated_at&limit=1`, {jwt});
       const profile = profiles[0];
-      if (!profile || !ids.has(profile.id)) return reply({error: 'This account does not have sibling access.'}, 403);
+      if (!profile || !ids.has(profile.id)) return reply({error: 'This account doesn’t have access.'}, 403);
       if (action === 'profile') return reply({profile});
       if (action==='read-profile') {
         const target=body.profile_id||profile.id;
