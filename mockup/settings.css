@@ -24,9 +24,10 @@
 .links-heading{display:flex;align-items:center;margin:0 0 4px;padding-top:24px;border-top:1px solid #2d3d53}
 .links-heading h3{font-size:15px;font-weight:500;margin:0;color:#eef3fa}
 #link-total{margin-left:5px;font-size:13px;font-weight:400;font-variant-numeric:tabular-nums;color:#aebed1}
-.managed-link{padding:22px 0;border-bottom:1px solid #2d3d53}
-.managed-link:first-child{padding-top:16px}
-.managed-link:last-child{border-bottom:0}
+.managed-link{--company-hue:210;padding:18px 14px;margin:10px 0;background:hsl(var(--company-hue) 55% 65% / .08);border-bottom:1px solid hsl(var(--company-hue) 45% 70% / .25);border-radius:12px}
+.managed-link .managed-link-info h4{color:hsl(var(--company-hue) 75% 82%)}
+.managed-link .copy-company-link{color:hsl(var(--company-hue) 75% 82%);border-color:hsl(var(--company-hue) 50% 75% / .4)}
+.managed-link .copy-company-link:hover:not(:disabled){background:hsl(var(--company-hue) 50% 70% / .14);border-color:hsl(var(--company-hue) 60% 78% / .7)}
 .managed-link-top{display:flex;align-items:flex-start;gap:10px}
 .managed-link-info{flex:1;min-width:0}
 .managed-link h4{font-size:16px;font-weight:500;line-height:1.4;margin:0 0 6px;overflow-wrap:anywhere;color:#f0f5fc}

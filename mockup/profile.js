@@ -1015,7 +1015,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("pdf-file").value = "";
     }
   });
-  sharing = adapter ? await (await import(document.documentElement.dataset.preview==='true'?'./account-settings.mjs?v=account-polish':'../main/live-sharing.mjs?v=accounts-2')).createLiveSharing(adapter,openResume) : createSharingUI({
+  sharing = adapter ? await (await import(document.documentElement.dataset.preview==='true'?'./account-settings.mjs?v=company-colours':'../main/live-sharing.mjs?v=accounts-2')).createLiveSharing(adapter,openResume) : createSharingUI({
     name: data.name,
     onOpenCV: openResume,
     beforePreview() {

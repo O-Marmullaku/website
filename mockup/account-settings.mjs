@@ -40,6 +40,8 @@ export async function createLiveSharing(adapter) {
     if(!links.length){host.append(node('p','No company links yet.','links-empty'));return;}
     for(const link of links) {
       const item=node('article','','managed-link');item.dataset.linkId=link.id;if(link.id===justCreated)item.classList.add('just-created');
+      let colour=0;for(const letter of link.company.toLowerCase())colour=(colour*31+letter.codePointAt(0))>>>0;
+      item.style.setProperty('--company-hue',[210,155,38,275,180,330,85,18][colour%8]);
       const top=node('div','','managed-link-top'),info=node('div','','managed-link-info');
       const heading=node('h4',link.company);heading.title=link.company;
       const meta=node('p','','managed-link-meta'),state=node('span',active(link)?'Active':link.revoked?'Off':'Expired','managed-link-state');
