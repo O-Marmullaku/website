@@ -1,4 +1,6 @@
 import { resolveQuote } from "./picture-anchor.mjs";
+import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
+import { createPDFViewer } from "./pdf-viewer.mjs";
 
 (() => {
   const key = "marmullaku-profile-mockup-v1",
@@ -39,7 +41,14 @@ import { resolveQuote } from "./picture-anchor.mjs";
     previewing = false,
     extraTypes = ["picture", "fact", "link", "button"],
     pictureAnchor = null,
-    pickingPicture = false;
+    pickingPicture = false,
+    pendingDocument = null,
+    documents = [],
+    documentAccess = true,
+    documentURL = null,
+    documentGeneration = 0,
+    documentTrigger = null;
+  let viewerPromise;
   try {
     const stored = JSON.parse(localStorage.getItem(key));
     if (stored && typeof stored === "object")
@@ -59,6 +68,35 @@ import { resolveQuote } from "./picture-anchor.mjs";
         after: typeof saved.after === "string" ? saved.after.slice(0, 32) : "",
       };
     }
+    if (Array.isArray(stored?.documents))
+      documents = stored.documents
+        .filter(
+          (doc) =>
+            typeof doc?.id === "string" &&
+            /^[a-f0-9-]{36}$/i.test(doc.id) &&
+            typeof doc.name === "string",
+        )
+        .map((doc) => ({
+          id: doc.id,
+          name: doc.name.slice(0, 180),
+          anchor: sections.some(([field]) => field === doc.anchor?.field)
+            ? {
+                field: doc.anchor.field,
+                quote:
+                  typeof doc.anchor.quote === "string"
+                    ? doc.anchor.quote.slice(0, 5000)
+                    : "",
+                before:
+                  typeof doc.anchor.before === "string"
+                    ? doc.anchor.before.slice(-32)
+                    : "",
+                after:
+                  typeof doc.anchor.after === "string"
+                    ? doc.anchor.after.slice(0, 32)
+                    : "",
+              }
+            : null,
+        }));
   } catch {}
   data.name = initial.name;
   if (!/^data:image\/(png|jpeg|webp);base64,/.test(data.picture))
@@ -75,13 +113,14 @@ import { resolveQuote } from "./picture-anchor.mjs";
       if (el !== except) el.textContent = data[field];
     });
     decoratePictureAnchor();
+    renderDocumentLinks();
   }
   function save() {
     let message = "Saved in this browser";
     try {
       localStorage.setItem(
         key,
-        JSON.stringify({ ...data, extraTypes, pictureAnchor }),
+        JSON.stringify({ ...data, extraTypes, pictureAnchor, documents }),
       );
     } catch {
       message = "Updated for this preview · browser storage unavailable";
@@ -130,6 +169,7 @@ import { resolveQuote } from "./picture-anchor.mjs";
     button.removeAttribute("aria-pressed");
     host.classList.remove("editing");
     decoratePictureAnchor();
+    renderDocumentLinks();
     if (document.activeElement === value) button.focus({ preventScroll: true });
     if (!keep)
       $("resume-status").textContent = $("save-status").textContent =
@@ -212,6 +252,8 @@ import { resolveQuote } from "./picture-anchor.mjs";
     finish(true);
     cancelAttachment();
     previewing = !!allowed;
+    documentAccess = !allowed || allowed.includes("documents");
+    closeDocument();
     $("resume").classList.toggle("preview-view", previewing);
     $("resume-mode").textContent = previewing
       ? `${company || "Company"}’s view`
@@ -229,19 +271,23 @@ import { resolveQuote } from "./picture-anchor.mjs";
     $("extras-rail").hidden = !!allowed && !allowed.includes("extras");
     if (!$("resume").open) $("resume").showModal();
     decoratePictureAnchor();
+    renderDocumentLinks();
+    renderDocumentLibrary();
     requestAnimationFrame(alignPicture);
   }
   $("resume-open").addEventListener("click", () => openResume());
   $("exit-preview").addEventListener("click", () => openResume());
-  $("settings-open").addEventListener("click", (event) => {
-    event.preventDefault();
-    finish(true);
-    $("settings-panel").showModal();
-  });
+  for (const id of ["settings-open", "settings-icon-open"])
+    $(id).addEventListener("click", (event) => {
+      event.preventDefault();
+      finish(true);
+      $("settings-panel").showModal();
+    });
   document.querySelectorAll("[data-close]").forEach((button) =>
     button.addEventListener("click", () => {
       finish(true);
       cancelAttachment();
+      closeDocument();
       $(button.dataset.close).close();
     }),
   );
@@ -266,6 +312,7 @@ import { resolveQuote } from "./picture-anchor.mjs";
     for (const [field, title] of [
       ...sections,
       ["extras", "Beyond the résumé"],
+      ["documents", "Supporting documents"],
     ]) {
       const label = node("label", title),
         check = document.createElement("input");
@@ -472,6 +519,7 @@ import { resolveQuote } from "./picture-anchor.mjs";
   }
   function cancelAttachment() {
     pickingPicture = false;
+    pendingDocument = null;
     $("resume").classList.remove("picking-picture");
     $("cancel-attachment").hidden = true;
     document.querySelectorAll(".paper [data-section]").forEach((section) => {
@@ -480,9 +528,10 @@ import { resolveQuote } from "./picture-anchor.mjs";
       section.removeAttribute("aria-label");
     });
   }
-  function pickAttachment() {
+  function pickAttachment(documentId = null) {
     finish(true);
     cancelAttachment();
+    pendingDocument = typeof documentId === "string" ? documentId : null;
     // Flatten edited paragraphs before measuring a text selection.
     sections.forEach(([field]) => sync(field));
     pickingPicture = true;
@@ -493,11 +542,11 @@ import { resolveQuote } from "./picture-anchor.mjs";
       section.setAttribute("role", "button");
       section.setAttribute(
         "aria-label",
-        `Attach picture to ${sectionName(section.dataset.section)}`,
+        `Attach ${pendingDocument ? "document" : "picture"} to ${sectionName(section.dataset.section)}`,
       );
     });
     $("resume-status").textContent =
-      "Click a section, or highlight the words to attach this picture to.";
+      `Click a section, or highlight the words to attach this ${pendingDocument ? "document" : "picture"} to.`;
   }
   $("cancel-attachment").addEventListener("click", () => {
     cancelAttachment();
@@ -517,19 +566,21 @@ import { resolveQuote } from "./picture-anchor.mjs";
         event.target.matches(".paper [data-section]")
       ) {
         event.preventDefault();
-        attachPicture(event.target.dataset.section);
+        attachToSection(event.target.dataset.section);
       }
     },
     true,
   );
-  function attachPicture(field, quote = "", before = "", after = "") {
-    pictureAnchor = { field, quote, before, after };
+  function attachToSection(field, quote = "", before = "", after = "") {
+    const doc = documents.find((doc) => doc.id === pendingDocument);
+    if (doc) doc.anchor = { field, quote, before, after };
+    else pictureAnchor = { field, quote, before, after };
     cancelAttachment();
     getSelection()?.removeAllRanges();
     save();
     renderExtras();
     $("resume-status").textContent =
-      `Picture attached to ${sectionName(field)}`;
+      `${doc ? "Document" : "Picture"} attached to ${sectionName(field)}`;
   }
   document.addEventListener("pointerup", (event) => {
     if (!pickingPicture || event.target.closest("button,a")) return;
@@ -564,7 +615,7 @@ import { resolveQuote } from "./picture-anchor.mjs";
       before = text.slice(Math.max(0, start - 32), start);
       after = text.slice(start + quote.length, start + quote.length + 32);
     }
-    attachPicture(field, quote, before, after);
+    attachToSection(field, quote, before, after);
   });
   addEventListener("resize", alignPicture);
   document.fonts.ready.then(alignPicture);
@@ -674,6 +725,8 @@ import { resolveQuote } from "./picture-anchor.mjs";
         (button) => (button.disabled = extraTypes.includes(button.dataset.add)),
       );
     decoratePictureAnchor();
+    renderDocumentLibrary();
+    renderDocumentLinks();
   }
   document.querySelectorAll("[data-add]").forEach((button) =>
     button.addEventListener("click", () => {
@@ -717,6 +770,190 @@ import { resolveQuote } from "./picture-anchor.mjs";
     save();
     renderExtras();
     $("link-editor").hidePopover();
+  });
+  function documentVisible(doc) {
+    return (
+      !previewing ||
+      (documentAccess &&
+        doc.anchor &&
+        !document.querySelector(`[data-section="${doc.anchor.field}"]`)?.hidden)
+    );
+  }
+  function renderDocumentLinks() {
+    document.querySelectorAll(".document-attachment").forEach((item) => {
+      const doc = documents.find((doc) => doc.id === item.dataset.documentId);
+      if (
+        !doc?.anchor ||
+        !documentVisible(doc) ||
+        item.closest("[data-section]").dataset.section !== doc.anchor.field
+      )
+        item.remove();
+    });
+    for (const doc of documents) {
+      if (!doc.anchor || !documentVisible(doc)) continue;
+      const section = document.querySelector(
+        `[data-section="${doc.anchor.field}"]`,
+      );
+      if (!section) continue;
+      let links = section.querySelector(".document-attachments");
+      if (!links) {
+        links = node("div", undefined, "document-attachments");
+        section.append(links);
+      }
+      let item = links.querySelector(`[data-document-id="${doc.id}"]`);
+      if (!item) {
+        item = node("div", undefined, "document-attachment");
+        item.dataset.documentId = doc.id;
+        const button = node("button", undefined, "document-link");
+        button.innerHTML =
+          '<svg aria-hidden="true"><use href="#pdf-icon"/></svg>';
+        button.append(node("span", doc.name));
+        button.addEventListener("click", () => openDocument(doc.id, button));
+        item.append(button);
+        links.append(item);
+      }
+      item.querySelector(".document-context")?.remove();
+      if (resolveQuote(data[doc.anchor.field], doc.anchor) >= 0)
+        item.append(
+          node(
+            "small",
+            "“" + doc.anchor.quote.slice(0, 90) + "”",
+            "document-context",
+          ),
+        );
+    }
+    document
+      .querySelectorAll(".document-attachments:empty")
+      .forEach((el) => el.remove());
+  }
+  function renderDocumentLibrary() {
+    $("pdf-list").replaceChildren();
+    document.querySelector(".pdf-library").hidden =
+      previewing && !documentAccess;
+    for (const doc of documents.filter(documentVisible)) {
+      const item = node("div", undefined, "pdf-item"),
+        open = node("button", doc.name, "text-button pdf-name");
+      open.addEventListener("click", () => openDocument(doc.id, open));
+      item.append(
+        open,
+        node(
+          "small",
+          doc.anchor ? sectionName(doc.anchor.field) : "Choose a section",
+        ),
+      );
+      const actions = node(
+          "div",
+          undefined,
+          "pdf-item-actions document-owner-action",
+        ),
+        attach = node(
+          "button",
+          doc.anchor ? "Reattach" : "Attach to résumé",
+          "text-button",
+        ),
+        remove = node("button", "Remove", "text-button");
+      attach.addEventListener("click", () => {
+        closeDocument();
+        pickAttachment(doc.id);
+      });
+      remove.addEventListener("click", async () => {
+        remove.disabled = true;
+        try {
+          await deletePDF(doc.id);
+          documents = documents.filter((value) => value.id !== doc.id);
+          closeDocument();
+          save();
+          renderDocumentLibrary();
+          renderDocumentLinks();
+        } catch (error) {
+          $("resume-status").textContent = error.message;
+          remove.disabled = false;
+        }
+      });
+      actions.append(attach, remove);
+      item.append(actions);
+      $("pdf-list").append(item);
+    }
+  }
+  function closeDocument(restoreFocus = false) {
+    documentGeneration++;
+    $("document-reader").hidden = true;
+    document
+      .querySelector(".resume-workspace")
+      .classList.remove("document-open");
+    viewerPromise?.then((viewer) => viewer.close());
+    $("document-new-tab").removeAttribute("href");
+    if (documentURL) URL.revokeObjectURL(documentURL);
+    documentURL = null;
+    if (restoreFocus && documentTrigger?.isConnected)
+      documentTrigger.focus({ preventScroll: true });
+    documentTrigger = null;
+    requestAnimationFrame(alignPicture);
+  }
+  async function openDocument(id, trigger) {
+    const doc = documents.find((doc) => doc.id === id);
+    if (!doc || !documentVisible(doc)) return;
+    finish(true);
+    cancelAttachment();
+    closeDocument();
+    documentTrigger = trigger;
+    const generation = ++documentGeneration;
+    $("document-title").textContent = doc.name;
+    $("document-status").textContent = "Opening PDF…";
+    $("document-new-tab").hidden = true;
+    $("document-reader").hidden = false;
+    document.querySelector(".resume-workspace").classList.add("document-open");
+    $("close-document").focus({ preventScroll: true });
+    try {
+      const file = await getPDF(id);
+      if (generation !== documentGeneration) return;
+      if (!file)
+        throw new Error(
+          "This PDF is unavailable in this browser. Add it again.",
+        );
+      documentURL = URL.createObjectURL(file);
+      $("document-new-tab").href = documentURL;
+      $("document-new-tab").hidden = false;
+      viewerPromise ||= createPDFViewer($("document-reader"));
+      const viewer = await viewerPromise;
+      if (generation !== documentGeneration) return;
+      await viewer.open(file);
+    } catch (error) {
+      if (generation === documentGeneration)
+        $("document-status").textContent = error.message;
+    }
+  }
+  $("close-document").addEventListener("click", () => closeDocument(true));
+  $("resume").addEventListener("cancel", (event) => {
+    if (!$("document-reader").hidden) {
+      event.preventDefault();
+      closeDocument(true);
+    }
+  });
+  $("resume").addEventListener("close", () => {
+    cancelAttachment();
+    closeDocument();
+  });
+  for (const id of ["add-pdf", "add-pdf-shortcut"])
+    $(id).addEventListener("click", () => {
+      $("add-extra").open = false;
+      $("pdf-file").click();
+    });
+  $("pdf-file").addEventListener("change", async () => {
+    const file = $("pdf-file").files[0];
+    if (!file) return;
+    $("resume-status").textContent = "Adding PDF…";
+    try {
+      const id = await putPDF(file);
+      documents.push({ id, name: file.name.slice(0, 180), anchor: null });
+      save();
+      renderDocumentLibrary();
+      pickAttachment(id);
+    } catch (error) {
+      $("resume-status").textContent = error.message;
+    } finally {
+      $("pdf-file").value = "";
+    }
   });
   renderExtras();
 })();

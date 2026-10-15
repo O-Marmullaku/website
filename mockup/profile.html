@@ -25,16 +25,19 @@
           <circle cx="8" cy="9" r="1.5" />
           <path d="m4 17 5-5 4 4 3-3 5 5" />
         </symbol>
+        <symbol id="settings-icon" viewBox="0 0 24 24">
+          <path
+            d="m9.7 4.3.6-2.3h3.4l.6 2.3 2.1 1.2 2.3-.6 1.7 2.9-1.7 1.7v2.5l1.7 1.7-1.7 2.9-2.3-.6-2.1 1.2-.6 2.3h-3.4l-.6-2.3-2.1-1.2-2.3.6-1.7-2.9 1.7-1.7V9.5L3.6 7.8l1.7-2.9 2.3.6z"
+          />
+          <circle cx="12" cy="11" r="3" />
+        </symbol>
+        <symbol id="pdf-icon" viewBox="0 0 24 24">
+          <path d="M14 3H5v18h14V8zM14 3v5h5M8 13h8M8 17h6" />
+        </symbol>
       </defs>
     </svg>
     <header class="site-header">
       <a href="../">Marmullaku</a>
-      <p class="signed-in">
-        Signed in as
-        <a id="settings-open" href="#profile-settings" data-value="name"
-          >Osman Marmullaku</a
-        >
-      </p>
     </header>
     <main>
       <div class="intro">
@@ -112,7 +115,22 @@
       </div>
     </main>
     <footer>
-      <span>© 2026 Marmullaku</span><span>All rights reserved</span>
+      <div class="footer-identity">
+        <span>© 2026 Marmullaku</span><span aria-hidden="true">·</span>
+        <p class="signed-in">
+          Signed in as
+          <a id="settings-open" href="#profile-settings" data-value="name"
+            >Osman Marmullaku</a
+          ><button
+            id="settings-icon-open"
+            class="footer-settings"
+            aria-label="Open profile settings"
+          >
+            <svg aria-hidden="true"><use href="#settings-icon" /></svg>
+          </button>
+        </p>
+      </div>
+      <span>All rights reserved</span>
     </footer>
 
     <dialog id="resume" aria-labelledby="resume-name">
@@ -163,13 +181,72 @@
                 <button data-add="picture">Picture</button
                 ><button data-add="fact">Fun fact</button
                 ><button data-add="link">Link</button
-                ><button data-add="button">Button</button>
+                ><button data-add="button">Button</button
+                ><button id="add-pdf">PDF document</button>
               </div>
             </details>
           </div>
           <div id="extra-blocks"></div>
+          <section class="pdf-library">
+            <div class="extra-heading">
+              <h3>Supporting documents</h3>
+              <button class="text-button" id="add-pdf-shortcut">Add PDF</button>
+            </div>
+            <div id="pdf-list"></div>
+            <p class="pdf-help">PDF · up to 10 MB · stored in this browser</p>
+          </section>
+        </aside>
+        <aside
+          id="document-reader"
+          class="document-reader"
+          aria-label="Supporting document"
+          hidden
+        >
+          <header>
+            <div>
+              <span class="reader-label">Supporting document</span>
+              <h2 id="document-title"></h2>
+            </div>
+            <a id="document-new-tab" target="_blank" rel="noopener">Open PDF</a
+            ><button
+              id="close-document"
+              class="icon-button"
+              aria-label="Close supporting document"
+            >
+              <svg aria-hidden="true"><use href="#close" /></svg>
+            </button>
+          </header>
+          <p id="document-status" role="status"></p>
+          <div class="document-controls" hidden>
+            <button
+              id="document-previous"
+              class="text-button"
+              aria-label="Previous PDF page"
+            >
+              Previous
+            </button>
+            <span id="document-page" role="status"></span>
+            <button
+              id="document-next"
+              class="text-button"
+              aria-label="Next PDF page"
+            >
+              Next
+            </button>
+            <select id="document-zoom" aria-label="PDF zoom">
+              <option value="fit">Fit width</option>
+              <option value="1">100%</option>
+              <option value="1.5">150%</option>
+              <option value="2">200%</option>
+            </select>
+          </div>
+          <div class="document-pages">
+            <canvas hidden role="img" aria-label="PDF page"></canvas>
+            <p id="document-text" class="document-accessible-text"></p>
+          </div>
         </aside>
       </div>
+      <input id="pdf-file" type="file" accept="application/pdf,.pdf" hidden />
       <input
         id="extra-picture"
         type="file"
