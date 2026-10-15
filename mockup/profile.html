@@ -9,7 +9,7 @@
       href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Sans+Condensed:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="profile.css" />
+    <link rel="stylesheet" href="profile.css?v=full-cv" />
   </head>
   <body>
     <svg class="symbols" aria-hidden="true">
@@ -347,20 +347,9 @@
           <button class="secondary" id="preview-company">Preview</button
           ><button class="primary" id="create-link">Create link</button>
         </div>
-        <details class="sharing-defaults">
-          <summary>Shared view <span id="sharing-summary"></span></summary>
-          <label class="field-label" for="share-mode">What to share</label>
-          <select id="share-mode">
-            <option value="cv">CV</option>
-            <option value="documents">CV and documents</option>
-            <option value="all">CV, documents and extras</option>
-          </select>
-          <p class="context-help">
-            Applies to all your links. Your CV is always included. Other CVs
-            appear when their owners let you share them.
-          </p>
-          <div id="included-profiles"></div>
-        </details>
+        <p class="context-help">
+          Each link opens your full CV, documents and extras.
+        </p>
         <div class="section-label"><h3>Your links</h3></div>
         <p class="context-help">
           Anyone with a link can use it. Turn it off whenever you want.
@@ -388,6 +377,6 @@
         Preview only. Links and activity stay in this browser.
       </p>
     </dialog>
-    <script type="module" src="profile.js"></script>
+    <script type="module" src="profile.js?v=full-cv"></script>
   </body>
 </html>

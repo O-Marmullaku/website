@@ -68,50 +68,23 @@ export function findCompanies(query, recent = []) {
     .slice(0, 6)
     .map((item) => item.company);
 }
-export const viewSections = {
-  cv: [
-    "contact",
-    "profile",
-    "education",
-    "experience",
-    "skills",
-    "languages",
-    "certificates",
-    "interests",
-  ],
-  documents: [
-    "contact",
-    "profile",
-    "education",
-    "experience",
-    "skills",
-    "languages",
-    "certificates",
-    "interests",
-    "documents",
-  ],
-  all: [
-    "contact",
-    "profile",
-    "education",
-    "experience",
-    "skills",
-    "languages",
-    "certificates",
-    "interests",
-    "documents",
-    "extras",
-  ],
-};
+export const companySections = [
+  "contact",
+  "profile",
+  "education",
+  "experience",
+  "skills",
+  "languages",
+  "certificates",
+  "interests",
+  "documents",
+  "extras",
+];
 // Each CV owner grants access. A link sender cannot grant it on their behalf.
 export const visibleProfiles = (profiles, senderId) =>
   profiles.filter(
     (profile) =>
       profile.id === senderId || profile.shareWith?.includes(senderId),
-  );
-export const sharedSections = (requested, ownerDefault) =>
-  (viewSections[requested] || viewSections.cv).filter((field) =>
-    (viewSections[ownerDefault] || viewSections.cv).includes(field),
   );
 export function summarizeActivity(events) {
   const opens = events.filter((event) => event.type === "visit");

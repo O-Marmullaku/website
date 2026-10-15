@@ -1,17 +1,11 @@
 import {
   findCompanies,
-  viewSections,
+  companySections,
   visibleProfiles,
-  sharedSections,
   summarizeActivity,
-} from "./sharing-model.mjs";
+} from "./sharing-model.mjs?v=full-cv";
 
 const storageKey = "marmullaku-sharing-mockup-v1";
-const modeNames = {
-  cv: "CV",
-  documents: "CV and documents",
-  all: "CV, documents and extras",
-};
 const siblings = ["Diellza", "Drilona", "Drenusha", "Dredhza", "Ali"];
 const node = (tag, text, cls) => {
   const el = document.createElement(tag);
@@ -27,7 +21,7 @@ const stamp = (at) =>
   }).format(new Date(at));
 
 export function createSharingUI({ name, onOpenCV, beforePreview }) {
-  let state = { mode: "cv", companies: [], links: [], family: [] },
+  let state = { companies: [], links: [], family: [] },
     chosen = null,
     suggestions = [],
     active = -1,
@@ -37,7 +31,6 @@ export function createSharingUI({ name, onOpenCV, beforePreview }) {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
       if (!saved || typeof saved !== "object") return;
-      state.mode = Object.hasOwn(viewSections, saved.mode) ? saved.mode : "cv";
       state.companies = Array.isArray(saved.companies)
         ? saved.companies
             .filter((c) => typeof c?.name === "string")
@@ -175,20 +168,6 @@ export function createSharingUI({ name, onOpenCV, beforePreview }) {
       choose(suggestions[active]);
     }
   });
-  function updateDefaults() {
-    $("share-mode").value = state.mode;
-    $("sharing-summary").textContent = modeNames[state.mode];
-    $("included-profiles").textContent = included()
-      .map((profile) => profile.name)
-      .join(", ");
-  }
-  updateDefaults();
-  $("share-mode").addEventListener("change", () => {
-    state.mode = $("share-mode").value;
-    updateDefaults();
-    save("Sharing view saved.");
-    renderLinks();
-  });
   for (const sibling of siblings) {
     const label = node("label", undefined, "family-share");
     const check = node("input");
@@ -234,11 +213,7 @@ export function createSharingUI({ name, onOpenCV, beforePreview }) {
       const summary = summarizeActivity(link.events);
       item.append(
         head,
-        node(
-          "p",
-          `Created ${stamp(link.created)} · ${modeNames[state.mode]}`,
-          "link-meta",
-        ),
+        node("p", `Created ${stamp(link.created)}`, "link-meta"),
         node(
           "p",
           summary.opens
@@ -383,7 +358,7 @@ export function createSharingUI({ name, onOpenCV, beforePreview }) {
           }
         }
         track("cv", `Opened ${person.name}’s CV`);
-        onOpenCV(sharedSections("all", state.mode), link.company);
+        onOpenCV(companySections, link.company);
       });
       content.append(button);
       card.append(portrait, content);
@@ -406,7 +381,6 @@ export function createSharingUI({ name, onOpenCV, beforePreview }) {
   window.addEventListener("storage", (event) => {
     if (event.key !== storageKey) return;
     read();
-    updateDefaults();
     renderLinks();
     if (current && !preview) {
       const link = state.links.find((link) => link.id === current.id);
@@ -414,7 +388,7 @@ export function createSharingUI({ name, onOpenCV, beforePreview }) {
         document.getElementById("resume").close();
         showCompany(link);
       } else if ($("resume").open) {
-        onOpenCV(sharedSections("all", state.mode), link.company);
+        onOpenCV(companySections, link.company);
       }
     }
   });
@@ -446,7 +420,6 @@ export function createSharingUI({ name, onOpenCV, beforePreview }) {
     refresh() {
       read();
       renderLinks();
-      updateDefaults();
     },
   };
 }

@@ -3,7 +3,7 @@ import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs";
 import { createRowEditor } from "./cv-row-editor.mjs";
-import { createSharingUI } from "./sharing-ui.mjs";
+import { createSharingUI } from "./sharing-ui.mjs?v=full-cv";
 
 (() => {
   const key = "marmullaku-profile-mockup-v1",

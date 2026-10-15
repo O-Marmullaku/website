@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import {
   findCompanies,
   visibleProfiles,
-  sharedSections,
+  companySections,
   summarizeActivity,
 } from "../mockup/sharing-model.mjs";
 test("company search tolerates typos, accents and pasted domains", () => {
@@ -40,10 +40,9 @@ test("the sender is always included; other CV owners must grant sharing themselv
     ["osman"],
   );
 });
-test("a sender cannot expose more content than the CV owner allows", () => {
-  assert.ok(!sharedSections("all", "cv").includes("documents"));
-  assert.ok(sharedSections("all", "documents").includes("documents"));
-  assert.ok(!sharedSections("all", "documents").includes("extras"));
+test("company links include contact details, interests, documents and extras", () => {
+  for (const section of ["contact", "interests", "documents", "extras"])
+    assert.ok(companySections.includes(section));
 });
 test("link opens and actual clicks are counted separately", () => {
   assert.deepEqual(
