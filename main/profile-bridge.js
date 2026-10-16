@@ -1,4 +1,4 @@
-import {createProfileMotion} from '../main/profile-motion.mjs?v=smooth-windows-final';
+import {createProfileMotion} from '../main/profile-motion.mjs?v=reference-cv-ready';
 await window.marmullakuServicesReady;
 (() => {
   const session=window.siblingSession,identity=document.querySelector('.footer-identity');
@@ -8,17 +8,16 @@ await window.marmullakuServicesReady;
   const dismiss=document.createElement('button');dismiss.className='profile-dismiss';dismiss.textContent='Close';dismiss.addEventListener('click',()=>close());
   panel.append(notice,dismiss);document.body.append(panel);
   const motion=createProfileMotion(panel);
-  function close(){if(closing)return closing;if(!panel.open)return Promise.resolve();clearTimeout(loading);closing=motion.exit(frame).then(()=>panel.close()).finally(()=>{closing=false;});return closing;}
+  function close(){if(closing)return closing;if(!panel.open){clearTimeout(loading);panel.classList.remove('preparing');origin?.removeAttribute('aria-busy');frame?.remove();frame=null;return Promise.resolve();}clearTimeout(loading);closing=motion.exit(frame).then(()=>panel.close()).finally(()=>{closing=false;});return closing;}
   panel.addEventListener('cancel',event=>{event.preventDefault();close();});
   panel.addEventListener('close',()=>{if(panel.open)return;clearTimeout(loading);motion.reset();frame?.remove();frame=null;focusBefore?.focus({preventScroll:true});});
   async function open(nextView,id,token,source) {
-    if(panel.open)await close();
-    view=nextView;origin=source||document.activeElement;focusBefore=document.activeElement;notice.textContent='Opening…';notice.hidden=dismiss.hidden=true;
+    if(panel.open||frame)await close();
+    view=nextView;origin=source||document.activeElement;focusBefore=document.activeElement;origin?.setAttribute('aria-busy','true');notice.hidden=dismiss.hidden=true;
     frame?.remove();frame=document.createElement('iframe');frame.title=view==='settings'?'Profile settings':'CV';frame.referrerPolicy='no-referrer';frame.className='profile-frame-loading';
-    const url=new URL('profile/',location.href);url.searchParams.set('view',view);url.searchParams.set('v','centered-paper');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
-    frame.src=url;panel.classList.toggle('settings-window',view==='settings');panel.append(frame);
-    if(!panel.open)panel.showModal();
-    clearTimeout(loading);loading=setTimeout(()=>{notice.hidden=dismiss.hidden=false;loading=setTimeout(()=>{notice.textContent='This is taking longer than usual. Close and try again.';},20000);},180);
+    const url=new URL('profile/',location.href);url.searchParams.set('view',view);url.searchParams.set('v','reference-cv-ready');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
+    frame.src=url;panel.classList.toggle('settings-window',view==='settings');panel.append(frame);panel.classList.add('preparing');
+    clearTimeout(loading);loading=setTimeout(()=>{origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');notice.textContent='Could not open this page. Close and try again.';notice.hidden=dismiss.hidden=false;if(!panel.open)panel.showModal();},20000);
   }
   function signedFooter() {
     identity.replaceChildren();const text=document.createElement('span');text.textContent=window.MARMULLAKU_LOCAL_PREVIEW?'Local preview · edits stay in this browser · ':'Signed in as ';
@@ -64,9 +63,9 @@ await window.marmullakuServicesReady;
   addEventListener('message',event=>{
     if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
     const data=event.data;if(!data||typeof data!=='object')return;
-    if(data.type==='marmullaku-ready'){clearTimeout(loading);notice.hidden=dismiss.hidden=true;if(!closing)motion.enter(frame,origin,view);}
+    if(data.type==='marmullaku-ready'){clearTimeout(loading);notice.hidden=dismiss.hidden=true;if(!closing){origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');if(!panel.open)panel.showModal();motion.enter(frame,origin,view);}}
     if(data.type==='marmullaku-close')close();
-    if(data.type==='marmullaku-error'){clearTimeout(loading);notice.hidden=dismiss.hidden=false;notice.textContent=String(data.message).slice(0,300);frame.hidden=true;}
+    if(data.type==='marmullaku-error'){clearTimeout(loading);notice.hidden=dismiss.hidden=false;notice.textContent=String(data.message).slice(0,300);frame.hidden=true;origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');if(!panel.open)panel.showModal();}
     if(data.type==='marmullaku-saved'&&(window.MARMULLAKU_LOCAL_PREVIEW||own?.id===data.id)){if(own?.id===data.id)own.role=data.role;const role=document.querySelector(`.role[data-i18n="${data.id}"]`);if(role)role.textContent=data.role;}
     if(data.type==='marmullaku-signed-out')close().then(()=>location.assign(new URL('./',location.href)));
   });

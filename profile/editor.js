@@ -204,10 +204,10 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   }
   const portrait = document.querySelector(".paper-header > img");
   portrait.className = "cv-portrait";
-  document.querySelector('.paper-header').prepend(portrait);
-  for (const field of ['contact','skills','languages'])
+  sidebar.prepend(portrait);
+  for (const field of ['contact','languages','certificates'])
     sidebar.append(document.querySelector(`[data-section="${field}"]`));
-  for (const field of ['profile','experience','education','certificates','interests'])
+  for (const field of ['profile','education','experience','skills','interests'])
     mainColumn.append(document.querySelector(`[data-section="${field}"]`));
   rowEditor = createRowEditor({
     rows: cvRows,
