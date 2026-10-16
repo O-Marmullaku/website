@@ -3,7 +3,14 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createPreviewAPI} from '../mockup/preview-api.mjs';
 import {mockupHomepage} from '../mockup/sync-homepage.mjs';
+import {profilesToSeed} from '../mockup/profile-seed.mjs';
 const cv={contact:[],skills:[],languages:[],profile:'Sample CV',experience:[],education:[],certs:[],interests:''};
+test('current CV content fills empty profiles without replacing existing edits',()=>{
+  const entries=['osman','drilona'].map(id=>({profile:{id,cv:{profile:'Imported CV'}},files:[]}));
+  assert.equal(profilesToSeed([{id:'osman',cv:{profile:'',experience:[],education:[]}}],entries).length,2);
+  assert.equal(profilesToSeed([{id:'osman',cv:{profile:''}}],entries,['osman']).length,1);
+  assert.deepEqual(profilesToSeed([{id:'osman',cv:{profile:'My edited CV'}},{id:'drilona',cv:{profile:'',editor:{rows:{experience:[{title:'My role'}]}}}}],entries),[]);
+});
 function fixture() {
   let state={profiles:[{id:'osman',display_name:'Osman Marmullaku',role:'Sample title',cv,updated_at:'original'},{id:'diellza',display_name:'Diellza Marmullaku',role:'',cv,updated_at:'original'}],family:[],links:[],events:[],assets:[]};
   const files=new Map();

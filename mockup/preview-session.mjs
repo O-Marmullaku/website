@@ -1,5 +1,6 @@
-import {createPreviewAPI} from './preview-api.mjs?v=site-testing';
-import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=site-testing';
+import {createPreviewAPI} from './preview-api.mjs?v=current-cvs';
+import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=current-cvs';
+import {profilesToSeed} from './profile-seed.mjs';
 
 const key='marmullaku-site-preview-v1',signedOut='marmullaku-preview-signed-out';
 const store=createAssetStore('marmullaku-site-preview-attachments');
@@ -24,6 +25,28 @@ async function initialize() {
   for(const asset of state.assets) {
     if(await store.get(asset.id))continue;
     const blob=await originalAsset(asset.id);if(blob)await store.put(blob,asset.id);
+  }
+  if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)) {
+    const response=await fetch('/work/testing-profiles.json',{cache:'no-store'});
+    if(response.ok) {
+      const entries=profilesToSeed(state.profiles,await response.json(),state.seeded_profiles||[]);
+      for(const {profile,files} of entries) {
+        await Promise.all(files.map(async file=>{
+          if(await store.get(file.id))return;
+          const existing=await originalAsset(file.id);
+          if(existing){await store.put(existing,file.id);return;}
+          const response=await fetch(file.url,{cache:'no-store'});
+          if(!response.ok)throw new Error('Could not load the CV documents. Reload and try again.');
+          await store.put(new Blob([await response.arrayBuffer()],{type:file.mime}),file.id);
+        }));
+        const index=state.profiles.findIndex(item=>item.id===profile.id),existing=state.profiles[index];
+        const next={...profile,role:existing?.role||profile.role};
+        if(index<0)state.profiles.push(next);else state.profiles[index]=next;
+        state.assets.push(...files.filter(file=>!state.assets.some(asset=>asset.id===file.id)).map(({url,...asset})=>asset));
+        state.seeded_profiles=[...state.seeded_profiles||[],profile.id];
+      }
+      if(entries.length)save(state);
+    }
   }
   if(source)localStorage.setItem('marmullaku-site-preview-live-sync-v1','true');
 }
