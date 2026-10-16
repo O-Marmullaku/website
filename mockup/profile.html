@@ -9,7 +9,8 @@
       href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Sans+Condensed:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="profile.css?v=full-cv" />
+    <link rel="stylesheet" href="profile.css?v=sleek-pdf-reader" />
+    <link rel="stylesheet" href="../main/pdf-reader.css?v=sleek-pdf-reader" />
   </head>
   <body>
     <svg class="symbols" aria-hidden="true">
@@ -223,7 +224,7 @@
             <div>
               <h2 id="document-title"></h2>
             </div>
-            <a id="document-new-tab" target="_blank" rel="noopener">Open PDF</a
+            <a id="document-new-tab" class="document-icon" target="_blank" rel="noopener" aria-label="Open original PDF" title="Open original PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4 10 14M10 5H5a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1h13a1 1 0 0 0 1-1v-5"/></svg></a
             ><button
               id="close-document"
               class="icon-button"
@@ -239,7 +240,7 @@
               class="text-button"
               aria-label="Previous PDF page"
             >
-              Previous
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg>
             </button>
             <span id="document-page" role="status"></span>
             <button
@@ -247,9 +248,10 @@
               class="text-button"
               aria-label="Next PDF page"
             >
-              Next
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg>
             </button>
             <select id="document-zoom" aria-label="PDF zoom">
+              <option value="fit-page">Fit page</option>
               <option value="fit">Fit width</option>
               <option value="1">100%</option>
               <option value="1.5">150%</option>

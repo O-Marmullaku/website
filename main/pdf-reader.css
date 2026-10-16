@@ -1,0 +1,34 @@
+/* One document surface for the live reader and both preview entry points. */
+#document-reader{display:flex;flex-direction:column;height:calc(100dvh - 112px);background:#101b2a;color:#e9f0f8;border:0;border-radius:12px;overflow:hidden;box-shadow:0 24px 64px -24px #000b;animation:pdf-stage-in .28s cubic-bezier(.16,1,.3,1) both;color-scheme:dark}
+#document-reader>header{display:flex;align-items:center;flex:none;gap:8px;min-height:64px;padding:10px 16px 10px 20px;border:0;background:#101b2a;z-index:2}
+#document-reader>header>div{flex:1;min-width:0}
+#document-reader h2{margin:0;font-size:13px;font-weight:500;line-height:1.45;color:#dce7f4;overflow-wrap:anywhere}
+#document-reader .document-icon,#document-reader #close-document{display:grid;place-items:center;flex:none;width:40px;height:40px;padding:10px;border:0;border-radius:50%;background:#1b2b40;color:#c7d8ec;text-decoration:none;transition:background .16s,color .16s,transform .16s}
+#document-reader .document-icon svg,#document-reader button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#document-reader .document-icon:hover,#document-reader #close-document:hover{background:#304660;color:white}
+#document-reader .document-icon:active,#document-reader #close-document:active{transform:scale(.94)}
+#document-reader :is(button,a,select):focus-visible{outline:2px solid #86c1ff;outline-offset:3px}
+#document-reader .document-pages{position:relative;flex:1;min-height:0;height:calc(100dvh - 176px);padding:16px 16px 88px;background:#0b1522;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3c5069 transparent}
+#document-reader .document-pages::-webkit-scrollbar{width:7px;height:7px}
+#document-reader .document-pages::-webkit-scrollbar-thumb{background:#3c5069;border:2px solid #0b1522;border-radius:8px}
+#document-reader .document-pages::-webkit-scrollbar-track{background:transparent}
+#document-reader canvas{color-scheme:light;display:block;margin:0 auto;border-radius:2px;box-shadow:0 12px 32px -8px #0009}
+#document-reader .document-controls{position:absolute;z-index:3;left:50%;bottom:20px;transform:translateX(-50%);display:flex;align-items:center;flex-wrap:nowrap;gap:4px;width:max-content;max-width:calc(100% - 32px);min-height:52px;margin:0;padding:5px 7px;background:#18283def;color:#e9f0f8;border:1px solid #344963;border-radius:999px;box-shadow:0 10px 28px -8px #000a;backdrop-filter:blur(12px)}
+#document-reader .document-controls button{display:grid;place-items:center;width:40px;height:40px;min-width:40px;padding:10px;color:#d6e8fc;background:transparent;border:0;border-radius:50%;transition:background .16s,color .16s}
+#document-reader .document-controls button:hover:not(:disabled){background:#304660;color:#fff}
+#document-reader .document-controls button:disabled{opacity:.35;cursor:default}
+#document-reader #document-page{min-width:60px;text-align:center;white-space:nowrap;font-size:13px;line-height:1;font-variant-numeric:tabular-nums;color:#dce7f4}
+#document-reader .document-controls select{width:auto;max-width:120px;min-height:36px;margin:0 2px 0 6px;padding:7px 8px;border:0;border-left:1px solid #3d506a;border-radius:0;background:transparent;color:#dce7f4;font:500 12px 'Fira Sans',sans-serif;cursor:pointer}
+#document-reader .document-controls option{background:#18283d;color:#e9f0f8}
+#document-reader #document-status{position:absolute;z-index:2;inset:80px 24px auto;margin:0;padding:0;color:#b9cae0;font-size:13px;line-height:1.6;text-align:center}
+#document-reader #document-status:empty{display:none}
+@keyframes pdf-stage-in{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+@media(max-width:1000px){
+ #document-reader{border-radius:0}
+ #document-reader>header{min-height:64px;padding:10px 12px 10px 16px}
+ #document-reader .document-icon,#document-reader #close-document{width:44px;height:44px}
+ #document-reader .document-controls{bottom:calc(16px + env(safe-area-inset-bottom));gap:2px;min-height:56px}
+ #document-reader .document-controls button{width:44px;height:44px;min-width:44px}
+ #document-reader .document-controls select{min-height:44px;font-size:16px}
+}
+@media print{#document-reader{display:none!important}}

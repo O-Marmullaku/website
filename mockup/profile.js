@@ -1,7 +1,7 @@
 import {setupExtrasRail} from '../main/cv-extras-rail.mjs?v=centered-paper';
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=sleek-pdf-reader";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=accounts-2";
 import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
@@ -925,21 +925,36 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("pdf-list").append(item);
     }
   }
+  let documentExit;
   function closeDocument(restoreFocus = false) {
-    documentGeneration++;
-    $("document-reader").hidden = true;
-    document
-      .querySelector(".resume-workspace")
-      .classList.remove("document-open");
-    viewerPromise?.then((viewer) => viewer.close());
-    $("document-new-tab").removeAttribute("href");
-    if (documentURL) URL.revokeObjectURL(documentURL);
-    documentURL = null;
-    if (restoreFocus && documentTrigger?.closest('#extras-rail'))extrasRail?.open();
-    if (restoreFocus && documentTrigger?.isConnected)
-      documentTrigger.focus({ preventScroll: true });
-    documentTrigger = null;
-    requestAnimationFrame(alignPicture);
+    documentExit?.cancel();
+    documentExit = null;
+    const generation = ++documentGeneration, reader = $("document-reader");
+    const cleanup = () => {
+      if (generation !== documentGeneration) return;
+      reader.hidden = true;
+      reader.inert = false;
+      documentExit?.cancel();
+      documentExit = null;
+      document.querySelector(".resume-workspace").classList.remove("document-open");
+      viewerPromise?.then((viewer) => viewer.close());
+      $("document-new-tab").removeAttribute("href");
+      if (documentURL) URL.revokeObjectURL(documentURL);
+      documentURL = null;
+      if (restoreFocus && documentTrigger?.closest('#extras-rail')) extrasRail?.open();
+      if (restoreFocus && documentTrigger?.isConnected) documentTrigger.focus({ preventScroll: true });
+      documentTrigger = null;
+      requestAnimationFrame(alignPicture);
+    };
+    if (restoreFocus && !reader.hidden) {
+      const current = getComputedStyle(reader);
+      reader.inert = true;
+      documentExit = reader.animate([
+        {opacity:current.opacity,transform:current.transform},
+        {opacity:0,transform:'translateX(18px)'}
+      ],{duration:180,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'});
+      documentExit.finished.catch(()=>{}).then(cleanup);
+    } else cleanup();
   }
   async function openDocument(id, trigger) {
     const doc = documents.find((doc) => doc.id === id);

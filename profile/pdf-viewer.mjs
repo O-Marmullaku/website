@@ -1,4 +1,8 @@
 // Local rendering keeps uploaded documents off third-party services.
+export function pdfScale(mode,width,height,natural) {
+  const fitWidth=(width-32)/natural.width;
+  return Math.max(.1,mode==='fit-page'?Math.min(fitWidth,(height-104)/natural.height):mode==='fit'?fitWidth:Number(mode));
+}
 export async function createPDFViewer(root) {
   const pdfjs = await import("../mockup/vendor/pdfjs/pdf.min.mjs");
   pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -23,29 +27,30 @@ export async function createPDFViewer(root) {
     rendering?.cancel();
     previous.disabled = pageNumber === 1;
     next.disabled = pageNumber === pdf.numPages;
-    label.textContent = `Page ${pageNumber} of ${pdf.numPages}`;
+    label.textContent = `${pageNumber} / ${pdf.numPages}`;
+    label.setAttribute('aria-label',`Page ${pageNumber} of ${pdf.numPages}`);
     try {
       const page = await pdf.getPage(pageNumber);
       if (current !== revision) return;
       const natural = page.getViewport({ scale: 1 });
-      const scale =
-        zoom.value === "fit"
-          ? Math.max(0.1, (viewport.clientWidth - 24) / natural.width)
-          : Number(zoom.value);
+      const scale = pdfScale(zoom.value,viewport.clientWidth,viewport.clientHeight,natural);
       const sized = page.getViewport({ scale });
       const density = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.ceil(sized.width * density);
-      canvas.height = Math.ceil(sized.height * density);
-      canvas.style.width = `${sized.width}px`;
-      canvas.style.height = `${sized.height}px`;
-      canvas.setAttribute("aria-label", label.textContent);
+      // Keep the current page visible until its replacement is fully painted.
+      const pendingCanvas=document.createElement('canvas');
+      pendingCanvas.width = Math.ceil(sized.width * density);
+      pendingCanvas.height = Math.ceil(sized.height * density);
       rendering = page.render({
-        canvas,
+        canvas:pendingCanvas,
         viewport: sized,
         transform: [density, 0, 0, density, 0, 0],
       });
       await rendering.promise;
       if (current !== revision) return;
+      canvas.width=pendingCanvas.width;canvas.height=pendingCanvas.height;
+      canvas.style.width=`${sized.width}px`;canvas.style.height=`${sized.height}px`;
+      canvas.getContext('2d').drawImage(pendingCanvas,0,0);
+      canvas.setAttribute('aria-label',`Page ${pageNumber} of ${pdf.numPages}`);
       canvas.hidden = false;
       status.textContent = "";
       viewport.scrollTop = 0;
@@ -73,11 +78,12 @@ export async function createPDFViewer(root) {
     }
   });
   zoom.addEventListener("change", render);
-  let width = 0;
+  let width = 0,height=0;
   new ResizeObserver(([entry]) => {
-    if (Math.abs(entry.contentRect.width - width) > 1) {
+    if (Math.abs(entry.contentRect.width - width) > 1 || Math.abs(entry.contentRect.height-height)>1) {
       width = entry.contentRect.width;
-      if (width && zoom.value === "fit") render();
+      height=entry.contentRect.height;
+      if (width && ['fit','fit-page'].includes(zoom.value)) render();
     }
   }).observe(viewport);
   function close() {
@@ -112,7 +118,7 @@ export async function createPDFViewer(root) {
       if (current !== revision) return;
       pdf = loaded;
       pageNumber = 1;
-      zoom.value = "fit";
+      zoom.value = "fit-page";
       root.querySelector(".document-controls").hidden = false;
       await render();
     },
