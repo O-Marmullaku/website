@@ -118,9 +118,10 @@
     .card::before { content: ""; position: absolute; left: 12%; right: 12%; bottom: 0; height: 2px; z-index: 1; pointer-events: none;
       background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0; transition: opacity .35s; }
     .card.away { transform: scale(.96); }
-    .card:hover, .card:focus-within { border-color: rgba(242,196,109,.35); transform: translateY(-8px);
+    /* Mouse focus can remain after closing a CV; keyboard focus takes precedence over hover. */
+    .card:has(:focus-visible), .people:not(:has(:focus-visible)) .card:hover { border-color: rgba(242,196,109,.35); transform: translateY(-8px);
       box-shadow: var(--paper-lift), 0 18px 40px -20px rgba(242,180,80,.45), inset 0 1px 0 rgba(255,255,255,.08); }
-    .card:hover::before, .card:focus-within::before { opacity: 1; }
+    .card:has(:focus-visible)::before, .people:not(:has(:focus-visible)) .card:hover::before { opacity: 1; }
     /* the gradient only shows while the office and portrait load */
     .media { aspect-ratio: 6 / 7; overflow: hidden; position: relative; border-bottom: 1px solid var(--line); background: linear-gradient(180deg, #8d9fb6, #4c5d75); }
     /* office and cutout portrait are separate layers; the office gets a light blur, scaled up so its edges stay sharp */
@@ -129,8 +130,8 @@
     /* cool blue-gray wash over the office only; the portrait sits above it untouched */
     .media::after { content: ""; position: absolute; inset: 0; background: rgba(70,90,120,.1); pointer-events: none; }
     .media .who { z-index: 1; object-position: 50% 0; } /* 6:7 frame crops the 4:5 cutout at the chest, never the headroom */
-    .card:hover .media .who { transform: scale(1.04); }
-    .card:hover .media .bg { transform: scale(1.08); }
+    .card:has(:focus-visible) .media .who, .people:not(:has(:focus-visible)) .card:hover .media .who { transform: scale(1.04); }
+    .card:has(:focus-visible) .media .bg, .people:not(:has(:focus-visible)) .card:hover .media .bg { transform: scale(1.08); }
     .content { padding: 18px 20px 18px; display: flex; flex-direction: column; flex: 1; }
     .name { font-family: var(--names); font-size: 22px; font-weight: 400; line-height: 1.1; margin: 0 0 8px; text-wrap: balance; }
     /* the name is the button that opens the résumé; it covers the whole card */
@@ -143,8 +144,8 @@
     .cta { font-size: 13px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap;
       display: inline-flex; align-items: center; gap: 8px; color: var(--ink-hi); transition: gap .3s var(--ease), color .2s; }
     .cta svg { transition: transform .3s var(--ease); }
-    .card:hover .cta, .card:focus-within .cta { color: var(--gold); }
-    .card:hover .cta svg { transform: translateX(4px); }
+    .card:has(:focus-visible) .cta, .people:not(:has(:focus-visible)) .card:hover .cta { color: var(--gold); }
+    .card:has(:focus-visible) .cta svg, .people:not(:has(:focus-visible)) .card:hover .cta svg { transform: translateX(4px); }
 
 
     /* footer */
