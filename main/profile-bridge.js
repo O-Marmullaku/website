@@ -10,7 +10,7 @@ await window.marmullakuServicesReady;
   async function open(view,id,token) {
     focusBefore=document.activeElement;notice.textContent='Opening…';notice.hidden=false;dismiss.hidden=false;
     frame?.remove();frame=document.createElement('iframe');frame.title=view==='settings'?'Profile settings':'CV';frame.referrerPolicy='no-referrer';
-    const url=new URL('profile/',location.href);url.searchParams.set('view',view);url.searchParams.set('v','classic-reader');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
+    const url=new URL('profile/',location.href);url.searchParams.set('view',view);url.searchParams.set('v','centered-paper');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
     frame.src=url;panel.classList.toggle('settings-window',view==='settings');panel.append(frame);
     if(!panel.open)panel.showModal();
     clearTimeout(loading);loading=setTimeout(()=>{notice.textContent='This is taking longer than usual. Close and try again.';},20000);

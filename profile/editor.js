@@ -1,3 +1,4 @@
+import {setupExtrasRail} from '../main/cv-extras-rail.mjs?v=centered-paper';
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs";
@@ -361,6 +362,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     decoratePictureAnchor();
     renderDocumentLinks();
     renderDocumentLibrary();
+    extrasRail?.sync();
     requestAnimationFrame(alignPicture);
   }
   $("resume-open").addEventListener("click", () => openResume());
@@ -421,6 +423,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     );
   }
   function showPicture() {
+    extrasRail?.open();
     sharing?.track("picture", "Viewed photo: " + data.pictureCaption);
     const block = document.querySelector(".extra-picture");
     if (!block) return;
@@ -504,10 +507,14 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     }
     requestAnimationFrame(alignPicture);
   }
+  let extrasRail;
   function alignPicture() {
-    const block=document.querySelector('.extra-picture');
-    if(block)block.style.paddingTop='';
+    const block=document.querySelector('.extra-picture'),target=pictureTarget();
+    if(!block)return;
+    block.style.paddingTop='';block.style.marginTop='';
     $('extras-rail').classList.remove('has-attachment');
+    if(target&&innerWidth>=1440&&!$('extras-rail').hidden)
+      block.style.marginTop=Math.max(0,target.getBoundingClientRect().top-block.getBoundingClientRect().top)+'px';
   }
   function cancelAttachment() {
     pickingPicture = false;
@@ -926,6 +933,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     $("document-new-tab").removeAttribute("href");
     if (documentURL) URL.revokeObjectURL(documentURL);
     documentURL = null;
+    if (restoreFocus && documentTrigger?.closest('#extras-rail'))extrasRail?.open();
     if (restoreFocus && documentTrigger?.isConnected)
       documentTrigger.focus({ preventScroll: true });
     documentTrigger = null;
@@ -936,6 +944,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     if (!doc || !documentVisible(doc)) return;
     finish(true);
     cancelAttachment();
+    if($('extras-rail').matches(':popover-open'))$('extras-rail').hidePopover();
     closeDocument();
     documentTrigger = trigger;
     const generation = ++documentGeneration;
@@ -1030,6 +1039,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Save as PDF</span>';
     download.addEventListener('click',()=>window.print());
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
+    extrasRail=setupExtrasRail({editable:()=>!previewing,onLayout:alignPicture});
     let closing=false;
     for (const id of ['resume','settings-panel']) $(id).addEventListener('close',async()=>{
       if(id==='settings-panel'&&$('resume').open)return;
