@@ -7,18 +7,18 @@ html[data-live] #resume-mode{display:none}
 @media(max-width:680px){
   #resume:not(.preview-view) .resume-toolbar{flex-wrap:wrap;gap:6px 10px;padding:10px 16px}
   #resume:not(.preview-view) .mobile-edit-note{display:block;order:10;flex-basis:100%;font-size:12px;line-height:1.5;color:#b8c9dd}
-  #resume:not(.preview-view) .cv-row{padding-right:40px}
-  #resume:not(.preview-view) .cv-row-timeline,#resume:not(.preview-view) .cv-row-timeline:has(.cv-row-logo){grid-template-columns:minmax(0,1fr);gap:8px}
-  #resume:not(.preview-view) .cv-row-timeline>.cv-cell-date{border-right:0;padding-right:34px}
-  #resume:not(.preview-view) .cv-cell{min-height:36px;padding-right:34px}
-  #resume:not(.preview-view) .cv-cell .cv-edit{width:32px;height:32px;top:0;right:0;opacity:1;display:grid;place-items:center}
-  #resume:not(.preview-view) .cv-row-options summary{min-width:36px;min-height:36px;justify-content:center}
-  #resume:not(.preview-view) .cv-row-menu{top:40px;max-width:calc(100vw - 64px)}
-  #resume:not(.preview-view) .cv-row-menu button{min-height:40px;font-size:14px}
-  #resume:not(.preview-view) .cv-add-row{min-height:40px;font-size:13px;padding:8px 12px}
-  #resume:not(.preview-view) .cv-language-level{min-height:40px;font-size:16px;max-width:100%}
+  #resume .cv-row{padding-right:40px}
+  #resume .cv-row-timeline,#resume .cv-row-timeline:has(.cv-row-logo){grid-template-columns:minmax(0,1fr);gap:8px}
+  #resume .cv-row-timeline>.cv-cell-date{border-right:0;padding-right:34px}
+  #resume .cv-cell{min-height:36px;padding-right:34px}
+  #resume .cv-cell .cv-edit{width:32px;height:32px;top:0;right:0;opacity:1;display:grid;place-items:center}
+  #resume .cv-row-options summary{min-width:36px;min-height:36px;justify-content:center}
+  #resume .cv-row-menu{top:40px;max-width:calc(100vw - 64px)}
+  #resume .cv-row-menu button{min-height:40px;font-size:14px}
+  #resume .cv-add-row{min-height:40px;font-size:13px;padding:8px 12px}
+  #resume .cv-language-level{min-height:40px;font-size:16px;max-width:100%}
   #resume:not(.preview-view) [contenteditable=plaintext-only]{font-size:16px}
-  #resume:not(.preview-view) .cv-row-logo{grid-column:auto}
+  #resume .cv-row-logo{grid-column:auto}
 }
 html[data-live] #created-link{display:block;width:100%;padding:10px 12px;margin:12px 0;border:1px solid var(--line);background:#0b1728;color:var(--text);border-radius:6px;font-size:12px}
 .cv-language-description{font-size:11px;display:block}
@@ -41,15 +41,62 @@ html[data-live] .document-pages{flex:1;min-height:0;height:auto}
   html[data-live] #document-page{white-space:nowrap}
 }
 @media(max-width:680px){
-  #resume:not(.preview-view) .cv-row{padding-right:52px}
-  #resume:not(.preview-view) .cv-cell{min-height:44px;padding-right:46px}
-  #resume:not(.preview-view) .cv-cell .cv-edit{width:44px;height:44px}
-  #resume:not(.preview-view) .cv-row-options summary,#resume:not(.preview-view) .cv-add-row{min-width:44px;min-height:44px}
-  #resume:not(.preview-view) .cv-row-menu{top:48px}
-  #resume:not(.preview-view) .cv-row-menu button,#resume:not(.preview-view) .cv-language-level{min-height:44px}
+  #resume .cv-row{padding-right:52px}
+  #resume .cv-cell{min-height:44px;padding-right:46px}
+  #resume .cv-cell .cv-edit{width:44px;height:44px}
+  #resume .cv-row-options summary,#resume .cv-add-row{min-width:44px;min-height:44px}
+  #resume .cv-row-menu{top:48px}
+  #resume .cv-row-menu button,#resume .cv-language-level{min-height:44px}
   #resume:not(.preview-view) .paper .edit{min-width:44px;min-height:44px}
   .link-form-actions button{min-height:44px}
   #settings-panel .settings-tabs button,#settings-panel .text-button,#settings-panel .link-activity summary{min-height:44px}
   #settings-panel .link-actions{gap:8px;flex-wrap:wrap}
   #settings-panel .link-actions .text-button{padding:8px}
+}
+
+/* The same document surface serves reading and in-place editing. */
+html[data-live] #resume .resume-toolbar{position:fixed;inset:16px 16px auto auto;display:flex;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100% - 32px);padding:0;gap:10px;border:0;background:transparent;z-index:5}
+html[data-live] #resume .resume-toolbar>#resume-status{position:fixed;right:16px;top:70px;max-width:220px;font-size:12px;color:#b8c9dd;text-align:right}
+html[data-live] #resume .cv-download>span{display:none}
+html[data-live] #resume .cv-download,html[data-live] #resume [data-close=resume]{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#eef2f6;color:#162537;box-shadow:0 5px 16px -6px #0009;transition:transform .25s cubic-bezier(.2,.8,.2,1),background .2s}
+html[data-live] #resume .cv-download svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+html[data-live] #resume .resume-toolbar button:hover{transform:scale(1.06);background:#fff}
+html[data-live] #resume .resume-toolbar button:active{transform:scale(.94)}
+html[data-live] #resume .resume-toolbar button:focus-visible{outline:2px solid #86c1ff;outline-offset:4px}
+html[data-live] #resume .cv-download::after,html[data-live] #resume [data-close=resume]::after{content:attr(aria-label);position:absolute;top:calc(100% + 8px);right:0;padding:5px 10px;border-radius:6px;background:#1c3049;color:#eef3fa;font-size:12px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s}
+html[data-live] #resume .resume-toolbar button:hover::after{opacity:1}
+html[data-live] #resume .resume-workspace{margin-top:32px}
+html[data-live] #resume .paper{min-height:1128px}
+html[data-live] #resume #extras-rail{position:static;padding-top:0}
+html[data-live] #resume .resume-section{position:relative}
+html[data-live] #resume .section-heading,html[data-live] #resume .paper-header .editable{position:relative}
+html[data-live] #resume .section-heading>.edit,html[data-live] #resume .paper-header .edit{position:absolute;right:0;top:50%;transform:translateY(-50%)}
+html[data-live] #resume .cv-add-row{position:absolute;bottom:0;right:0;margin:0;padding:2px 8px;min-height:24px;font-size:11px;border:0;opacity:.65}
+html[data-live] #resume .cv-add-row:hover,html[data-live] #resume .cv-add-row:focus-visible{opacity:1}
+html[data-live] #resume .cv-language-level{position:absolute;right:0;top:0;max-width:100%;opacity:0;height:24px;min-height:0;background:#fff}
+html[data-live] #resume .cv-cell:hover .cv-language-level,html[data-live] #resume .cv-language-level:focus{opacity:1}
+html[data-live] #resume .extra-picture{padding-top:0}
+html[data-live] #resume .picture-unavailable{font-size:13px;color:#bdcee2;margin-bottom:12px}
+html[data-live] #resume .extra-field{position:relative}
+html[data-live] #resume .extra-field>.edit{position:absolute;right:0;top:0}
+html[data-live] #resume .extra-heading{min-height:20px}
+html[data-live] #resume .extra-remove{position:absolute;right:0;top:0}
+html[data-live] #resume .extra-block>.text-button{position:absolute;bottom:3px;right:0}
+html[data-live] #resume .picture-attachment{position:absolute;z-index:2;top:100%;left:0;right:0;margin:0;padding:12px;background:#15263c;border:1px solid #344b67;border-radius:6px;visibility:hidden}
+html[data-live] #resume .extra-picture:hover .picture-attachment,html[data-live] #resume .extra-picture:focus-within .picture-attachment{visibility:visible}
+@media(max-width:680px){
+  html[data-live] #resume .resume-toolbar{inset:10px 10px auto auto}
+  html[data-live] #resume .resume-workspace{margin-top:76px}
+  html[data-live] #resume .paper{min-height:0}
+  html[data-live] #resume .cv-row-text,html[data-live] #resume .section-copy,html[data-live] #resume .paper-header p{font-size:16px}
+  html[data-live] #resume .mobile-edit-note{position:fixed;left:16px;top:22px;width:auto;max-width:calc(100% - 136px);font-size:11px}
+  html[data-live] #resume .resume-toolbar>#resume-status{left:16px;right:auto;top:43px;max-width:calc(100% - 136px);font-size:11px;text-align:left}
+  html[data-live] #resume .resume-section{padding-bottom:44px}
+  html[data-live] #resume .cv-add-row{min-height:44px}
+  html[data-live] #resume .cv-language-level{min-height:44px}
+}
+@media print{
+  html[data-live] #resume .resume-toolbar{display:none!important}
+  html[data-live] #resume .resume-workspace{margin:0}
+  html[data-live] #resume .paper{min-height:0}
 }

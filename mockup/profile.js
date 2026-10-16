@@ -1039,7 +1039,6 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     document.querySelector('.pdf-help').textContent = 'PDF · up to 10 MB';
     const download=node('button','','text-button cv-download');download.setAttribute('aria-label','Save as PDF');
     download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Save as PDF</span>';
-    $('resume').classList.toggle('resume-reader',adapter.guest);
     download.addEventListener('click',()=>window.print());
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     let closing=false;

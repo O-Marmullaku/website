@@ -511,21 +511,9 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     requestAnimationFrame(alignPicture);
   }
   function alignPicture() {
-    const block = document.querySelector(".extra-picture"),
-      target = pictureTarget();
-    if (!block) {
-      $("extras-rail").classList.remove("has-attachment");
-      return;
-    }
-    block.style.paddingTop = "";
-    $("extras-rail").classList.toggle("has-attachment", !!target);
-    if (!target || innerWidth <= 1000 || $("extras-rail").hidden) return;
-    block.style.paddingTop =
-      Math.max(
-        0,
-        target.getBoundingClientRect().top -
-          block.querySelector("img").getBoundingClientRect().top,
-      ) + "px";
+    const block=document.querySelector('.extra-picture');
+    if(block)block.style.paddingTop='';
+    $('extras-rail').classList.remove('has-attachment');
   }
   function cancelAttachment() {
     pickingPicture = false;
@@ -673,8 +661,13 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       block.append(heading);
       if (type === "picture") {
         const image = node("img");
-        if(data.picture) image.src = data.picture;
+        if(data.picture) image.src = data.picture;else image.hidden=true;
         image.alt = data.pictureCaption;
+        image.addEventListener('error',()=>{
+          image.hidden=true;
+          if(adapter&&!adapter.editable)block.remove();
+          else {change.textContent='Choose another picture';block.prepend(node('p','Picture unavailable.','picture-unavailable'));}
+        },{once:true});
         const change = node("button", data.picture ? "Change picture" : "Add picture", "text-button");
         change.addEventListener("click", () => $("extra-picture").click());
         const caption = node("div", undefined, "extra-field");
@@ -1039,7 +1032,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     portrait.src = `../main/pictures/portraits/${adapter.profile.id}.webp`;
     document.querySelector('.paper-foot span').textContent = '';
     document.querySelector('.pdf-help').textContent = 'PDF · up to 10 MB';
-    const download=node('button','Save as PDF','text-button');
+    const download=node('button','','text-button cv-download');download.setAttribute('aria-label','Save as PDF');
+    download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Save as PDF</span>';
     download.addEventListener('click',()=>window.print());
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     let closing=false;

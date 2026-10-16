@@ -62,21 +62,6 @@
 .section-timing-summary+.activity-note{margin-bottom:16px}
 .cv-download{display:inline-flex;align-items:center;gap:8px}
 .resume-workspace #extras-rail{padding-top:0;top:80px}
-.resume-reader #extras-rail{position:static}
-.resume-reader .extra-picture{padding-top:0}
-.extra-picture .picture-unavailable{padding:20px 12px;background:#172a40;color:#bdcee2;border-radius:8px;font-size:13px;margin:0 0 12px}
-.extra-block img{border-radius:8px}
-.document-link{border-radius:16px;padding:6px 10px;font-size:12px;gap:6px}
-.resume-reader .resume-toolbar{position:fixed;inset:16px 16px auto auto;padding:0;gap:10px;border:0;background:transparent;z-index:5}
-.resume-reader .resume-toolbar>#resume-status,.resume-reader .cv-download>span,.resume-reader .extras-heading{display:none}
-.resume-reader .resume-toolbar .cv-download,.resume-reader .resume-toolbar [data-close=resume]{position:relative;display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#eef2f6;color:#162537;box-shadow:0 5px 16px -6px #0009;transition:transform .25s cubic-bezier(.2,.8,.2,1),background .2s}
-.resume-reader .resume-toolbar button:hover{transform:scale(1.06);background:#fff}
-.resume-reader .resume-toolbar button:active{transform:scale(.94)}
-.resume-reader .resume-toolbar button::after{content:attr(aria-label);position:absolute;top:calc(100% + 8px);right:0;padding:5px 10px;border-radius:6px;background:#1c3049;color:#eef3fa;font-size:12px;font-weight:400;white-space:nowrap;opacity:0;transform:translateY(-4px);pointer-events:none;transition:opacity .18s,transform .18s}
-.resume-reader .resume-toolbar button:hover::after{opacity:1;transform:none}
-.resume-reader .resume-toolbar button:focus-visible{outline:2px solid #86c1ff;outline-offset:4px}
-.resume-reader .resume-workspace{margin-top:32px}
-@media(max-width:600px){.resume-reader .resume-toolbar{inset:10px 10px auto auto;gap:8px}.resume-reader .resume-workspace{margin-top:68px}}
 @media(max-width:680px){
   #settings-panel .icon-button,#settings-panel .link-more{width:44px;height:44px}
   #settings-panel .copy-company-link{height:44px}
