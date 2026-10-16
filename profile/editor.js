@@ -162,7 +162,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   }
   function save() {
     if (adapter) {adapter.save({...data,extraTypes,pictureAnchor,documents,cvRows});return;}
-    let message = "Saved in this browser";
+    let message = "Saved";
     try {
       localStorage.setItem(
         key,
@@ -175,7 +175,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
         }),
       );
     } catch {
-      message = "Updated for this preview · browser storage unavailable";
+      message = "Could not save your changes. Keep this page open and try again.";
     }
     $("save-status").textContent = message;
     $("resume-status").textContent = message;
@@ -972,7 +972,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       if (generation !== documentGeneration) return;
       if (!file)
         throw new Error(
-          "This PDF is unavailable in this browser. Add it again.",
+          "This PDF is unavailable. Add it again.",
         );
       documentURL = URL.createObjectURL(file);
       $("document-new-tab").href = documentURL;
@@ -1026,7 +1026,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("pdf-file").value = "";
     }
   });
-  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=shared-mockup')).createLiveSharing(adapter,openResume) : createSharingUI({
+  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=site-testing')).createLiveSharing(adapter,openResume) : createSharingUI({
     name: data.name,
     onOpenCV: openResume,
     beforePreview() {

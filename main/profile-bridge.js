@@ -15,7 +15,7 @@ await window.marmullakuServicesReady;
     if(panel.open||frame)await close();
     view=nextView;origin=source||document.activeElement;focusBefore=document.activeElement;origin?.setAttribute('aria-busy','true');notice.hidden=dismiss.hidden=true;
     frame?.remove();frame=document.createElement('iframe');frame.title=view==='settings'?'Profile settings':'CV';frame.referrerPolicy='no-referrer';frame.className='profile-frame-loading';
-    const url=new URL('profile/',document.baseURI);url.searchParams.set('view',view);url.searchParams.set('v','shared-mockup');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
+    const url=new URL('profile/',document.baseURI);url.searchParams.set('view',view);url.searchParams.set('v','site-testing');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
     frame.src=url;panel.classList.toggle('settings-window',view==='settings');panel.append(frame);panel.classList.add('preparing');
     clearTimeout(loading);loading=setTimeout(()=>{origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');notice.textContent='Could not open this page. Close and try again.';notice.hidden=dismiss.hidden=false;if(!panel.open)panel.showModal();},20000);
   }

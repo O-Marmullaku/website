@@ -1,5 +1,5 @@
-import {createPreviewAPI} from './preview-api.mjs';
-import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=shared-mockup';
+import {createPreviewAPI} from './preview-api.mjs?v=site-testing';
+import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=site-testing';
 
 const key='marmullaku-site-preview-v1',signedOut='marmullaku-preview-signed-out';
 const store=createAssetStore('marmullaku-site-preview-attachments');

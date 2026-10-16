@@ -14,7 +14,7 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset,ownerI
     const record=(profile_id,kind,label,details={})=>{const current=load();current.events.unshift({link_id:link.id,profile_id,kind,label,...details,created_at:new Date().toISOString()});current.events=current.events.slice(0,1000);save(current);};
     if(options.token||['welcome','read','event'].includes(action)) {
       link=state.links.find(link=>link.token===options.token&&!link.revoked);
-      if(!link)fail('This preview link is unavailable.',404);
+      if(!link)fail('This link is unavailable.',404);
       allowed=available(link.profile_id);
     }
     if(action==='directory')return {profiles:state.profiles.map(publicProfile)};
@@ -40,7 +40,7 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset,ownerI
       if(!file||!allowed.includes(file.profile_id))fail('File unavailable.',404);
       const profile=state.profiles.find(profile=>profile.id===file.profile_id);
       if((link||file.profile_id!==own.id)&&(!profile.cv.editor||!editorAssets(profile.cv.editor).includes(file.id)))fail('File unavailable.',404);
-      const blob=await getAsset(file.id);if(!blob)fail('This file is unavailable in this browser. Add it again.',404);
+      const blob=await getAsset(file.id);if(!blob)fail('This file is unavailable. Add it again.',404);
       if(link&&file.mime==='application/pdf')record(file.profile_id,'document','Opened PDF: '+file.name);
       return blob;
     }
@@ -78,6 +78,6 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset,ownerI
       if(action==='copy-link'){if(found.revoked)fail('Link is off.',404);return {token:found.token};}
       if(typeof body.revoked!=='boolean')fail('Invalid link.');found.revoked=body.revoked;save(state);return {saved:true};
     }
-    fail('This action is unavailable in the mockup.');
+    fail('This action is unavailable.');
   }};
 }

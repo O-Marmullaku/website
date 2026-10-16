@@ -44,6 +44,13 @@ test('mockup starts from the actual homepage without loading production account 
   assert(loader.includes("import('../profile/editor.js"));
 });
 
+test('active screens and error messages contain no test-environment labels',()=>{
+  for(const path of ['profile/editor.html','profile/editor.js','main/profile-bridge.js','main/live-sharing.mjs','mockup/preview-api.mjs']) {
+    const source=readFileSync(new URL('../'+path,import.meta.url),'utf8');
+    assert(!/local preview|local data|preview only|this preview|in the mockup|in this browser|sample cv/i.test(source),path);
+  }
+});
+
 test('preview section timing validates section identity and duration',async()=>{
   const f=fixture(),created=await f.request('create',{company:'Timing test'}),guest={token:created.token};
   const event={kind:'section',section:'experience',seconds:18};
