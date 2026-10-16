@@ -1,7 +1,8 @@
 html[data-live] body{background:transparent;min-height:100dvh}
 html[data-live] .site-header,html[data-live] #family-home,html[data-live] #company-view,html[data-live] body>footer{display:none!important}
 html[data-live] #settings-panel::backdrop{background:transparent;backdrop-filter:none}
-html[data-live] #resume{width:100%;max-width:100%;height:100dvh;max-height:100dvh;margin:0;border:0;background:#0b1522}
+html[data-live] #resume{width:100%;max-width:100%;height:100dvh;max-height:100dvh;margin:0;border:0;background:transparent}
+html[data-live] #resume::backdrop{background:transparent;backdrop-filter:none}
 html[data-live] #resume-mode{display:none}
 .mobile-edit-note{display:none}
 @media(max-width:680px){

@@ -1,4 +1,4 @@
-import {createProfileMotion} from '../main/profile-motion.mjs?v=sleek-pdf-reader';
+import {createProfileMotion} from '../main/profile-motion.mjs?v=reader-toolbar';
 await window.marmullakuPreviewReady;
 (() => {
   const session=window.siblingSession,identity=document.querySelector('.footer-identity');

@@ -1,7 +1,7 @@
 import {setupExtrasRail} from '../main/cv-extras-rail.mjs?v=centered-paper';
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=sleek-pdf-reader";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=reader-toolbar";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=accounts-2";
 import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
