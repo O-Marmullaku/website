@@ -5,7 +5,7 @@
     el.onerror=()=>reject(new Error('Could not load account services.'));document.head.append(el);
   });
   window.marmullakuServicesReady=(async()=>{
-    await (await import('./preview-session.mjs?v=current-cvs')).bootstrapPreview();
+    await (await import('./preview-session.mjs?v=cv-draft-repair')).bootstrapPreview();
     await script('main/sign-in.js?v=ui-review-final');
     await script('main/private-access.js?v=accounts-2');
     if(document.readyState==='complete') {

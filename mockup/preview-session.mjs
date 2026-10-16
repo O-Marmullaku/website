@@ -1,6 +1,6 @@
-import {createPreviewAPI} from './preview-api.mjs?v=current-cvs';
-import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=current-cvs';
-import {profilesToSeed} from './profile-seed.mjs';
+import {createPreviewAPI} from './preview-api.mjs?v=cv-draft-repair';
+import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=cv-draft-repair';
+import {profilesToSeed} from './profile-seed.mjs?v=cv-draft-repair';
 
 const key='marmullaku-site-preview-v1',signedOut='marmullaku-preview-signed-out';
 const store=createAssetStore('marmullaku-site-preview-attachments');
@@ -29,7 +29,10 @@ async function initialize() {
   if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)) {
     const response=await fetch('/work/testing-profiles.json',{cache:'no-store'});
     if(response.ok) {
-      const entries=profilesToSeed(state.profiles,await response.json(),state.seeded_profiles||[]);
+      const imported=await response.json(),restore=state.cv_content_revision!=='imported-cvs-v2';
+      const entries=restore?imported:profilesToSeed(state.profiles,imported,state.seeded_profiles||[]);
+      if(restore&&!localStorage.getItem('marmullaku-before-full-cv-restore-v2'))
+        localStorage.setItem('marmullaku-before-full-cv-restore-v2',JSON.stringify(state));
       for(const {profile,files} of entries) {
         await Promise.all(files.map(async file=>{
           if(await store.get(file.id))return;
@@ -40,11 +43,13 @@ async function initialize() {
           await store.put(new Blob([await response.arrayBuffer()],{type:file.mime}),file.id);
         }));
         const index=state.profiles.findIndex(item=>item.id===profile.id),existing=state.profiles[index];
-        const next={...profile,role:existing?.role||profile.role};
+        const role=existing?.role;
+        const next={...profile,role:role&&!['Job title','Your professional titles'].includes(role)?role:profile.role};
         if(index<0)state.profiles.push(next);else state.profiles[index]=next;
         state.assets.push(...files.filter(file=>!state.assets.some(asset=>asset.id===file.id)).map(({url,...asset})=>asset));
         state.seeded_profiles=[...state.seeded_profiles||[],profile.id];
       }
+      state.cv_content_revision='imported-cvs-v2';
       if(entries.length)save(state);
     }
   }

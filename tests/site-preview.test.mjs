@@ -11,6 +11,13 @@ test('current CV content fills empty profiles without replacing existing edits',
   assert.equal(profilesToSeed([{id:'osman',cv:{profile:''}}],entries,['osman']).length,1);
   assert.deepEqual(profilesToSeed([{id:'osman',cv:{profile:'My edited CV'}},{id:'drilona',cv:{profile:'',editor:{rows:{experience:[{title:'My role'}]}}}}],entries),[]);
 });
+test('old starter text and sample rows do not block the imported CVs',()=>{
+  const cv={profile:'Write a short introduction.',experience:[{title:'Your latest role'}],education:[{title:'Qualification or programme'}],editor:{rows:{contact:[{title:'Email address'}],experience:[{title:'Your latest role'}],education:[{title:'Qualification or programme'}]}}};
+  const current=[{id:'osman',role:'Job title',cv},{id:'drilona',cv}];
+  const entries=current.map(({id})=>({profile:{id,cv:{profile:'Imported CV'}},files:[]}));
+  assert.equal(profilesToSeed(current,entries).length,2);
+  assert.equal(profilesToSeed(current,entries,['osman','drilona']).length,2);
+});
 function fixture() {
   let state={profiles:[{id:'osman',display_name:'Osman Marmullaku',role:'Sample title',cv,updated_at:'original'},{id:'diellza',display_name:'Diellza Marmullaku',role:'',cv,updated_at:'original'}],family:[],links:[],events:[],assets:[]};
   const files=new Map();
