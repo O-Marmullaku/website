@@ -1,6 +1,6 @@
-import {createPreviewAPI} from './preview-api.mjs?v=cv-draft-repair';
-import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=cv-draft-repair';
-import {profilesToSeed} from './profile-seed.mjs?v=cv-draft-repair';
+import {createPreviewAPI} from './preview-api.mjs?v=paper-documents';
+import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=paper-documents';
+import {profilesToSeed} from './profile-seed.mjs?v=paper-documents';
 
 const key='marmullaku-site-preview-v1',signedOut='marmullaku-preview-signed-out';
 const store=createAssetStore('marmullaku-site-preview-attachments');

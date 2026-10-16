@@ -825,7 +825,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
         doc.anchor.rowId &&
         section.querySelector(`[data-row-id="${doc.anchor.rowId}"]`);
       if (doc.anchor.rowId && !row) continue;
-      const host = row?.querySelector(".cv-row-content") || section;
+      const host = row?.querySelector(".cv-cell-title") || section;
       let links = host.querySelector(":scope > .document-attachments");
       if (!links) {
         links = node("div", undefined, "document-attachments");
@@ -836,6 +836,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
         item = node("div", undefined, "document-attachment");
         item.dataset.documentId = doc.id;
         const button = node("button", undefined, "document-link");
+        button.title = doc.name;
         button.innerHTML =
           '<svg aria-hidden="true"><use href="#pdf-icon"/></svg>';
         button.append(node("span", doc.name));
