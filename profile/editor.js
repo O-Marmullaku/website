@@ -374,22 +374,20 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       sharing?.refresh();
       $("settings-panel").showModal();
     });
-  document.querySelectorAll("[data-close]").forEach((button) =>
-    button.addEventListener("click", () => {
-      finish(true);
-      cancelAttachment();
-      closeDocument();
-      $(button.dataset.close).close();
-    }),
-  );
-  for (const id of ["resume", "settings-panel"]) {
-    $(id).addEventListener("click", (e) => {
-      if (e.target === $(id)) {
-        finish(true);
-        $(id).close();
-      }
-    });
-    $(id).addEventListener("cancel", () => finish(true));
+  let closing=false;
+  async function closeDialog(id) {
+    if(closing)return;closing=true;
+    finish(true);cancelAttachment();
+    try {
+      if(adapter&&!(id==='settings-panel'&&$('resume').open))await adapter.close();
+      else {await $(id).animate([{opacity:1},{opacity:0,transform:'translateY(8px)'}],{duration:180}).finished;$(id).close();}
+    } catch(error){$('resume-status').textContent=$('settings-status').textContent=error.message;}
+    finally{closing=false;}
+  }
+  document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>closeDialog(button.dataset.close)));
+  for(const id of ['resume','settings-panel']) {
+    $(id).addEventListener('click',event=>{if(event.target===$(id))closeDialog(id);});
+    $(id).addEventListener('cancel',event=>{event.preventDefault();closeDialog(id);});
   }
   function safeURL(value) {
     try {
@@ -1040,16 +1038,11 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     download.addEventListener('click',()=>window.print());
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     extrasRail=setupExtrasRail({editable:()=>!previewing,onLayout:alignPicture});
-    let closing=false;
-    for (const id of ['resume','settings-panel']) $(id).addEventListener('close',async()=>{
-      if(id==='settings-panel'&&$('resume').open)return;
-      if(closing)return;closing=true;
-      try {await adapter.close();}catch(error){$(id).showModal();$('resume-status').textContent=$('settings-status').textContent=error.message;}
-      finally{closing=false;}
-    });
     addEventListener('beforeunload',event=>{if(adapter.dirty){event.preventDefault();event.returnValue='';}});
     if(new URLSearchParams(location.search).get('view')==='settings'&&adapter.editable) $('settings-panel').showModal();
     else openResume(adapter.editable ? null : ['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);
+    await document.fonts.ready;
+    await portrait.decode().catch(()=>{});
     parent.postMessage({type:'marmullaku-ready'},location.origin);
   }
 })().catch(error=>{

@@ -12,3 +12,11 @@
 .card-title-field .role{flex:1;min-width:0}
 .card-title-edit{flex:none;align-self:flex-start;margin:0}
 .role[contenteditable=plaintext-only]{outline:1px solid #86c1ff;outline-offset:4px;cursor:text}
+
+html{scrollbar-gutter:stable}
+.profile-window{background:transparent}
+.profile-window iframe.profile-frame-loading{visibility:hidden;opacity:0}
+.profile-window[open]::backdrop{animation:profile-backdrop-in .24s both}
+.profile-window.is-closing::backdrop{animation:profile-backdrop-out .22s both}
+@keyframes profile-backdrop-in{from{opacity:0}to{opacity:1}}
+@keyframes profile-backdrop-out{from{opacity:1}to{opacity:0}}

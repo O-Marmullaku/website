@@ -8,4 +8,6 @@ On localhost, every profile opens with inline editing. CV drafts, uploaded files
 
 Public hosting always uses the normal authenticated backend. Ordinary company invitation links on localhost also use that backend unless marked as local sample links. The local mode accepts only loopback hostnames, not LAN addresses or domains.
 
+CV and settings transitions are shared in `main/profile-motion.mjs`. The outer window keeps the editor visible while drafts flush and the exit animation completes; the frame is removed afterward.
+
 The reader and inline editor share the white A4 presentation in `main/profile-live.css`. The paper is centered independently; extras occupy the right margin at 1440px and above, and open in a side drawer below that width. Supporting PDFs overlay the right side without resizing the paper. `profile/` is the production editor; `mockup/` holds the isolated sample experience. Backend setup is documented in [supabase/README.md](supabase/README.md).

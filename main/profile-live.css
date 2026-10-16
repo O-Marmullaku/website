@@ -180,3 +180,7 @@ html[data-live] #resume .document-reader{left:calc(50% + 429px);right:auto;width
   html[data-live] #resume .resume-workspace,html[data-live] #resume .resume-workspace.document-open{width:100%;max-width:none;margin:0}
   html[data-live] #resume #extras-rail{display:none!important}
 }
+
+html[data-live] #resume,html[data-live] #settings-panel{animation:none;scrollbar-gutter:stable both-edges}
+html[data-live] #settings-panel{height:100dvh;overflow:auto}
+html[data-live] #resume .paper{transform-origin:50% 0}

@@ -1,19 +1,24 @@
+import {createProfileMotion} from '../main/profile-motion.mjs?v=smooth-windows-final';
 await window.marmullakuServicesReady;
 (() => {
   const session=window.siblingSession,identity=document.querySelector('.footer-identity');
-  let own,focusBefore,frame,loading;
+  let own,focusBefore,frame,loading,origin,view,closing=false;
   const panel=document.createElement('dialog');panel.className='profile-window';panel.setAttribute('aria-label','CV and settings');
   const notice=document.createElement('div');notice.className='profile-loading';notice.setAttribute('role','status');
-  const dismiss=document.createElement('button');dismiss.className='profile-dismiss';dismiss.textContent='Close';dismiss.addEventListener('click',()=>panel.close());
+  const dismiss=document.createElement('button');dismiss.className='profile-dismiss';dismiss.textContent='Close';dismiss.addEventListener('click',()=>close());
   panel.append(notice,dismiss);document.body.append(panel);
-  panel.addEventListener('close',()=>{if(panel.open)return;clearTimeout(loading);frame?.remove();frame=null;focusBefore?.focus({preventScroll:true});});
-  async function open(view,id,token) {
-    focusBefore=document.activeElement;notice.textContent='Opening…';notice.hidden=false;dismiss.hidden=false;
-    frame?.remove();frame=document.createElement('iframe');frame.title=view==='settings'?'Profile settings':'CV';frame.referrerPolicy='no-referrer';
+  const motion=createProfileMotion(panel);
+  function close(){if(closing)return closing;if(!panel.open)return Promise.resolve();clearTimeout(loading);closing=motion.exit(frame).then(()=>panel.close()).finally(()=>{closing=false;});return closing;}
+  panel.addEventListener('cancel',event=>{event.preventDefault();close();});
+  panel.addEventListener('close',()=>{if(panel.open)return;clearTimeout(loading);motion.reset();frame?.remove();frame=null;focusBefore?.focus({preventScroll:true});});
+  async function open(nextView,id,token,source) {
+    if(panel.open)await close();
+    view=nextView;origin=source||document.activeElement;focusBefore=document.activeElement;notice.textContent='Opening…';notice.hidden=dismiss.hidden=true;
+    frame?.remove();frame=document.createElement('iframe');frame.title=view==='settings'?'Profile settings':'CV';frame.referrerPolicy='no-referrer';frame.className='profile-frame-loading';
     const url=new URL('profile/',location.href);url.searchParams.set('view',view);url.searchParams.set('v','centered-paper');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
     frame.src=url;panel.classList.toggle('settings-window',view==='settings');panel.append(frame);
     if(!panel.open)panel.showModal();
-    clearTimeout(loading);loading=setTimeout(()=>{notice.textContent='This is taking longer than usual. Close and try again.';},20000);
+    clearTimeout(loading);loading=setTimeout(()=>{notice.hidden=dismiss.hidden=false;loading=setTimeout(()=>{notice.textContent='This is taking longer than usual. Close and try again.';},20000);},180);
   }
   function signedFooter() {
     identity.replaceChildren();const text=document.createElement('span');text.textContent=window.MARMULLAKU_LOCAL_PREVIEW?'Local preview · edits stay in this browser · ':'Signed in as ';
@@ -52,18 +57,18 @@ await window.marmullakuServicesReady;
   const guestRequest=window.requestPrivateCV;
   window.requestPrivateCV=card=>{
     const token=location.hash.match(/^#invite=([A-Za-z0-9_-]{43})$/)?.[1];
-    if(!token&&session.active){open('cv',card?.querySelector('.role').dataset.i18n||own?.id);return;}
+    if(!token&&session.active){open('cv',card?.querySelector('.role').dataset.i18n||own?.id,undefined,card);return;}
     return guestRequest(card);
   };
-  window.openPrivateCV=(card,profile)=>open('cv',profile.id,location.hash.match(/^#invite=([A-Za-z0-9_-]{43})$/)?.[1]);
+  window.openPrivateCV=(card,profile)=>open('cv',profile.id,location.hash.match(/^#invite=([A-Za-z0-9_-]{43})$/)?.[1],card);
   addEventListener('message',event=>{
     if(event.origin!==location.origin||event.source!==frame?.contentWindow)return;
     const data=event.data;if(!data||typeof data!=='object')return;
-    if(data.type==='marmullaku-ready'){clearTimeout(loading);notice.hidden=dismiss.hidden=true;}
-    if(data.type==='marmullaku-close')panel.close();
+    if(data.type==='marmullaku-ready'){clearTimeout(loading);notice.hidden=dismiss.hidden=true;if(!closing)motion.enter(frame,origin,view);}
+    if(data.type==='marmullaku-close')close();
     if(data.type==='marmullaku-error'){clearTimeout(loading);notice.hidden=dismiss.hidden=false;notice.textContent=String(data.message).slice(0,300);frame.hidden=true;}
     if(data.type==='marmullaku-saved'&&(window.MARMULLAKU_LOCAL_PREVIEW||own?.id===data.id)){if(own?.id===data.id)own.role=data.role;const role=document.querySelector(`.role[data-i18n="${data.id}"]`);if(role)role.textContent=data.role;}
-    if(data.type==='marmullaku-signed-out'){panel.close();location.assign(new URL('./',location.href));}
+    if(data.type==='marmullaku-signed-out')close().then(()=>location.assign(new URL('./',location.href)));
   });
   addEventListener('marmullaku-signed-in',boot);boot();
 })();
