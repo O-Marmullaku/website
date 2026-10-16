@@ -111,7 +111,7 @@ html[data-live] #resume .paper-foot{flex:none}
   html[data-live] #resume .resume-workspace{margin-top:76px}
   html[data-live] #resume .paper{min-height:0}
   html[data-live] #resume .paper-header h2{font-size:26px}
-  html[data-live] #resume .paper-header .editable{padding-inline:28px}
+  html[data-live] #resume .paper-header .editable[data-field=role]{padding-inline:44px}
   html[data-live] #resume .section-heading{min-height:44px}
 }
 
@@ -150,3 +150,11 @@ html[data-live] #resume .document-reader{left:calc(50% + 429px);right:auto;width
 html[data-live] #resume,html[data-live] #settings-panel{animation:none;scrollbar-gutter:stable both-edges}
 html[data-live] #settings-panel{height:100dvh;overflow:auto}
 html[data-live] #resume .paper{transform-origin:50% 0}
+
+/* Keep filled desktop CVs close to the reference document's density. */
+@media(min-width:681px){
+  html[data-live] #resume .cv-rows{gap:10px}
+  html[data-live] #resume .resume-section{padding-bottom:20px}
+  html[data-live] #resume .resume-column:last-child .section-heading{margin-bottom:12px}
+  html[data-live] #resume .cv-row-text{line-height:1.5}
+}

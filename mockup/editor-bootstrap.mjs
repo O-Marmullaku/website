@@ -1,5 +1,5 @@
 import {bootstrapPreview} from './preview-session.mjs?v=site-preview';
 await bootstrapPreview();
-const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=reference-cv-ready';document.head.append(style);
-const settingsStyle=document.createElement('link');settingsStyle.rel='stylesheet';settingsStyle.href='settings.css?v=reference-cv-ready';document.head.append(settingsStyle);
-await import('./profile.js?v=reference-cv-ready');
+const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=imported-cv-layout';document.head.append(style);
+const settingsStyle=document.createElement('link');settingsStyle.rel='stylesheet';settingsStyle.href='settings.css?v=imported-cv-layout';document.head.append(settingsStyle);
+await import('./profile.js?v=imported-cv-layout');

@@ -1,4 +1,4 @@
-import {createProfileMotion} from '../main/profile-motion.mjs?v=reference-cv-ready';
+import {createProfileMotion} from '../main/profile-motion.mjs?v=imported-cv-layout';
 await window.marmullakuPreviewReady;
 (() => {
   const session=window.siblingSession,identity=document.querySelector('.footer-identity');
