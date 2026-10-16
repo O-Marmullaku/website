@@ -100,3 +100,52 @@ html[data-live] #resume .extra-picture:hover .picture-attachment,html[data-live]
   html[data-live] #resume .resume-workspace{margin:0}
   html[data-live] #resume .paper{min-height:0}
 }
+
+/* Original white A4 reader, shared with the inline editor. */
+html[data-live] #resume .resume-workspace{grid-template-columns:minmax(0,794px) minmax(180px,260px);width:min(1086px,calc(100% - 48px));margin-top:48px}
+html[data-live] #resume .paper{display:flex;flex-direction:column;padding:54px 66px 36px;min-height:1123px;color:#141414;font-size:15px;line-height:1.55;border-radius:2px;box-shadow:0 2px 4px #0005,0 40px 80px -20px #000c}
+html[data-live] #resume .paper-header{display:flex;align-items:center;gap:24px;padding:0 0 21px;margin:0 0 24px;background:none;border-bottom:2px solid #141414;text-align:left}
+html[data-live] #resume .paper-header .cv-portrait{width:112.5px;height:112.5px;aspect-ratio:1;margin:0;flex:none;object-fit:cover;filter:grayscale(1) contrast(1.05);background:#eceef1}
+html[data-live] #resume .paper-header .editable{justify-content:flex-start}
+html[data-live] #resume .paper-header h2{font-size:39px;font-weight:500;line-height:1.05;letter-spacing:-.03em;color:#141414;margin:0 0 8px}
+html[data-live] #resume .paper-header p{font-size:16.5px;color:#5c5c5c}
+html[data-live] #resume .resume-sections{grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:33px;align-items:start}
+html[data-live] #resume .resume-column{padding:0;background:none;border:0}
+html[data-live] #resume .resume-section{padding-bottom:24px}
+html[data-live] #resume .section-heading{padding:0;margin:0 0 12px;border:0;background:none;min-height:22px}
+html[data-live] #resume .section-heading h3{color:#141414;font-size:14.25px;font-weight:500;letter-spacing:.14em;text-transform:uppercase}
+html[data-live] #resume .section-heading .edit{color:#3c6f9e}
+html[data-live] #resume .section-copy,html[data-live] #resume .cv-row-text{font-size:15px;line-height:1.55;color:#141414}
+html[data-live] #resume .resume-column:first-child .cv-rows{margin:0}
+html[data-live] #resume .cv-rows{gap:16px}
+html[data-live] #resume .cv-row-timeline{grid-template-columns:minmax(0,1fr);gap:3px}
+html[data-live] #resume .cv-row-timeline>.cv-cell-date{border:0;padding-right:0}
+html[data-live] #resume .cv-cell-date .cv-row-text{font-size:12px;color:#5c5c5c}
+html[data-live] #resume .cv-row-timeline:has(.cv-row-logo){grid-template-columns:minmax(0,1fr) 58px}
+html[data-live] #resume .cv-row-timeline:has(.cv-row-logo)>.cv-cell-date{grid-column:1/-1}
+html[data-live] #resume .cv-row-logo{width:58px}
+html[data-live] #resume .paper-foot{margin: auto 0 0;padding:12px 0 0;border-top:1px solid #dcdcdc;font-size:13.5px;color:#5c5c5c}
+@media(max-width:1000px){
+  html[data-live] #resume .resume-workspace{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:680px){
+  html[data-live] #resume .resume-workspace{width:calc(100% - 32px);margin-top:76px}
+  html[data-live] #resume .paper{padding:28px 22px;min-height:0}
+  html[data-live] #resume .paper-header{gap:16px}
+  html[data-live] #resume .paper-header .cv-portrait{width:72px;height:72px}
+  html[data-live] #resume .paper-header h2{font-size:28px}
+  html[data-live] #resume .paper-header p{font-size:16px}
+  html[data-live] #resume .resume-sections{display:block}
+  html[data-live] #resume .resume-section{padding-bottom:44px}
+  html[data-live] #resume .section-copy,html[data-live] #resume .cv-row-text{font-size:16px}
+  html[data-live] #resume .paper-foot{margin-top:16px}
+}
+@media print{
+  html[data-live] #resume .resume-workspace{display:block;width:100%;margin:0}
+  html[data-live] #resume .paper{width:100%;min-height:0;box-shadow:none}
+  html[data-live] #resume .resume-sections{display:grid}
+}
+
+@media(min-width:1001px) and (max-width:1280px){
+  html[data-live] #resume #extras-rail{padding-top:28px}
+}

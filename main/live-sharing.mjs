@@ -8,7 +8,7 @@ export async function createLiveSharing(adapter,openResume) {
   const status=message=>$('settings-status').textContent=message;
   status('');
   const company=companyCombobox($('company-name'),$('company-suggestions'),()=>links.map(link=>({name:link.company})));
-  const url=token=>new URL('../#invite='+token,location.href).href;
+  const url=token=>{const target=new URL('../#invite='+token,location.href);if(window.MARMULLAKU_LOCAL_PREVIEW)target.searchParams.set('local','1');return target.href;};
   const report=operation=>async()=>{try{await operation();}catch(error){status(error.message);}};
   function showURL(value) {
     let output=$('created-link');

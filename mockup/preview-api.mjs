@@ -3,11 +3,11 @@ import {decodeUpload,editorAssets} from '../supabase/functions/marmullaku-access
 import {sectionLabels} from './section-timing.mjs';
 
 // Same request contract as the site, backed only by browser-owned sample data.
-export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset}) {
+export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset,ownerID='osman'}) {
   const fail=(message,status=400)=>{throw Object.assign(new Error(message),{status});};
   const token=()=>btoa(String.fromCharCode(...crypto.getRandomValues(new Uint8Array(32)))).replaceAll('+','-').replaceAll('/','_').replaceAll('=','');
   return {async request(action,body={},options={}) {
-    const state=load(),own=state.profiles.find(profile=>profile.id==='osman');
+    const state=load(),own=state.profiles.find(profile=>profile.id===ownerID);
     const available=sender=>[sender,...state.family.filter(grant=>grant.recipient_id===sender&&grant.enabled).map(grant=>grant.owner_id)];
     const publicProfile=profile=>({id:profile.id,display_name:profile.display_name,role:profile.role});
     let link,allowed=available(own.id);

@@ -414,11 +414,7 @@
     </div><aside class="project-rail" id="project-rail" aria-label="Project previews" hidden></aside><aside class="playground" id="playground" aria-label="Project preview" popover="auto" tabindex="-1" hidden></aside></div>
   </dialog>
 
-  <script src="main/backend-config.js"></script>
-  <script src="main/access-api.js?v=accounts-2"></script>
-  <script src="admin/session.js?v=accounts-2"></script>
-  <script src="main/sign-in.js?v=ui-review-final"></script>
-  <script src="main/private-access.js?v=accounts-2"></script>
+  <script src="main/site-services.js?v=classic-reader"></script>
   <script src="main/cv-safe.js"></script>
   <script src="main/cv-playground.js"></script>
   <script>
@@ -732,6 +728,6 @@
     sheet.addEventListener("cancel", e => { e.preventDefault(); close(); }); // Esc
     sheet.addEventListener("click", e => { if (e.target === sheet) close(); }); // click on the desk around the page
   </script>
-  <script type="module" src="main/profile-bridge.js?v=preview-split"></script>
+  <script type="module" src="main/profile-bridge.js?v=classic-reader"></script>
 </body>
 </html>

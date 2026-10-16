@@ -203,16 +203,10 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   }
   const portrait = document.querySelector(".paper-header > img");
   portrait.className = "cv-portrait";
-  sidebar.prepend(portrait);
-  for (const field of ["contact", "languages", "certificates"])
+  document.querySelector('.paper-header').prepend(portrait);
+  for (const field of ['contact','skills','languages'])
     sidebar.append(document.querySelector(`[data-section="${field}"]`));
-  for (const field of [
-    "profile",
-    "education",
-    "experience",
-    "skills",
-    "interests",
-  ])
+  for (const field of ['profile','experience','education','certificates','interests'])
     mainColumn.append(document.querySelector(`[data-section="${field}"]`));
   rowEditor = createRowEditor({
     rows: cvRows,
@@ -1010,7 +1004,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("pdf-file").value = "";
     }
   });
-  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=ui-review-final')).createLiveSharing(adapter,openResume) : createSharingUI({
+  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=classic-reader')).createLiveSharing(adapter,openResume) : createSharingUI({
     name: data.name,
     onOpenCV: openResume,
     beforePreview() {
