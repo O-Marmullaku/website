@@ -796,18 +796,32 @@ footer .signed-in a {
 .document-link {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 7px 9px;
-  background: #eef4f9;
-  color: #285982;
-  border: 1px solid #bfd0df;
-  border-radius: 4px;
+  gap: 5px;
+  min-height: 24px;
+  padding: 4px 0;
+  background: transparent;
+  color: #52677b;
+  border: 0;
+  border-radius: 2px;
   text-align: left;
   font-size: 12px;
+  transition: color .16s;
 }
 .document-link:hover {
-  background: #ddebf6;
+  background: transparent;
+  color: #285982;
 }
+.document-link:focus-visible {
+  outline: 2px solid #285982;
+  outline-offset: 3px;
+}
+.document-link span {
+  text-decoration: underline;
+  text-decoration-color: #b9c6d3;
+  text-underline-offset: 3px;
+}
+.document-link:hover span { text-decoration-color: currentColor; }
+@media (max-width: 680px), (pointer: coarse) { .document-link { min-height: 44px; } }
 .document-link svg {
   width: 16px;
   height: 16px;
@@ -1761,8 +1775,8 @@ footer .signed-in a {
   margin-top: 7px;
 }
 .cv-row .document-link {
-  font-size: 10px;
-  padding: 4px 6px;
+  font-size: 11px;
+  padding: 4px 0;
 }
 .cv-row .document-link svg {
   width: 13px;
