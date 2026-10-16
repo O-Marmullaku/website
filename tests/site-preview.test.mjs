@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {createPreviewAPI} from '../mockup/preview-api.mjs';
+import {mockupHomepage} from '../mockup/sync-homepage.mjs';
 const cv={contact:[],skills:[],languages:[],profile:'Sample CV',experience:[],education:[],certs:[],interests:''};
 function fixture() {
   let state={profiles:[{id:'osman',display_name:'Osman Marmullaku',role:'Sample title',cv,updated_at:'original'},{id:'diellza',display_name:'Diellza Marmullaku',role:'',cv,updated_at:'original'}],family:[],links:[],events:[],assets:[]};
@@ -29,10 +30,18 @@ test('preview links have isolated activity and follow local family grants and re
 test('mockup starts from the actual homepage without loading production account services',()=>{
   const html=readFileSync(new URL('../mockup/index.html',import.meta.url),'utf8');
   assert.equal((html.match(/class="card t\d/g)||[]).length,6);
-  assert(html.includes('id="prev-left"'));assert(html.includes('preview-session.mjs'));
+  assert(html.includes('id="prev-left"'));
+  assert.equal(html,mockupHomepage(readFileSync(new URL('../index.html',import.meta.url),'utf8')));
+  assert(html.includes('mockup/site-services.js'));
+  const services=readFileSync(new URL('../mockup/site-services.js',import.meta.url),'utf8');
+  assert(services.includes('preview-session.mjs'));
+  for(const path of ['backend-config.js','access-api.js','admin/session.js'])assert(!services.includes(path));
   for(const path of ['main/backend-config.js','main/access-api.js','admin/session.js','main/sign-in.js'])assert(!html.includes('src="'+path));
   const loader=readFileSync(new URL('../main/profile-loader.mjs',import.meta.url),'utf8');
   assert(!loader.includes('../mockup/index.html'));assert(!loader.includes('../mockup/profile.js'));
+  assert(loader.includes('parent.MARMULLAKU_MOCKUP'));
+  assert(loader.includes("fetch('../profile/editor.html'"));
+  assert(loader.includes("import('../profile/editor.js"));
 });
 
 test('preview section timing validates section identity and duration',async()=>{

@@ -11,7 +11,7 @@ for (const path of ['main/profile-bridge.js','mockup/site-bridge.mjs']) {
       return {contentWindow:{},classList:{add:c=>classes.add(c),remove:c=>classes.delete(c),toggle(){},contains:c=>classes.has(c)},setAttribute(){},removeAttribute(){},addEventListener(){},append(){},remove(){this.removed=true;},showModal(){this.open=true;},close(){this.open=false;}};
     };
     const window={siblingSession:{active:false},requestPrivateCV(){}};
-    const document={activeElement:element(),body:{append(){}},querySelector:()=>element(),createElement:()=>{const el=element();elements.push(el);return el;}};
+    const document={baseURI:'http://localhost:8000/',activeElement:element(),body:{append(){}},querySelector:()=>element(),createElement:()=>{const el=element();elements.push(el);return el;}};
     let entered=0;
     const source=readFileSync(new URL('../'+path,import.meta.url),'utf8').split('\n').slice(2).join('\n');
     vm.runInNewContext(source,{window,document,location:{href:'http://localhost:8000/',origin:'http://localhost:8000',hash:''},URL,URLSearchParams,createProfileMotion:()=>({enter(){entered++;},reset(){},exit:async()=>{}}),addEventListener:(name,fn)=>events[name]=fn,setTimeout:fn=>{timers.push(fn);return timers.length;},clearTimeout(){}});

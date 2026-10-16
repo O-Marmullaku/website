@@ -1026,7 +1026,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("pdf-file").value = "";
     }
   });
-  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=classic-reader')).createLiveSharing(adapter,openResume) : createSharingUI({
+  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=shared-mockup')).createLiveSharing(adapter,openResume) : createSharingUI({
     name: data.name,
     onOpenCV: openResume,
     beforePreview() {

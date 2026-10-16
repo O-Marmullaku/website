@@ -15,12 +15,12 @@ await window.marmullakuServicesReady;
     if(panel.open||frame)await close();
     view=nextView;origin=source||document.activeElement;focusBefore=document.activeElement;origin?.setAttribute('aria-busy','true');notice.hidden=dismiss.hidden=true;
     frame?.remove();frame=document.createElement('iframe');frame.title=view==='settings'?'Profile settings':'CV';frame.referrerPolicy='no-referrer';frame.className='profile-frame-loading';
-    const url=new URL('profile/',location.href);url.searchParams.set('view',view);url.searchParams.set('v','reader-toolbar');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
+    const url=new URL('profile/',document.baseURI);url.searchParams.set('view',view);url.searchParams.set('v','shared-mockup');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
     frame.src=url;panel.classList.toggle('settings-window',view==='settings');panel.append(frame);panel.classList.add('preparing');
     clearTimeout(loading);loading=setTimeout(()=>{origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');notice.textContent='Could not open this page. Close and try again.';notice.hidden=dismiss.hidden=false;if(!panel.open)panel.showModal();},20000);
   }
   function signedFooter() {
-    identity.replaceChildren();const text=document.createElement('span');text.textContent=window.MARMULLAKU_LOCAL_PREVIEW?'Local preview · edits stay in this browser · ':'Signed in as ';
+    identity.replaceChildren();const text=document.createElement('span');text.textContent='Signed in as ';
     const name=document.createElement('a');name.href='#settings';name.textContent=own.display_name;name.className='footer-account-name';name.addEventListener('click',event=>{event.preventDefault();open('settings',own.id);});
     const settings=document.createElement('button');settings.className='footer-settings';settings.setAttribute('aria-label','Open settings');settings.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.7 4.3.6-2.3h3.4l.6 2.3 2.1 1.2 2.3-.6 1.7 2.9-1.7 1.7v2.5l1.7 1.7-1.7 2.9-2.3-.6-2.1 1.2-.6 2.3h-3.4l-.6-2.3-2.1-1.2-2.3.6-1.7-2.9 1.7-1.7V9.5L3.6 7.8l1.7-2.9 2.3.6z"/><circle cx="12" cy="11" r="3"/></svg>';settings.addEventListener('click',()=>open('settings',own.id));
     identity.append(text,name,settings);

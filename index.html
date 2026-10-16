@@ -636,7 +636,7 @@
     const unclipped = { transform: "none", clipPath: "inset(-80px -80px -80px -80px round 2px)" };
     const key = c => c.querySelector(".role").dataset.i18n;
     function open(c, authorizedProfile) {
-      if (!authorizedProfile || authorizedProfile.id !== key(c)) return window.requestPrivateCV(c);
+      if (!authorizedProfile || authorizedProfile.id !== key(c)) return window.marmullakuServicesReady.then(() => window.requestPrivateCV(c));
       if (busy) return;
       busy = true; card = c;
       if (!window.marmullakuInvitationURL) history.replaceState(null, "", "#" + key(c));
@@ -728,6 +728,6 @@
     sheet.addEventListener("cancel", e => { e.preventDefault(); close(); }); // Esc
     sheet.addEventListener("click", e => { if (e.target === sheet) close(); }); // click on the desk around the page
   </script>
-  <script type="module" src="main/profile-bridge.js?v=reader-toolbar"></script>
+  <script type="module" src="main/profile-bridge.js?v=shared-mockup"></script>
 </body>
 </html>

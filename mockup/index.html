@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <base href="../">
+  <base href="../" />
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="robots" content="noindex, noimageindex" />
   <meta name="referrer" content="no-referrer" />
   <link rel="stylesheet" href="main/private-access.css?v=ui-review-final" />
   <link rel="stylesheet" href="main/profile-bridge.css?v=reader-toolbar" />
-  <link rel="stylesheet" href="mockup/site.css?v=account-polish" />
-  <title>Marmullaku · Mockup</title>
+  <title>Marmullaku</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Sans+Condensed:wght@400;500&family=Instrument+Serif&display=swap" rel="stylesheet" />
@@ -416,11 +415,7 @@
     </div><aside class="project-rail" id="project-rail" aria-label="Project previews" hidden></aside><aside class="playground" id="playground" aria-label="Project preview" popover="auto" tabindex="-1" hidden></aside></div>
   </dialog>
 
-  <script>
-    window.marmullakuPreviewReady=import('./mockup/preview-session.mjs?v=site-preview').then(module=>module.bootstrapPreview());
-    window.marmullakuRequest=(...args)=>window.marmullakuPreviewReady.then(api=>api.request(...args));
-  </script>
-  <script src="main/private-access.js?v=accounts-2"></script>
+  <script src="mockup/site-services.js?v=shared-mockup"></script>
   <script src="main/cv-safe.js"></script>
   <script src="main/cv-playground.js"></script>
   <script>
@@ -642,7 +637,7 @@
     const unclipped = { transform: "none", clipPath: "inset(-80px -80px -80px -80px round 2px)" };
     const key = c => c.querySelector(".role").dataset.i18n;
     function open(c, authorizedProfile) {
-      if (!authorizedProfile || authorizedProfile.id !== key(c)) return window.requestPrivateCV(c);
+      if (!authorizedProfile || authorizedProfile.id !== key(c)) return window.marmullakuServicesReady.then(() => window.requestPrivateCV(c));
       if (busy) return;
       busy = true; card = c;
       if (!window.marmullakuInvitationURL) history.replaceState(null, "", "#" + key(c));
@@ -734,6 +729,6 @@
     sheet.addEventListener("cancel", e => { e.preventDefault(); close(); }); // Esc
     sheet.addEventListener("click", e => { if (e.target === sheet) close(); }); // click on the desk around the page
   </script>
-  <script type="module" src="mockup/site-bridge.mjs?v=reader-toolbar"></script>
+  <script type="module" src="main/profile-bridge.js?v=shared-mockup"></script>
 </body>
 </html>
