@@ -798,11 +798,9 @@ footer .signed-in a {
   transition: opacity .18s;
 }
 .cv-cell-title:has(> .document-attachments) {
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  padding-right: 20px;
+  padding-right: 48px;
 }
+.cv-cell-title > .document-attachments { position: absolute; top: 0; right: 24px; }
 .cv-cell-title:has(> .document-attachments) > .cv-row-text { min-width: 0; }
 .resume-section > .document-attachments { position: absolute; top: 0; right: 32px; }
 .cv-row:hover .document-attachments,
@@ -839,6 +837,8 @@ footer .signed-in a {
 @media (max-width: 680px), (pointer: coarse) {
   .document-attachments { opacity: 1; pointer-events: auto; }
   .document-link { width: 44px; height: 44px; min-height: 44px; }
+  .cv-cell-title:has(> .document-attachments) { padding-right: 88px; }
+  .cv-cell-title > .document-attachments { right: 44px; }
 }
 @media print {
   .document-attachments { display: none !important; }
@@ -1630,6 +1630,7 @@ footer .signed-in a {
   min-width: 0;
 }
 .cv-row-text {
+  display: block;
   margin: 0;
   white-space: pre-wrap;
   overflow-wrap: anywhere;

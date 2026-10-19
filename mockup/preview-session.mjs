@@ -6,6 +6,24 @@ const key='marmullaku-site-preview-v1',signedOut='marmullaku-preview-signed-out'
 const store=createAssetStore('marmullaku-site-preview-attachments');
 const read=key=>{try{return JSON.parse(localStorage.getItem(key));}catch{return null;}};
 const save=state=>localStorage.setItem(key,JSON.stringify(state));
+async function ensureAssets(state,files){
+  let changed=false;
+  await Promise.all(files.map(async file=>{
+    if(!await store.get(file.id)){
+      const existing=await originalAsset(file.id);
+      if(existing)await store.put(existing,file.id);
+      else{
+        const response=await fetch(file.url,{cache:'no-store'});
+        if(!response.ok)throw new Error('Could not load the CV documents. Reload and try again.');
+        await store.put(new Blob([await response.arrayBuffer()],{type:file.mime}),file.id);
+      }
+    }
+    if(!state.assets.some(asset=>asset.id===file.id)){
+      const {url,...asset}=file;state.assets.push(asset);changed=true;
+    }
+  }));
+  return changed;
+}
 let initialization;
 async function initialize() {
   let state=read(key);
@@ -34,32 +52,25 @@ async function initialize() {
       if(restore&&!localStorage.getItem('marmullaku-before-full-cv-restore-v2'))
         localStorage.setItem('marmullaku-before-full-cv-restore-v2',JSON.stringify(state));
       for(const {profile,files} of entries) {
-        await Promise.all(files.map(async file=>{
-          if(await store.get(file.id))return;
-          const existing=await originalAsset(file.id);
-          if(existing){await store.put(existing,file.id);return;}
-          const response=await fetch(file.url,{cache:'no-store'});
-          if(!response.ok)throw new Error('Could not load the CV documents. Reload and try again.');
-          await store.put(new Blob([await response.arrayBuffer()],{type:file.mime}),file.id);
-        }));
+        await ensureAssets(state,files);
         const index=state.profiles.findIndex(item=>item.id===profile.id),existing=state.profiles[index];
         const role=existing?.role;
         const next={...profile,role:role&&!['Job title','Your professional titles'].includes(role)?role:profile.role};
         if(index<0)state.profiles.push(next);else state.profiles[index]=next;
-        state.assets.push(...files.filter(file=>!state.assets.some(asset=>asset.id===file.id)).map(({url,...asset})=>asset));
         state.seeded_profiles=[...state.seeded_profiles||[],profile.id];
       }
       state.cv_content_revision='imported-cvs-v2';
-      let copyChanged=false;
+      let copyChanged=false,assetsChanged=false;
       const beforeCopy=JSON.stringify(state);
       for(const entry of imported){
         const profile=state.profiles.find(profile=>profile.id===entry.profile.id);
+        if(profile&&entry.copy_updates?.length)assetsChanged=await ensureAssets(state,entry.files)||assetsChanged;
         if(profile&&applyCopyUpdates(profile,entry.copy_updates)){
           profile.updated_at=new Date().toISOString();copyChanged=true;
         }
       }
       if(copyChanged&&!localStorage.getItem('marmullaku-before-copy-update-v1'))localStorage.setItem('marmullaku-before-copy-update-v1',beforeCopy);
-      if(entries.length||copyChanged)save(state);
+      if(entries.length||copyChanged||assetsChanged)save(state);
     }
   }
   if(source)localStorage.setItem('marmullaku-site-preview-live-sync-v1','true');

@@ -21,12 +21,17 @@ try{
   let pagination;
   const rows=Object.fromEntries(Object.keys(rowLayouts).map(field=>[field,[]]));
   rows.experience=Array.from({length:12},(_,i)=>({id:crypto.randomUUID(),date:'2020–2024',title:`Role ${i+1}`,detail:'Example company',body:'A complete entry with meaningful work. '.repeat(6)}));
+  rows.experience[1].href='https://example.com';
   window.expectedIDs=rows.experience.map(row=>row.id);
   window.rowEditor=createRowEditor({rows,isReadOnly:()=>false,beforeEdit:()=>{},attachPDF:()=>{},beforeRender:()=>pagination?.restore(),onChange:()=>pagination?.schedule()});
+  const attachment=document.createElement('div');attachment.className='document-attachments';attachment.innerHTML='<div class="document-attachment"><button class="document-link" aria-label="Example attachment">PDF</button></div>';
+  document.querySelector('.cv-cell-title').append(attachment);
   pagination=setupCVPagination(document.querySelector('.paper'));window.pagination=pagination;pagination.layout();
  },base);
  const inspect=()=>page.evaluate(()=>({ids:[...document.querySelectorAll('.cv-row')].map(row=>row.dataset.rowId),pages:document.querySelectorAll('.cv-page').length,expected:window.expectedIDs,overflows:[...document.querySelectorAll('.cv-page')].some(page=>[...page.querySelectorAll('.cv-row')].some(row=>row.getBoundingClientRect().bottom>page.querySelector('.paper-foot').getBoundingClientRect().top))}));
  let result=await inspect();assert(result.pages>1);assert.deepEqual(result.ids,result.expected);assert.equal(result.overflows,false);
+ const offsets=await page.locator('[data-section=experience] .cv-row').evaluateAll(rows=>rows.map(row=>row.querySelector('.cv-cell-title > .cv-row-text').getBoundingClientRect().top-row.getBoundingClientRect().top));
+ assert(offsets.every(offset=>Math.abs(offset)<1),'attachment controls must not move a title off the row baseline');
  await page.getByRole('button',{name:'Edit title for experience row 8',exact:true}).click();
  await page.locator('[contenteditable="plaintext-only"]').fill('Changed role');await page.locator('[contenteditable="plaintext-only"]').press('Enter');
  await page.waitForTimeout(100);assert.equal(await page.getByText('Changed role',{exact:true}).count(),1);

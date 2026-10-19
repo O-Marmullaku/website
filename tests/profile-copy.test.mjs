@@ -21,3 +21,12 @@ test('copy corrections cannot write outside CV content or through prototype path
  assert.equal(applyCopyUpdates(profile,[{path:['display_name'],before:'Original',after:'Other'},{path:['cv','__proto__','polluted'],after:true}]),false);
  assert.equal(profile.display_name,'Original');assert.equal({}.polluted,undefined);
 });
+test('missing logos can be supplied without replacing a logo the owner uploaded',()=>{
+ const empty={cv:{editor:{rows:{experience:[{logo_id:null}]}}}},custom=structuredClone(empty);
+ custom.cv.editor.rows.experience[0].logo_id='owner-upload';
+ const updates=[{path:['cv','editor','rows','experience',0,'logo_id'],before:null,after:'imported-artwork'}];
+ assert.equal(applyCopyUpdates(empty,updates),true);
+ assert.equal(empty.cv.editor.rows.experience[0].logo_id,'imported-artwork');
+ assert.equal(applyCopyUpdates(custom,updates),false);
+ assert.equal(custom.cv.editor.rows.experience[0].logo_id,'owner-upload');
+});
