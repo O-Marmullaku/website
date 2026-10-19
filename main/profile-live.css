@@ -171,6 +171,8 @@ html[data-live] #resume .cv-view-switch button[aria-pressed=true]:hover{backgrou
   html[data-live] #resume .resume-section{padding-bottom:20px}
   html[data-live] #resume .resume-column:last-child .section-heading{margin-bottom:12px}
   html[data-live] #resume .cv-row-text{line-height:1.5}
+  html[data-live] #resume .cv-row-timeline:has(.cv-row-logo){grid-template-columns:minmax(75px,25%) minmax(0,1fr) 108px}
+  html[data-live] #resume .cv-row-logo{width:108px;max-height:84px;justify-self:end}
 }
 
 /* Actual sheets, with live content flowing at entry boundaries. */
@@ -221,7 +223,8 @@ html.cv-printing[data-live] #resume .cv-page .resume-column:last-child{padding:2
 html.cv-printing[data-live] #resume .resume-section{padding-bottom:20px}
 html.cv-printing[data-live] #resume .cv-row{padding-right:20px}
 html.cv-printing[data-live] #resume .cv-row-timeline{grid-template-columns:minmax(75px,25%) minmax(0,1fr);gap:0 12px}
-html.cv-printing[data-live] #resume .cv-row-timeline:has(.cv-row-logo){grid-template-columns:minmax(75px,25%) minmax(0,1fr) 70px}
+html.cv-printing[data-live] #resume .cv-row-timeline:has(.cv-row-logo){grid-template-columns:minmax(75px,25%) minmax(0,1fr) 108px}
+html.cv-printing[data-live] #resume .cv-row-logo{width:108px;max-height:84px;justify-self:end}
 html.cv-printing[data-live] #resume .cv-cell{min-height:0;padding:0}
 html.cv-printing[data-live] #resume .cv-row-text{font-size:12px;min-height:19px}
 html.cv-printing[data-live] #resume .section-copy{font-size:13px}

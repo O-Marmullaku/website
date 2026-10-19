@@ -23,3 +23,17 @@ export function profilesToSeed(current,entries,seeded=[]) {
       !Object.values(cv.editor?.rows||{}).some(rows=>rows.length);
   });
 }
+
+export function applyCopyUpdates(profile,updates=[]) {
+  let changed=false;
+  for(const update of updates){
+    const path=update.path;
+    if(!Array.isArray(path)||path[0]!=='cv'||path.length>8||path.some(key=>!['string','number'].includes(typeof key)||['__proto__','constructor','prototype'].includes(String(key))))continue;
+    let target=profile;
+    for(const key of path.slice(0,-1))target=target?.[key];
+    const key=path.at(-1);
+    if(!target||!Object.hasOwn(target,key)||JSON.stringify(target[key])!==JSON.stringify(update.before))continue;
+    target[key]=structuredClone(update.after);changed=true;
+  }
+  return changed;
+}

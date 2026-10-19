@@ -1,6 +1,6 @@
 import {createPreviewAPI} from './preview-api.mjs?v=paper-documents';
 import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=paper-documents';
-import {profilesToSeed} from './profile-seed.mjs?v=paper-documents';
+import {profilesToSeed,applyCopyUpdates} from './profile-seed.mjs?v=cv-copy';
 
 const key='marmullaku-site-preview-v1',signedOut='marmullaku-preview-signed-out';
 const store=createAssetStore('marmullaku-site-preview-attachments');
@@ -50,7 +50,16 @@ async function initialize() {
         state.seeded_profiles=[...state.seeded_profiles||[],profile.id];
       }
       state.cv_content_revision='imported-cvs-v2';
-      if(entries.length)save(state);
+      let copyChanged=false;
+      const beforeCopy=JSON.stringify(state);
+      for(const entry of imported){
+        const profile=state.profiles.find(profile=>profile.id===entry.profile.id);
+        if(profile&&applyCopyUpdates(profile,entry.copy_updates)){
+          profile.updated_at=new Date().toISOString();copyChanged=true;
+        }
+      }
+      if(copyChanged&&!localStorage.getItem('marmullaku-before-copy-update-v1'))localStorage.setItem('marmullaku-before-copy-update-v1',beforeCopy);
+      if(entries.length||copyChanged)save(state);
     }
   }
   if(source)localStorage.setItem('marmullaku-site-preview-live-sync-v1','true');
