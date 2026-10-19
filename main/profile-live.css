@@ -103,15 +103,18 @@ html[data-live] #resume .extra-picture:hover .picture-attachment,html[data-live]
 }
 
 /* The supplied CV layout, shared by reading and in-place editing. */
-html[data-live] #resume .resume-workspace{margin-top:48px}
-html[data-live] #resume .paper{display:flex;flex-direction:column;padding:0;min-height:1123px;border-radius:2px;box-shadow:0 2px 4px #0005,0 40px 80px -20px #000c}
+html[data-live] #resume .resume-workspace{margin-top:32px}
+html[data-live] #resume .paper{display:flex;flex-direction:column;padding:32px 0 0;min-height:1123px;border-radius:2px;box-shadow:0 2px 4px #0005,0 40px 80px -20px #000c}
 html[data-live] #resume .resume-sections{flex:1}
-html[data-live] #resume .paper-header{flex:none}
+html[data-live] #resume .paper-header{flex:none;min-height:96px}
+html[data-live] #resume .paper-header p{min-height:21px}
 html[data-live] #resume .paper-foot{flex:none}
 @media(max-width:680px){
   html[data-live] #resume .resume-workspace{margin-top:76px}
   html[data-live] #resume .paper{min-height:0}
   html[data-live] #resume .paper-header h2{font-size:26px}
+  html[data-live] #resume .paper-header{min-height:120px}
+  html[data-live] #resume .paper-header p{min-height:42px}
   html[data-live] #resume .paper-header .editable[data-field=role]{padding-inline:44px}
   html[data-live] #resume .section-heading{min-height:44px}
 }
@@ -120,7 +123,7 @@ html[data-live] #resume .paper-foot{flex:none}
 html[data-live] #resume .resume-workspace,html[data-live] #resume .resume-workspace.document-open,html[data-live] #resume .resume-workspace:has(#extras-rail[hidden]){position:relative;display:block;width:min(794px,calc(100% - 48px));max-width:794px;margin-inline:auto}
 html[data-live] #resume .document-open .paper{visibility:visible}
 html[data-live] #resume #extras-rail{position:absolute;left:calc(100% + 32px);right:auto;top:0;width:260px;padding:0}
-html[data-live] #resume .extras-empty .extras-heading>h2,html[data-live] #resume .extras-empty .pdf-library h3,html[data-live] #resume .extras-empty .pdf-help{display:none}
+html[data-live] #resume .extras-empty .pdf-library h3,html[data-live] #resume .extras-empty .pdf-help{display:none}
 html[data-live] #resume.preview-view .extras-empty{display:none}
 html[data-live] #resume .close-extras{display:none}
 html[data-live] #resume .cv-extras-tool{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#eef2f6;color:#162537;box-shadow:0 5px 16px -6px #0009}
