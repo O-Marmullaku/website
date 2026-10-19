@@ -1,9 +1,11 @@
 import {setupExtrasRail} from '../main/cv-extras-rail.mjs?v=centered-paper';
+import {setupCVPagination} from './cv-pagination.mjs?v=a4-pages';
+import {setupImageMagnifier} from './image-magnifier.mjs?v=a4-pages';
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=reader-toolbar";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
-import { createRowEditor } from "./cv-row-editor.mjs?v=accounts-2";
+import { createRowEditor } from "./cv-row-editor.mjs?v=a4-pages";
 import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {
@@ -54,7 +56,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     documentURL = null,
     documentGeneration = 0,
     documentTrigger = null;
-  let sharing;
+  let sharing,pagination;
   let viewerPromise,
     cvRows,
     rowEditor,
@@ -161,6 +163,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     renderDocumentLinks();
   }
   function save() {
+    pagination?.schedule();
     if (adapter) {adapter.save({...data,extraTypes,pictureAnchor,documents,cvRows});return;}
     let message = "Saved";
     try {
@@ -228,6 +231,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     },
     beforeEdit: () => finish(true),
     isReadOnly: () => previewing || pickingPicture,
+    beforeRender: () => pagination?.restore(),
     attachPDF(field, rowId) {
       finish(true);
       uploadAnchor = { field, rowId, quote: "", before: "", after: "" };
@@ -338,6 +342,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     if (edit) start(edit);
   });
   function openResume(allowed = null, company = "") {
+    pagination?.restore();
     finish(true);
     cancelAttachment();
     previewing = !!allowed;
@@ -365,6 +370,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     renderDocumentLibrary();
     extrasRail?.sync();
     requestAnimationFrame(alignPicture);
+    pagination?.schedule();
   }
   $("resume-open").addEventListener("click", () => openResume());
   $("exit-preview").addEventListener("click", () => openResume());
@@ -388,7 +394,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>closeDialog(button.dataset.close)));
   for(const id of ['resume','settings-panel']) {
     $(id).addEventListener('click',event=>{if(event.target===$(id))closeDialog(id);});
-    $(id).addEventListener('cancel',event=>{event.preventDefault();closeDialog(id);});
+    $(id).addEventListener('cancel',event=>{event.preventDefault();if(id==='resume'&&!$('document-reader').hidden)closeDocument(true);else closeDialog(id);});
   }
   function safeURL(value) {
     try {
@@ -508,12 +514,10 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   }
   let extrasRail;
   function alignPicture() {
-    const block=document.querySelector('.extra-picture'),target=pictureTarget();
+    const block=document.querySelector('.extra-picture');
     if(!block)return;
     block.style.paddingTop='';block.style.marginTop='';
     $('extras-rail').classList.remove('has-attachment');
-    if(target&&innerWidth>=1440&&!$('extras-rail').hidden)
-      block.style.marginTop=Math.max(0,target.getBoundingClientRect().top-block.getBoundingClientRect().top)+'px';
   }
   function cancelAttachment() {
     pickingPicture = false;
@@ -824,7 +828,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       if (!section) continue;
       const row =
         doc.anchor.rowId &&
-        section.querySelector(`[data-row-id="${doc.anchor.rowId}"]`);
+        document.querySelector(`[data-row-id="${doc.anchor.rowId}"]`);
       if (doc.anchor.rowId && !row) continue;
       const host = row?.querySelector(".cv-cell-title") || section;
       let links = host.querySelector(":scope > .document-attachments");
@@ -866,6 +870,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     for (const doc of documents.filter(documentVisible)) {
       const item = node("div", undefined, "pdf-item"),
         open = node("button", doc.name, "text-button pdf-name");
+      const icon=node('span',undefined,'pdf-file-icon');icon.innerHTML='<svg aria-hidden="true"><use href="#pdf-icon"/></svg>';open.prepend(icon);
       open.addEventListener("click", () => openDocument(doc.id, open));
       item.append(
         open,
@@ -923,11 +928,14 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("pdf-list").append(item);
     }
   }
-  let documentExit;
+  let documentExit,documentEntry;
   function closeDocument(restoreFocus = false) {
+    const reader = $("document-reader"),style=getComputedStyle(reader);
+    const current={opacity:style.opacity,transform:style.transform};
+    documentEntry?.cancel();documentEntry=null;
     documentExit?.cancel();
     documentExit = null;
-    const generation = ++documentGeneration, reader = $("document-reader");
+    const generation = ++documentGeneration;
     const cleanup = () => {
       if (generation !== documentGeneration) return;
       reader.hidden = true;
@@ -945,7 +953,6 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       requestAnimationFrame(alignPicture);
     };
     if (restoreFocus && !reader.hidden) {
-      const current = getComputedStyle(reader);
       reader.inert = true;
       documentExit = reader.animate([
         {opacity:current.opacity,transform:current.transform},
@@ -968,6 +975,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     $("document-new-tab").hidden = true;
     $("document-reader").hidden = false;
     document.querySelector(".resume-workspace").classList.add("document-open");
+    documentEntry=$('document-reader').animate([{opacity:0,transform:'translateX(64px)'},{opacity:1,transform:'none'}],{duration:360,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'});
+    documentEntry.finished.catch(()=>{});
     $("close-document").focus({ preventScroll: true });
     try {
       const file = await fileStore.getPDF(id);
@@ -991,12 +1000,6 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     }
   }
   $("close-document").addEventListener("click", () => closeDocument(true));
-  $("resume").addEventListener("cancel", (event) => {
-    if (!$("document-reader").hidden) {
-      event.preventDefault();
-      closeDocument(true);
-    }
-  });
   $("resume").addEventListener("close", () => {
     cancelAttachment();
     closeDocument();
@@ -1069,6 +1072,9 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     else openResume(adapter.editable ? null : ['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);
     await document.fonts.ready;
     await portrait.decode().catch(()=>{});
+    pagination=setupCVPagination(document.querySelector('.paper'));
+    pagination.layout();
+    setupImageMagnifier();
     parent.postMessage({type:'marmullaku-ready'},location.origin);
   }
 })().catch(error=>{

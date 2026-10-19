@@ -106,7 +106,7 @@ html[data-live] #resume .extra-picture:hover .picture-attachment,html[data-live]
 html[data-live] #resume .resume-workspace{margin-top:8px}
 html[data-live] #resume .paper{display:flex;flex-direction:column;padding:0;min-height:1123px;border-radius:2px;box-shadow:0 2px 4px #0005,0 40px 80px -20px #000c}
 html[data-live] #resume .resume-sections{flex:1}
-html[data-live] #resume .paper-header{flex:none;min-height:96px}
+html[data-live] #resume .paper-header{flex:none;min-height:96px;background:#7b91a8}
 html[data-live] #resume .paper-header p{min-height:21px}
 html[data-live] #resume .paper-foot{flex:none}
 @media(max-width:680px){
@@ -172,3 +172,60 @@ html[data-live] #resume .cv-view-switch button[aria-pressed=true]:hover{backgrou
   html[data-live] #resume .resume-column:last-child .section-heading{margin-bottom:12px}
   html[data-live] #resume .cv-row-text{line-height:1.5}
 }
+
+/* Actual sheets, with live content flowing at entry boundaries. */
+html[data-live] #resume .cv-paper-stack{display:grid;gap:24px;transform-origin:50% 0}
+html[data-live] #resume .cv-page{height:var(--cv-page-height);min-height:0;padding:0;border-radius:1px}
+html[data-live] #resume .cv-page .resume-sections{min-height:0;flex:1}
+html[data-live] #resume .cv-page .paper-foot{display:flex;justify-content:space-between;min-height:40px;padding:12px 0;color:#617082;font-size:11px}
+html[data-live] #resume .cv-running-head{padding:18px 24px 12px;color:#425d77;font-size:13px;min-height:48px}
+html[data-live] #resume .document-open #extras-rail{display:block;opacity:.25;pointer-events:none}
+html[data-live] #resume #extras-rail{transition:opacity .22s ease}
+html[data-live] #resume .extras-heading{gap:10px;margin-bottom:20px}
+html[data-live] #resume .extras-heading h2{font-size:14px;font-weight:500}
+html[data-live] #resume .extra-block{padding:0 0 16px;margin-bottom:20px;border-bottom:1px solid #3d536755}
+html[data-live] #resume .pdf-library{margin-top:0;padding-top:0;border:0}
+html[data-live] #resume .pdf-library>.extra-heading{margin-bottom:8px}
+html[data-live] #resume .pdf-library h3{color:#b2c3d5;font-size:12px;font-weight:400}
+html[data-live] #resume .pdf-item{position:relative;padding:12px 8px 12px 30px;border:0;border-radius:6px;transition:background .18s}
+html[data-live] #resume .pdf-item:hover,html[data-live] #resume .pdf-item:focus-within{background:#20344c99}
+html[data-live] #resume .pdf-name{display:block;width:100%;padding:0;text-align:left;font-size:13px;line-height:1.45;color:#d6e6f8;text-decoration:none}
+html[data-live] #resume .pdf-file-icon{position:absolute;left:6px;top:14px;color:#8ca9c8}
+html[data-live] #resume .pdf-file-icon svg{display:block;width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linejoin:round}
+html[data-live] #resume .pdf-item small{font-size:11px;color:#94abc2;margin-top:3px}
+html[data-live] #resume .pdf-item-actions{position:absolute;bottom:3px;right:8px;margin:0;opacity:0;transition:opacity .15s}
+html[data-live] #resume:not(.preview-view) .pdf-item{padding-bottom:22px}
+html[data-live] #resume .pdf-item:hover .pdf-item-actions,html[data-live] #resume .pdf-item:focus-within .pdf-item-actions{opacity:1}
+@media(min-width:1440px){
+ html[data-live] #resume #extras-rail{position:fixed;left:calc(50% + 429px);top:8px;width:276px;max-height:calc(100dvh - 24px);overflow:auto;padding:16px;background:#0d1a29;border-radius:8px;scrollbar-width:thin;scrollbar-color:#40566f transparent}
+}
+@media(hover:none){html[data-live] #resume .pdf-item-actions{opacity:1}}
+html[data-live] #resume .cv-page-continuation .resume-column:first-child{padding-top:16px}
+html[data-live] #resume .cv-section-continuation .section-heading h3{font-size:14px}
+@media(max-width:680px){
+ html[data-live] #resume .cv-page .resume-sections{display:block}
+ html[data-live] #resume .cv-page .paper-foot{margin-inline:18px}
+ html[data-live] #resume .cv-page .resume-column:empty{padding:0;border:0}
+ html[data-live] #resume .cv-page .resume-column:last-child{padding:18px}
+ html[data-live] #resume .cv-page .resume-column:first-child:has(>.resume-section){padding-bottom:0}
+}
+@media print{
+ @page{size:A4;margin:0}
+ html[data-live] #resume .cv-paper-stack{display:block}
+ html[data-live] #resume .cv-page{display:flex;width:210mm;height:297mm;min-height:0;break-after:page;box-shadow:none}
+ html[data-live] #resume .cv-page:last-child{break-after:auto}
+}
+html.cv-printing[data-live] #resume .resume-workspace{width:794px;max-width:none}
+html.cv-printing[data-live] #resume .cv-page .resume-sections{display:grid;grid-template-columns:25% minmax(0,1fr)}
+html.cv-printing[data-live] #resume .cv-page .resume-column:last-child{padding:24px 24px 8px}
+html.cv-printing[data-live] #resume .resume-section{padding-bottom:20px}
+html.cv-printing[data-live] #resume .cv-row{padding-right:20px}
+html.cv-printing[data-live] #resume .cv-row-timeline{grid-template-columns:minmax(75px,25%) minmax(0,1fr);gap:0 12px}
+html.cv-printing[data-live] #resume .cv-row-timeline:has(.cv-row-logo){grid-template-columns:minmax(75px,25%) minmax(0,1fr) 70px}
+html.cv-printing[data-live] #resume .cv-cell{min-height:0;padding:0}
+html.cv-printing[data-live] #resume .cv-row-text{font-size:12px;min-height:19px}
+html.cv-printing[data-live] #resume .section-copy{font-size:13px}
+html.cv-printing[data-live] #resume .paper-header{min-height:96px}
+html.cv-printing[data-live] #resume .paper-header h2{font-size:30px}
+html.cv-printing[data-live] #resume .paper-header p{font-size:14px;min-height:21px}
+html.cv-printing[data-live] #resume .paper-header .editable[data-field=role]{padding:0}

@@ -20,10 +20,11 @@ export async function createPDFViewer(root) {
     pdf,
     rendering,
     pageNumber = 1,
-    revision = 0;
-  async function render() {
+    revision = 0,renderedScale=1;
+  async function render(reset=false) {
     if (!pdf) return;
     const current = ++revision;
+    const center={x:(viewport.scrollLeft+viewport.clientWidth/2-canvas.offsetLeft)/(canvas.clientWidth||1),y:(viewport.scrollTop+viewport.clientHeight/2-canvas.offsetTop)/(canvas.clientHeight||1)};
     rendering?.cancel();
     previous.disabled = pageNumber === 1;
     next.disabled = pageNumber === pdf.numPages;
@@ -50,10 +51,12 @@ export async function createPDFViewer(root) {
       canvas.width=pendingCanvas.width;canvas.height=pendingCanvas.height;
       canvas.style.width=`${sized.width}px`;canvas.style.height=`${sized.height}px`;
       canvas.getContext('2d').drawImage(pendingCanvas,0,0);
-      canvas.setAttribute('aria-label',`Page ${pageNumber} of ${pdf.numPages}`);
+      canvas.setAttribute('aria-label',`${canvas.classList.contains('image-magnifiable')?'Magnify ':''}Page ${pageNumber} of ${pdf.numPages}`);
       canvas.hidden = false;
+      renderedScale=scale;
       status.textContent = "";
-      viewport.scrollTop = 0;
+      viewport.scrollLeft=reset?0:canvas.offsetLeft+center.x*sized.width-viewport.clientWidth/2;
+      viewport.scrollTop=reset?0:canvas.offsetTop+center.y*sized.height-viewport.clientHeight/2;
       const text = await page.getTextContent();
       if (current === revision)
         root.querySelector("#document-text").textContent = text.items
@@ -68,16 +71,21 @@ export async function createPDFViewer(root) {
   previous.addEventListener("click", () => {
     if (pageNumber > 1) {
       pageNumber--;
-      render();
+      render(true);
     }
   });
   next.addEventListener("click", () => {
     if (pdf && pageNumber < pdf.numPages) {
       pageNumber++;
-      render();
+      render(true);
     }
   });
-  zoom.addEventListener("change", render);
+  zoom.addEventListener("change", () => render());
+  for(const [id,direction] of [['document-zoom-in',1],['document-zoom-out',-1]])root.querySelector('#'+id)?.addEventListener('click',()=>{
+    const levels=[.5,.75,1,1.25,1.5,2,3];
+    zoom.value=String(direction>0?levels.find(value=>value>renderedScale+.01)||3:[...levels].reverse().find(value=>value<renderedScale-.01)||.5);
+    render();
+  });
   let width = 0,height=0;
   new ResizeObserver(([entry]) => {
     if (Math.abs(entry.contentRect.width - width) > 1 || Math.abs(entry.contentRect.height-height)>1) {
@@ -120,7 +128,7 @@ export async function createPDFViewer(root) {
       pageNumber = 1;
       zoom.value = "fit-page";
       root.querySelector(".document-controls").hidden = false;
-      await render();
+      await render(true);
     },
   };
 }

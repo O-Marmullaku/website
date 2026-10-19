@@ -6,6 +6,7 @@ export function createRowEditor({
   beforeEdit,
   attachPDF,
   isReadOnly,
+  beforeRender = () => {},
 }) {
   let active, undo, logoTarget;
   const node = (tag, cls, text) => {
@@ -130,6 +131,7 @@ export function createRowEditor({
     menu.append(button);
   }
   function paint(fieldName) {
+    beforeRender();
     const section = sections[fieldName],
       layout = rowLayouts[fieldName];
     section.querySelector(".section-copy")?.remove();

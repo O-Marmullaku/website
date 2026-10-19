@@ -7,7 +7,7 @@ export function createProfileMotion(panel) {
   let animations=[],cardFade,card,view,generation=0;
   const play=(element,frames,options)=>{const animation=element.animate(frames,options);animations.push(animation);return animation.finished.catch(()=>{});};
   const stop=()=>{animations.forEach(animation=>animation.cancel());animations=[];};
-  const visual=frame=>frame?.contentDocument?.querySelector(view==='settings'?'#settings-panel':'.paper');
+  const visual=frame=>frame?.contentDocument?.querySelector(view==='settings'?'#settings-panel':'.cv-paper-stack, .paper');
   return {
     async enter(frame,origin,mode) {
       const current=++generation;stop();cardFade?.cancel();card=origin?.closest('.card');view=mode;

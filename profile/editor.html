@@ -9,8 +9,8 @@
       href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@300;400;500;600;700&family=Fira+Sans+Condensed:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="editor.css?v=paper-documents" />
-    <link rel="stylesheet" href="../main/pdf-reader.css?v=reader-toolbar" />
+    <link rel="stylesheet" href="editor.css?v=a4-pages" />
+    <link rel="stylesheet" href="../main/pdf-reader.css?v=a4-pages" />
   </head>
   <body>
     <svg class="symbols" aria-hidden="true">
@@ -208,7 +208,7 @@
           <div id="extra-blocks"></div>
           <section class="pdf-library">
             <div class="extra-heading">
-              <h3>Supporting documents</h3>
+              <h3>Documents</h3>
               <button class="text-button" id="add-pdf-shortcut">Add PDF</button>
             </div>
             <div id="pdf-list"></div>
@@ -251,12 +251,18 @@
             >
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg>
             </button>
+            <button id="document-zoom-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+            <button id="document-zoom-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
             <select id="document-zoom" aria-label="PDF zoom">
               <option value="fit-page">Fit page</option>
               <option value="fit">Fit width</option>
+              <option value="0.5">50%</option>
+              <option value="0.75">75%</option>
               <option value="1">100%</option>
+              <option value="1.25">125%</option>
               <option value="1.5">150%</option>
               <option value="2">200%</option>
+              <option value="3">300%</option>
             </select>
           </div>
           <div class="document-pages">

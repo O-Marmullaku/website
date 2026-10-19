@@ -5,7 +5,7 @@ function fixture(){
  const records=[];
  const element=(name,rect)=>({name,isConnected:true,style:{},dataset:{},classList:{add(){},remove(){}},getBoundingClientRect:()=>rect,animate(frames,options){let resolve,reject;const animation={frames,options,finished:new Promise((yes,no)=>{resolve=yes;reject=no;}),finish(){resolve();},cancel(){this.cancelled=true;reject(new Error('cancelled'));}};animation.finished.catch(()=>{});records.push({name,animation});return animation;}});
  const paper=element('paper',{left:243,top:48,width:794,height:1123}),rail=element('rail',{}),settings=element('settings',{}),card=element('card',{left:100,top:300,width:240,height:420}),panel=element('panel',{});
- const frame={...element('frame',{}),clientHeight:900,contentDocument:{querySelector:sel=>sel==='.paper'?paper:sel==='#extras-rail'?rail:settings},contentWindow:{getComputedStyle:()=>({opacity:'1',transform:'none',clipPath:'none'})}};
+ const frame={...element('frame',{}),clientHeight:900,contentDocument:{querySelector:sel=>sel==='.cv-paper-stack, .paper'?paper:sel==='#extras-rail'?rail:settings},contentWindow:{getComputedStyle:()=>({opacity:'1',transform:'none',clipPath:'none'})}};
  return {panel,frame,records,origin:{closest:()=>card},motion:createProfileMotion(panel),finish(){records.forEach(({animation})=>animation.finish());}};
 }
 test('card projection preserves the clicked card’s center and top edge',()=>{
