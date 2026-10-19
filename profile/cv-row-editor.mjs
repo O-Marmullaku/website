@@ -1,4 +1,4 @@
-import { rowLayouts, moveRow } from "./cv-rows.mjs?v=accounts-2";
+import { rowLayouts, moveRow, contactLabel } from "./cv-rows.mjs?v=original-composition";
 
 export function createRowEditor({
   rows,
@@ -148,6 +148,7 @@ export function createRowEditor({
       if (layout === "timeline")
         field(item, row, "date", `Edit dates for ${label}`, "Dates");
       const content = node("div", "cv-row-content");
+      if(fieldName==='contact'&&contactLabel(row))content.append(node('strong','cv-contact-label',contactLabel(row)));
       field(
         content,
         row,
@@ -171,7 +172,7 @@ export function createRowEditor({
         field(content,row,'date',`Edit date for ${label}`,'Date');
       }
       if (layout === "language") {
-        if (row.detail) content.append(node("span", "cv-language-description", row.detail));
+        if (row.detail) content.querySelector('.cv-cell-title').append(node("span", "cv-language-description", ` (${row.detail})`));
         const level = node("select", "cv-language-level cv-owner");
         level.setAttribute("aria-label", `Language level for ${label}`);
         for (const [value, title] of [

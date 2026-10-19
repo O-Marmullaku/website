@@ -5,7 +5,7 @@ import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
-import { createRowEditor } from "./cv-row-editor.mjs?v=a4-pages";
+import { createRowEditor } from "./cv-row-editor.mjs?v=original-composition";
 import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {
@@ -19,10 +19,10 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     ["skills", "Skills"],
     ["languages", "Languages"],
     ["profile", "Profile"],
-    ["experience", "Experience"],
+    ["experience", "Professional Experience"],
     ["education", "Education"],
     ["certificates", "Certificates"],
-    ["interests", "Interests"],
+    ["interests", "Interests / Hobbies"],
   ];
   const initial = {
     name: "Osman Marmullaku",

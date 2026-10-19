@@ -7,6 +7,13 @@ export const rowLayouts = {
   skills: "list",
   interests: "list",
 };
+export function contactLabel(row) {
+  if(/^mailto:/i.test(row.href||''))return 'E-mail';
+  if(/^tel:/i.test(row.href||''))return 'Telephone';
+  if(/^https?:/i.test(row.href||''))return 'Website';
+  if(/\n.*\b\d{4}\b/.test(row.title||''))return 'Address';
+  return '';
+}
 const text = (value) => (typeof value === "string" ? value.slice(0, 5000) : "");
 const image = (value) =>
   /^data:image\/(png|jpeg|webp);base64,/.test(value || "") &&
