@@ -103,8 +103,8 @@ html[data-live] #resume .extra-picture:hover .picture-attachment,html[data-live]
 }
 
 /* The supplied CV layout, shared by reading and in-place editing. */
-html[data-live] #resume .resume-workspace{margin-top:32px}
-html[data-live] #resume .paper{display:flex;flex-direction:column;padding:32px 0 0;min-height:1123px;border-radius:2px;box-shadow:0 2px 4px #0005,0 40px 80px -20px #000c}
+html[data-live] #resume .resume-workspace{margin-top:8px}
+html[data-live] #resume .paper{display:flex;flex-direction:column;padding:0;min-height:1123px;border-radius:2px;box-shadow:0 2px 4px #0005,0 40px 80px -20px #000c}
 html[data-live] #resume .resume-sections{flex:1}
 html[data-live] #resume .paper-header{flex:none;min-height:96px}
 html[data-live] #resume .paper-header p{min-height:21px}
@@ -154,6 +154,16 @@ html[data-live] #resume .document-reader{left:calc(50% + 429px);right:auto;width
 html[data-live] #resume,html[data-live] #settings-panel{animation:none;scrollbar-gutter:stable both-edges}
 html[data-live] #settings-panel{height:100dvh;overflow:auto}
 html[data-live] #resume .paper{transform-origin:50% 0}
+html[data-live] #resume .cv-view-switch{display:flex;align-items:center;padding:3px;border:1px solid #40546b;border-radius:24px;background:#102034;gap:2px}
+html[data-live] #resume .cv-view-switch button{min-height:36px;padding:0 13px;border:0;border-radius:20px;background:transparent;color:#c1d0e1;font:inherit;font-size:13px;cursor:pointer;transition:background .18s,color .18s}
+html[data-live] #resume .cv-view-switch button[aria-pressed=true]{background:#eef2f6;color:#162537}
+html[data-live] #resume .cv-view-switch button:hover{transform:none;background:#2a405a;color:#fff}
+html[data-live] #resume .cv-view-switch button[aria-pressed=true]:hover{background:#fff;color:#162537}
+@media(max-width:680px){
+  html[data-live] #resume .mobile-edit-note{top:64px;max-width:calc(100% - 32px)}
+  html[data-live] #resume .cv-view-switch button{min-height:44px;padding-inline:10px}
+  html[data-live] #resume .resume-workspace{margin-top:84px}
+}
 
 /* Keep filled desktop CVs close to the reference document's density. */
 @media(min-width:681px){

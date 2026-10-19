@@ -350,7 +350,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
         ? `${company || "Company"} preview`
         : "Your CV";
     $("resume-status").textContent = "";
-    $("exit-preview").hidden = !previewing || sharing?.isGuest;
+    $("exit-preview").hidden = !!adapter || !previewing || sharing?.isGuest;
+    document.querySelectorAll('[data-cv-view]').forEach(button=>button.setAttribute('aria-pressed',String((button.dataset.cvView==='preview')===previewing)));
     document
       .querySelectorAll("[data-section]")
       .forEach(
@@ -1053,6 +1054,15 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Save as PDF</span>';
     download.addEventListener('click',()=>window.print());
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
+    if(adapter.editable){
+      const modes=node('div',undefined,'cv-view-switch');modes.setAttribute('role','group');modes.setAttribute('aria-label','CV view');
+      for(const mode of ['edit','preview']){
+        const button=node('button',mode==='edit'?'Edit':'Preview');button.dataset.cvView=mode;
+        button.addEventListener('click',()=>{if(previewing===(mode==='preview'))return;openResume(mode==='edit'?null:['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);});
+        modes.append(button);
+      }
+      document.querySelector('.resume-toolbar').prepend(modes);
+    }
     extrasRail=setupExtrasRail({editable:()=>!previewing,onLayout:alignPicture});
     addEventListener('beforeunload',event=>{if(adapter.dirty){event.preventDefault();event.returnValue='';}});
     if(new URLSearchParams(location.search).get('view')==='settings'&&adapter.editable) $('settings-panel').showModal();
