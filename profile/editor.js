@@ -370,7 +370,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     renderDocumentLibrary();
     extrasRail?.sync();
     requestAnimationFrame(alignPicture);
-    pagination?.schedule();
+    pagination?.layout();
   }
   $("resume-open").addEventListener("click", () => openResume());
   $("exit-preview").addEventListener("click", () => openResume());
