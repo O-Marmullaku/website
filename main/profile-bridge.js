@@ -26,27 +26,8 @@ await window.marmullakuServicesReady;
     identity.append(text,name,settings);
   }
   function ownTitle() {
-    document.querySelectorAll('.card-title-edit').forEach(el=>el.remove());
-    const role=document.querySelector(`.role[data-i18n="${own.id}"]`);if(!role)return;
-    role.textContent=own.role||'';
-    const edit=document.createElement('button');edit.className='card-title-edit';edit.setAttribute('aria-label','Edit your title');edit.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 5 4 4M4 20l4-1L20 7a2.8 2.8 0 0 0-4-4L4 15z"/></svg>';
-    let original,busy=false;
-    async function finish(keep=true) {
-      if(role.contentEditable!=='plaintext-only'||busy)return;busy=true;role.contentEditable='false';role.removeAttribute('role');edit.setAttribute('aria-pressed','false');
-      if(!keep)role.textContent=original;
-      else if(role.textContent!==original) {
-        try{const current=await session.request('profile');const saved=await session.request('save',{role:role.textContent.slice(0,160),cv:current.profile.cv,updated_at:current.profile.updated_at});own=saved.profile;role.textContent=own.role;}
-        catch(error){role.textContent=original;notice.textContent=error.message;window.alert(error.message);}
-      }
-      busy=false;
-    }
-    edit.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();if(busy)return;if(role.isContentEditable){finish();return;}original=role.textContent;role.contentEditable='plaintext-only';role.setAttribute('role','textbox');role.setAttribute('aria-label','Professional title');edit.setAttribute('aria-pressed','true');role.focus();});
-    role.addEventListener('input',()=>{if(role.textContent.length>160)role.textContent=role.textContent.slice(0,160);});
-    role.addEventListener('click',event=>{if(role.isContentEditable)event.stopPropagation();});
-    role.addEventListener('blur',()=>finish());role.addEventListener('keydown',event=>{if(['Enter','Escape'].includes(event.key)){event.preventDefault();event.stopPropagation();finish(event.key!=='Escape');}});
-    let field=role.closest('.card-title-field');
-    if(!field){field=document.createElement('div');field.className='card-title-field';role.before(field);field.append(role);}
-    field.append(edit);
+    const role=document.querySelector(`.role[data-i18n="${own.id}"]`);
+    if(role)role.textContent=own.role||'';
   }
   async function boot() {
     if(!session.active)return;
