@@ -21,10 +21,18 @@ test('color themes survive adapter and server validation without changing CV con
  const {validateEditor}=await import('../supabase/functions/marmullaku-access/editor.mjs');
  const state=fromProfile({display_name:'Owner',role:'Title',cv:{contact:[],skills:[],languages:[],profile:'Intro',experience:[],education:[],certs:[],interests:''}});
  assert.equal(state.theme,'navy');
- for(const theme of ['navy','charcoal','forest','burgundy']){
+ for(const theme of ['navy','blue-gray','charcoal','forest','burgundy']){
   state.theme=theme;const saved=toCV(state,new Map());saved.editor=validateEditor(saved.editor);
   assert.equal(fromProfile({display_name:'Owner',role:'Title',cv:saved}).theme,theme);assert.equal(saved.profile,'Intro');
  }
  const saved=toCV(state,new Map());saved.editor.data.theme='unknown';assert.throws(()=>validateEditor(saved.editor),/color theme/);
  delete saved.editor.data.theme;assert.equal(validateEditor(saved.editor).data.theme,'navy');
+});
+
+test('classic and compact typography survive saves and reject unknown styles',async()=>{
+ const {validateEditor}=await import('../supabase/functions/marmullaku-access/editor.mjs');
+ const state=fromProfile({display_name:'Owner',role:'Title',cv:{contact:[],skills:[],languages:[],profile:'',experience:[],education:[],certs:[],interests:''}});
+ assert.equal(state.typography,'classic');
+ for(const typography of ['classic','compact']){state.typography=typography;const saved=toCV(state,new Map());saved.editor=validateEditor(saved.editor);assert.equal(fromProfile({display_name:'Owner',role:'Title',cv:saved}).typography,typography);}
+ const saved=toCV(state,new Map());saved.editor.data.typography='unknown';assert.throws(()=>validateEditor(saved.editor),/typography/);
 });

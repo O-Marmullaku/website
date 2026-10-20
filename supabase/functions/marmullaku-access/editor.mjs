@@ -30,7 +30,9 @@ export function validateEditor(editor) {
   }
   const data = {};
   data.theme=editor.data?.theme||'navy';
-  if(!['navy','charcoal','forest','burgundy'].includes(data.theme))throw new Error('Choose a color theme.');
+  if(!['navy','blue-gray','charcoal','forest','burgundy'].includes(data.theme))throw new Error('Choose a color theme.');
+  data.typography=editor.data?.typography||'classic';
+  if(!['classic','compact'].includes(data.typography))throw new Error('Choose a typography style.');
   for (const key of ['fact','pictureCaption','linkLabel','buttonLabel']) data[key] = string(editor.data?.[key]||'',500);
   for (const key of ['linkURL','buttonURL']) {
     const value = string(editor.data?.[key]||'',500);

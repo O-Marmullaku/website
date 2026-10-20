@@ -10,7 +10,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {
   const live = document.documentElement.dataset.live === 'true';
-  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=paper-themes')).createLiveAdapter() : null;
+  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=classic-typography')).createLiveAdapter() : null;
   const fileStore = adapter || {putPDF,getPDF,deletePDF};
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
@@ -28,6 +28,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     name: "Osman Marmullaku",
     role: "Job title",
     theme: "navy",
+    typography: "classic",
     contact: "Email address\nPortfolio website",
     skills: "Interface design\nWeb development\nCreative technology",
     languages: "Add your languages",
@@ -157,7 +158,8 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     return e;
   }
   function sync(field, except) {
-    if(field==='theme'){document.documentElement.dataset.cvTheme=['navy','charcoal','forest','burgundy'].includes(data.theme)?data.theme:'navy';return;}
+    if(field==='typography'){document.documentElement.dataset.cvTypography=data.typography==='compact'?'compact':'classic';return;}
+    if(field==='theme'){document.documentElement.dataset.cvTheme=['navy','blue-gray','charcoal','forest','burgundy'].includes(data.theme)?data.theme:'navy';return;}
 
     document.querySelectorAll(`[data-value="${field}"]`).forEach((el) => {
       if (el !== except) {
@@ -1068,12 +1070,16 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     if(adapter.editable){
       const themes=node('fieldset',undefined,'cv-theme-picker');themes.append(node('legend','Color theme'));
-      for(const [value,label,color] of [['navy','Navy','#173f67'],['charcoal','Charcoal','#424851'],['forest','Forest green','#285445'],['burgundy','Burgundy','#73394a']]){
+      for(const [value,label,color] of [['blue-gray','Original blue-gray','#adbacd'],['navy','Navy','#173f67'],['charcoal','Charcoal','#424851'],['forest','Forest green','#285445'],['burgundy','Burgundy','#73394a']]){
         const option=node('label'),input=node('input');input.type='radio';input.name='cv-theme';input.value=value;input.checked=(data.theme||'navy')===value;
         const dot=node('span',undefined,'cv-theme-dot');dot.style.background=color;
         option.append(input,dot,node('span',label));input.addEventListener('change',()=>{if(input.checked){data.theme=value;sync('theme');save();}});themes.append(option);
       }
-      document.querySelector('#extras-rail .extras-heading').after(themes);
+      const typography=node('label',undefined,'cv-typography-picker');typography.append(node('span','Typography'));
+      const typeSelect=node('select');typeSelect.setAttribute('aria-label','Typography');
+      for(const [value,label] of [['classic','Classic'],['compact','Compact']]){const option=node('option',label);option.value=value;typeSelect.append(option);}
+      typeSelect.value=data.typography==='compact'?'compact':'classic';typeSelect.addEventListener('change',()=>{data.typography=typeSelect.value;sync('typography');save();});typography.append(typeSelect);
+      document.querySelector('#extras-rail .extras-heading').after(themes,typography);
       const modes=node('div',undefined,'cv-view-switch');modes.setAttribute('role','group');modes.setAttribute('aria-label','CV view');
       for(const mode of ['edit','preview']){
         const button=node('button',mode==='edit'?'Edit':'Preview');button.dataset.cvView=mode;

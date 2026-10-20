@@ -15,7 +15,7 @@ export function fromProfile(profile) {
     interests:cv.interests.split('\n').filter(Boolean).map(value=>row(value)),
   };
   return {name:profile.display_name,role:profile.role,profile:cv.profile,
-    theme:'navy',fact:'',linkLabel:'',linkURL:'',buttonLabel:'',buttonURL:'',pictureCaption:'',picture:'',
+    theme:'navy',typography:'classic',fact:'',linkLabel:'',linkURL:'',buttonLabel:'',buttonURL:'',pictureCaption:'',picture:'',
     ...editor?.data,cvRows:normalizeRows(rows,{}),extraTypes:editor?.extraTypes||[],
     documents:editor?.documents||[],pictureAnchor:editor?.pictureAnchor||null};
 }
@@ -28,7 +28,7 @@ export function toCV(state, assetIDs) {
     languages:rows.languages.map(row=>[row.title,row.detail||['','Beginner','Elementary','Intermediate','Advanced','Fluent / native'][row.level]]),
     profile:state.profile,experience:rows.experience.map(row=>({...period(row),points:row.body?row.body.split('\n'):[],tags:[],demos:[]})),
     education:rows.education.map(period),certs:rows.certificates.map(period),interests:rows.interests.map(row=>row.title).join('\n'),
-    editor:{version:1,rows,data:Object.fromEntries(['theme','fact','pictureCaption','linkLabel','linkURL','buttonLabel','buttonURL'].map(key=>[key,state[key]||''])),
+    editor:{version:1,rows,data:Object.fromEntries(['theme','typography','fact','pictureCaption','linkLabel','linkURL','buttonLabel','buttonURL'].map(key=>[key,state[key]||''])),
       extraTypes:state.extraTypes,picture_id:state.extraTypes.includes('picture')&&state.picture?assetIDs.get(state.picture)||null:null,pictureAnchor:state.pictureAnchor,documents:state.documents}};
 }
 const dataURL=file=>new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Could not read this file.'));reader.readAsDataURL(file);});

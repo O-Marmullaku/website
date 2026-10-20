@@ -51,8 +51,13 @@ try{
  assert((await documentButton.boundingBox()).width>compact.width+40,'keyboard focus expands the label');
  await page.evaluate(()=>document.querySelector('#resume').classList.add('preview-view'));
  assert.deepEqual(await positions(),baseline,'Edit and Preview use identical geometry');
- for(const theme of ['navy','charcoal','forest','burgundy']){await page.evaluate(theme=>document.documentElement.dataset.cvTheme=theme,theme);assert.deepEqual(await positions(),baseline);}
+ for(const theme of ['navy','blue-gray','charcoal','forest','burgundy']){await page.evaluate(theme=>document.documentElement.dataset.cvTheme=theme,theme);assert.deepEqual(await positions(),baseline);}
  await page.evaluate(()=>dispatchEvent(new Event('beforeprint')));assert.deepEqual(await positions(),baseline,'A4 print preserves row positions and page breaks');await page.evaluate(()=>dispatchEvent(new Event('afterprint')));
+ for(const typography of ['compact','classic']){
+  await page.evaluate(value=>{document.documentElement.dataset.cvTypography=value;window.pagination.layout();},typography);
+  const typePositions=await positions();await page.evaluate(()=>dispatchEvent(new Event('beforeprint')));
+  assert.deepEqual(await positions(),typePositions,'each typography style prints with the same page geometry');await page.evaluate(()=>dispatchEvent(new Event('afterprint')));
+ }
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);assert.deepEqual((await inspect()).ids,result.expected);assert.equal((await inspect()).overflows,false);
  console.log('PASS: live A4 pagination preserves entry order and editing across repeated layouts and mobile resize');
 }finally{await browser.close();}

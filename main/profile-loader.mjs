@@ -10,7 +10,7 @@ if (window===parent) {
   for(const link of template.head.querySelectorAll('link'))document.head.append(document.importNode(link,true));
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
-  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=expanding-documents';document.head.append(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=classic-typography';document.head.append(style);
   if(parent.MARMULLAKU_MOCKUP) {
     await (await import('../mockup/preview-session.mjs?v=aligned-logos')).bootstrapPreview({ownerID:new URLSearchParams(location.search).get('id')||'osman'});
   } else if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&parent.MARMULLAKU_LOCAL_PREVIEW) {
@@ -20,7 +20,7 @@ if (window===parent) {
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
   }
-  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=expanding-documents';
+  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=classic-typography';
   await new Promise((resolve,reject)=>{paperStyle.onload=resolve;paperStyle.onerror=()=>reject(new Error('Could not load CV styles.'));document.head.append(paperStyle);});
-  await import('../profile/editor.js?v=expanding-documents');
+  await import('../profile/editor.js?v=classic-typography');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

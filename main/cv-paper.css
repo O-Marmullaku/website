@@ -1,5 +1,7 @@
 /* One paper composition; themes change ink and tint, never geometry. */
-:root{--cv-ink:#102b4d;--cv-accent:#173f67;--cv-muted:#405b78;--cv-tint:#edf3f6;--cv-rule:#c5d2dc}
+:root{--cv-role-size:18px;--cv-role-tracking:0px;--cv-role-case:none;--cv-role-weight:400;--cv-heading-size:15px;--cv-heading-tracking:.5px;--cv-ink:#102b4d;--cv-accent:#173f67;--cv-muted:#405b78;--cv-tint:#edf3f6;--cv-rule:#c5d2dc}
+:root[data-cv-theme=blue-gray]{--cv-ink:#152536;--cv-accent:#155c8c;--cv-muted:#2b4359;--cv-tint:#adbacd;--cv-rule:#718ba6}
+:root[data-cv-typography=compact]{--cv-role-size:10px;--cv-role-tracking:2px;--cv-role-case:uppercase;--cv-role-weight:600;--cv-heading-size:11px;--cv-heading-tracking:1.8px}
 :root[data-cv-theme=charcoal]{--cv-ink:#252b32;--cv-accent:#424851;--cv-muted:#515b66;--cv-tint:#f0f1f2;--cv-rule:#cdd1d5}
 :root[data-cv-theme=forest]{--cv-ink:#183b30;--cv-accent:#285445;--cv-muted:#466254;--cv-tint:#eef4ef;--cv-rule:#c6d6cb}
 :root[data-cv-theme=burgundy]{--cv-ink:#4c2432;--cv-accent:#73394a;--cv-muted:#76505f;--cv-tint:#f5eff1;--cv-rule:#dccbd1}
@@ -12,13 +14,13 @@ html[data-live] #resume .paper-header>div{width:100%}
 html[data-live] #resume .paper-header .editable{display:block;text-align:left;padding:0;min-height:0}
 html[data-live] #resume .paper-header h2{font-size:38px;line-height:1.12;letter-spacing:-.035em;color:var(--cv-ink);font-weight:700;margin:0 0 10px}
 html[data-live] #resume .cv-last-name{color:var(--cv-muted);font-weight:400}
-html[data-live] #resume .paper-header p{font-size:10px;line-height:1.5;letter-spacing:2px;text-transform:uppercase;color:var(--cv-accent);font-weight:600;min-height:15px;margin:0}
+html[data-live] #resume .paper-header p{font-size:var(--cv-role-size);line-height:1.5;letter-spacing:var(--cv-role-tracking);text-transform:var(--cv-role-case);color:var(--cv-accent);font-weight:var(--cv-role-weight);min-height:15px;margin:0}
 html[data-live] #resume .paper-header .editable[data-field=role]{padding:0}
 html[data-live] #resume .cv-portrait{width:100%;margin:32px 0 28px;aspect-ratio:.78;background:#f3f4f5;object-fit:cover;object-position:50% 35%}
 html[data-live] #resume .resume-section{padding-bottom:26px}
 html[data-live] #resume .section-heading,html[data-live] #resume .resume-column:first-child .section-heading,html[data-live] #resume .resume-column:last-child .section-heading{display:flex;align-items:center;gap:12px;padding:0;margin:0 0 18px;background:transparent;border:0;min-height:16px}
 html[data-live] #resume .section-heading::after{content:'';height:1px;background:var(--cv-rule);flex:1}
-html[data-live] #resume .section-heading h3,html[data-live] #resume .resume-column:first-child .section-heading h3{font-size:11px;font-weight:700;line-height:1.5;letter-spacing:1.8px;text-transform:uppercase;color:var(--cv-accent)}
+html[data-live] #resume .section-heading h3,html[data-live] #resume .resume-column:first-child .section-heading h3{font-size:var(--cv-heading-size);font-weight:700;line-height:1.5;letter-spacing:var(--cv-heading-tracking);text-transform:uppercase;color:var(--cv-accent)}
 html[data-live] #resume .section-heading>.edit{right:-20px;background:#fff;color:var(--cv-accent)}
 html[data-live] #resume [data-section=profile] .section-heading{height:0;min-height:0;margin:0}
 html[data-live] #resume [data-section=profile] .section-heading h3,html[data-live] #resume [data-section=profile] .section-heading::after{display:none}
@@ -67,7 +69,7 @@ html[data-live] #resume .cv-cell-title>.document-attachments{right:-17px;top:20p
  html[data-live] #resume .resume-column:last-child{padding:24px 26px 8px}
  html[data-live] #resume .paper-header{padding:28px 24px 6px;margin:0;background:#fff}
  html[data-live] #resume .paper-header h2{font-size:30px}
- html[data-live] #resume .paper-header p{font-size:10px;letter-spacing:1.3px}
+ html[data-live] #resume .paper-header p{font-size:var(--cv-role-size);letter-spacing:var(--cv-role-tracking)}
  html[data-live] #resume .cv-portrait{width:140px;margin:22px auto;aspect-ratio:.78}
  html[data-live] #resume .cv-row-timeline,html[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html[data-live] #resume [data-section=experience] .cv-row-timeline{grid-template-columns:68px minmax(0,1fr);gap:0 10px}
  html[data-live] #resume .cv-row-logo{grid-column:2;width:86px;max-height:54px;justify-self:start;margin-top:10px}
@@ -84,7 +86,7 @@ html.cv-printing[data-live] #resume .resume-column:first-child{padding:0 16px}
 html.cv-printing[data-live] #resume .resume-column:last-child{padding:34px 28px 8px 34px}
 html.cv-printing[data-live] #resume .paper-header{padding:0;margin:0 0 22px}
 html.cv-printing[data-live] #resume .paper-header h2{font-size:38px}
-html.cv-printing[data-live] #resume .paper-header p{font-size:10px;min-height:15px}
+html.cv-printing[data-live] #resume .paper-header p{font-size:var(--cv-role-size);min-height:15px}
 html.cv-printing[data-live] #resume .cv-portrait{width:100%;margin:32px 0 28px}
 html.cv-printing[data-live] #resume .cv-row-timeline{grid-template-columns:86px minmax(0,1fr);gap:0 14px}
 html.cv-printing[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html.cv-printing[data-live] #resume [data-section=experience] .cv-row-timeline{grid-template-columns:86px minmax(0,1fr) 94px}
@@ -118,3 +120,14 @@ html[data-live] #resume .document-link:focus-visible{outline:2px solid var(--cv-
 }
 @media print{html[data-live] #resume .cv-row:has(>.document-attachments){padding-bottom:12px}}
 html.cv-printing[data-live] #resume .cv-row:has(>.document-attachments){padding-bottom:12px}
+
+.cv-typography-picker{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-8px 0 24px;color:#c3d3e4;font-size:12px}
+.cv-typography-picker select{width:auto;min-height:40px;padding:8px;color:#e5edf7;background:#13263c;border:1px solid #607c9b;border-radius:5px;font:inherit}
+.preview-view .cv-typography-picker{display:none}
+@media print{.cv-typography-picker{display:none!important}}
+
+html[data-live] #resume .cv-section-continuation .section-heading h3{font-size:var(--cv-heading-size)}
+html.cv-printing[data-live] #resume .resume-column:first-child .cv-row:has(>.document-attachments){padding-bottom:0}
+
+html[data-cv-theme=blue-gray][data-live] #resume .resume-column:first-child .section-heading h3,html[data-cv-theme=blue-gray][data-live] #resume .document-link{color:var(--cv-ink)}
+html[data-live] #resume .resume-column:first-child .cv-row-list{padding-left:12px}
