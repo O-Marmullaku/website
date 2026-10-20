@@ -131,3 +131,56 @@ html.cv-printing[data-live] #resume .resume-column:first-child .cv-row:has(>.doc
 
 html[data-cv-theme=blue-gray][data-live] #resume .resume-column:first-child .section-heading h3,html[data-cv-theme=blue-gray][data-live] #resume .document-link{color:var(--cv-ink)}
 html[data-live] #resume .resume-column:first-child .cv-row-list{padding-left:12px}
+
+/* Optional timeline sits in the date gutter; neither style changes text or pagination. */
+html[data-cv-entries=timeline][data-live] #resume :is([data-section=education],[data-section=experience]) .cv-row-content{position:relative;--timeline-x:-7px}
+html[data-cv-entries=timeline][data-live] #resume :is([data-section=education],[data-section=experience]) .cv-row-content::before{content:'';position:absolute;left:calc(var(--timeline-x) - 3px);top:5px;width:7px;height:7px;border-radius:50%;background:var(--cv-accent);pointer-events:none}
+html[data-cv-entries=timeline][data-live] #resume :is([data-section=education],[data-section=experience]) .cv-row-content::after{content:'';position:absolute;left:var(--timeline-x);top:18px;bottom:-16px;width:1px;background:var(--cv-rule);pointer-events:none}
+html[data-cv-entries=timeline][data-live] #resume :is([data-section=education],[data-section=experience]) .cv-row:last-child .cv-row-content::after{bottom:0}
+@media(max-width:680px){html[data-cv-entries=timeline][data-live] #resume :is([data-section=education],[data-section=experience]) .cv-row-content{--timeline-x:-5px}}
+html.cv-printing[data-cv-entries=timeline][data-live] #resume :is([data-section=education],[data-section=experience]) .cv-row-content{--timeline-x:-7px}
+/* Editing tools stay outside the paper. */
+html[data-live] #resume.preview-view .cv-appearance-toggle,html[data-live] #resume.preview-view .cv-edit-help{display:none}
+html[data-live] #resume .cv-view-switch .cv-appearance-toggle{border-left:1px solid #40546b;border-radius:0 20px 20px 0;margin-left:4px;font-weight:500}
+.cv-edit-help{position:fixed;bottom:22px;left:20px;max-width:290px;margin:0;color:#d4e0ed;font-size:12px;z-index:4}
+html[data-live] #resume:not(.preview-view) :is(.cv-row-text,.section-copy,.paper-header [data-value=role]){cursor:text}
+html[data-live] #resume:not(.preview-view) :is(.cv-row-text,.section-copy,.paper-header [data-value=role]):hover{background:#dceaf455;outline:1px solid #7699b366;outline-offset:2px}
+.cv-appearance{position:fixed;inset:auto 16px calc(76px + env(safe-area-inset-bottom)) auto;width:340px;max-width:calc(100vw - 32px);max-height:calc(100dvh - 108px);overflow:auto;margin:0;padding:20px;border:1px solid #3e5873;border-radius:12px;background:#112238;color:#edf3fa;font:14px/1.45 'Fira Sans',sans-serif;box-shadow:0 18px 48px -18px #000b;scrollbar-width:thin;scrollbar-color:#536d88 transparent;opacity:0;transform:translateY(8px);transition:opacity .18s,transform .22s cubic-bezier(.2,.8,.2,1),display .22s allow-discrete,overlay .22s allow-discrete}
+.cv-appearance:popover-open{opacity:1;transform:none}
+@starting-style{.cv-appearance:popover-open{opacity:0;transform:translateY(8px)}}
+.appearance-head{display:flex;align-items:center;justify-content:space-between;margin:0 0 18px}
+.appearance-head h2{font-size:20px;line-height:1.2;margin:0;font-weight:600}
+.appearance-close{display:grid;place-items:center;width:40px;height:40px;margin:-8px -8px -8px 0;padding:10px;border:0;border-radius:6px;background:transparent;color:#d4e0ed;cursor:pointer}
+.appearance-close:hover{background:#263e59}
+.appearance-close svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round}
+.appearance-group{display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0;padding:0;border:0;margin:0 0 22px}
+.appearance-group legend{padding:0;margin:0 0 10px;color:#d4e0ed;font-size:13px;font-weight:500}
+.appearance-option{position:relative;display:flex;flex-direction:column;gap:8px;min-width:0;min-height:44px;padding:10px;border:1px solid #3e5873;border-radius:6px;cursor:pointer;transition:border-color .18s,background .18s}
+.appearance-option:hover{background:#1b334d;border-color:#6f94ba}
+.appearance-option:has(:checked){border-color:#a9d2ff;background:#203b58}
+.appearance-option:has(:focus-visible){outline:2px solid #b2d7ff;outline-offset:3px}
+.appearance-option input{position:absolute;inset:0;opacity:0;width:100%;height:100%;margin:0;padding:0;z-index:1;cursor:pointer}
+.appearance-caption{display:flex;flex-direction:column;gap:3px;min-width:0}
+.appearance-caption strong{padding-right:16px;font-size:13px;line-height:1.3;font-weight:500;color:#edf3fa}
+.appearance-caption small{font-size:11px;line-height:1.4;color:#c0d0e2}
+.appearance-check{position:absolute;right:7px;bottom:10px;width:14px;height:14px;color:#b2d7ff;opacity:0}
+.appearance-option:has(:checked) .appearance-check{opacity:1}
+.appearance-check svg{display:block;width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.appearance-theme .appearance-option{flex-direction:row;align-items:center;gap:9px;padding:8px}
+.appearance-theme .appearance-caption strong{font-size:12px}
+.color-sample{position:relative;display:block;width:29px;height:37px;overflow:hidden;border-radius:2px;background:#fff;flex:none}
+.color-sample i{position:absolute;inset:0 auto 0 0;width:9px;background:var(--sample-tint)}
+.color-sample b{position:absolute;left:11px;top:8px;color:var(--sample-ink);font:700 11px Arial,sans-serif}
+.appearance-sample{display:block;min-width:0}
+.type-sample{display:flex;flex-direction:column;height:65px;padding:8px 6px;background:#fff;border-radius:3px;color:#17334f;overflow:hidden;font-family:Arial,sans-serif}
+.type-sample b{font-size:15px;line-height:1.2;margin-bottom:2px}
+.type-classic span{font-size:12px;line-height:1.4}
+.type-classic strong{font-size:10px;margin-top:5px}
+.type-compact span{font-size:7px;letter-spacing:1px;line-height:1.6}
+.type-compact strong{font-size:8px;letter-spacing:1px;margin-top:6px}
+.entry-sample{display:block;width:100%;height:56px;border-radius:3px;background:#fff;color:#244c71;fill:currentColor}
+.entry-sample .sample-text{stroke:#617d98;stroke-width:2;fill:none;stroke-linecap:round}
+.entry-sample .sample-stem{stroke:#b0c1d0;stroke-width:1;fill:none}
+.appearance-note{margin:0;font-size:12px;line-height:1.5;color:#c0d0e2}
+@media(max-width:680px){.cv-edit-help{bottom:78px;left:16px;max-width:calc(100% - 32px);padding:6px 10px;border-radius:5px;background:#112238e8;font-size:11px}.appearance-close{width:44px;height:44px}.appearance-option{min-height:48px}}
+@media print{.cv-appearance,.cv-edit-help{display:none!important}}

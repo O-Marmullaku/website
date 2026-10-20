@@ -36,6 +36,8 @@ try{
  await page.getByRole('button',{name:'Edit title for experience row 8',exact:true}).click();
  await page.locator('[contenteditable="plaintext-only"]').fill('Changed role');await page.locator('[contenteditable="plaintext-only"]').press('Enter');
  await page.waitForTimeout(100);assert.equal(await page.getByText('Changed role',{exact:true}).count(),1);
+ const firstTitle=page.locator('.cv-cell-title .cv-row-text').first(),originalTitle=await firstTitle.textContent();
+ await firstTitle.click();assert.equal(await firstTitle.getAttribute('contenteditable'),'plaintext-only');await firstTitle.fill('Cancelled edit');await firstTitle.press('Escape');assert.equal(await firstTitle.textContent(),originalTitle);
  for(let i=0;i<3;i++)await page.evaluate(()=>window.pagination.layout());
  result=await inspect();assert.deepEqual(result.ids,result.expected);assert.equal(result.overflows,false);
  await page.evaluate(()=>{window.pagination.restore();window.pagination.layout();});assert.deepEqual((await inspect()).ids,result.expected);
@@ -57,6 +59,11 @@ try{
   await page.evaluate(value=>{document.documentElement.dataset.cvTypography=value;window.pagination.layout();},typography);
   const typePositions=await positions();await page.evaluate(()=>dispatchEvent(new Event('beforeprint')));
   assert.deepEqual(await positions(),typePositions,'each typography style prints with the same page geometry');await page.evaluate(()=>dispatchEvent(new Event('afterprint')));
+ }
+ const beforeTimeline=await positions();
+ for(const style of ['timeline','plain']){
+  await page.evaluate(style=>document.documentElement.dataset.cvEntries=style,style);assert.deepEqual(await positions(),beforeTimeline,'timeline is decorative and preserves geometry');
+  if(style==='timeline')assert.equal(await page.locator('[data-section=experience] .cv-row-content').first().evaluate(e=>getComputedStyle(e,'::before').width),'7px');
  }
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);assert.deepEqual((await inspect()).ids,result.expected);assert.equal((await inspect()).overflows,false);
  console.log('PASS: live A4 pagination preserves entry order and editing across repeated layouts and mobile resize');

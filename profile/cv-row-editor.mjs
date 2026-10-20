@@ -118,6 +118,9 @@ export function createRowEditor({
       if (active) event.preventDefault();
     });
     button.addEventListener("click", () => edit(value, button, row, key));
+    value.addEventListener('click',event=>{
+      if(!isReadOnly()&&!value.isContentEditable){event.preventDefault();edit(value,button,row,key);}
+    });
     wrapper.append(value, button);
     host.append(wrapper);
   }

@@ -1,3 +1,4 @@
+import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail} from '../main/cv-extras-rail.mjs?v=centered-paper';
 import {setupCVPagination} from './cv-pagination.mjs?v=paper-themes';
 import {setupImageMagnifier} from './image-magnifier.mjs?v=a4-pages';
@@ -5,12 +6,12 @@ import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
-import { createRowEditor } from "./cv-row-editor.mjs?v=paper-themes";
+import { createRowEditor } from "./cv-row-editor.mjs?v=appearance-panel";
 import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {
   const live = document.documentElement.dataset.live === 'true';
-  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=classic-typography')).createLiveAdapter() : null;
+  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=appearance-panel')).createLiveAdapter() : null;
   const fileStore = adapter || {putPDF,getPDF,deletePDF};
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
@@ -29,6 +30,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     role: "Job title",
     theme: "navy",
     typography: "classic",
+    entryStyle: "plain",
     contact: "Email address\nPortfolio website",
     skills: "Interface design\nWeb development\nCreative technology",
     languages: "Add your languages",
@@ -58,7 +60,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     documentURL = null,
     documentGeneration = 0,
     documentTrigger = null;
-  let sharing,pagination;
+  let sharing,pagination,appearance;
   let viewerPromise,
     cvRows,
     rowEditor,
@@ -158,6 +160,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     return e;
   }
   function sync(field, except) {
+    if(field==='entryStyle'){document.documentElement.dataset.cvEntries=data.entryStyle==='timeline'?'timeline':'plain';return;}
     if(field==='typography'){document.documentElement.dataset.cvTypography=data.typography==='compact'?'compact':'classic';return;}
     if(field==='theme'){document.documentElement.dataset.cvTheme=['navy','blue-gray','charcoal','forest','burgundy'].includes(data.theme)?data.theme:'navy';return;}
 
@@ -350,12 +353,17 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   document.addEventListener("click", (e) => {
     const edit = e.target.closest("[data-edit]");
     if (edit) start(edit);
+    else if(!previewing){
+      const value=e.target.closest('#resume .section-copy[data-value],#resume .paper-header [data-value="role"]');
+      if(value&&!value.isContentEditable){const button=value.closest('[data-field]')?.querySelector('[data-edit]');if(button)start(button);}
+    }
   });
   function openResume(allowed = null, company = "") {
     pagination?.restore();
     finish(true);
     cancelAttachment();
     previewing = !!allowed;
+    if(previewing&&appearance?.matches(':popover-open'))appearance.hidePopover();
     documentAccess = !allowed || allowed.includes("documents");
     closeDocument();
     $("resume").classList.toggle("preview-view", previewing);
@@ -1069,24 +1077,16 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     addEventListener('beforeprint',()=>{finish(true);rowEditor.finish(true);});
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     if(adapter.editable){
-      const themes=node('fieldset',undefined,'cv-theme-picker');themes.append(node('legend','Color theme'));
-      for(const [value,label,color] of [['blue-gray','Original blue-gray','#adbacd'],['navy','Navy','#173f67'],['charcoal','Charcoal','#424851'],['forest','Forest green','#285445'],['burgundy','Burgundy','#73394a']]){
-        const option=node('label'),input=node('input');input.type='radio';input.name='cv-theme';input.value=value;input.checked=(data.theme||'navy')===value;
-        const dot=node('span',undefined,'cv-theme-dot');dot.style.background=color;
-        option.append(input,dot,node('span',label));input.addEventListener('change',()=>{if(input.checked){data.theme=value;sync('theme');save();}});themes.append(option);
-      }
-      const typography=node('label',undefined,'cv-typography-picker');typography.append(node('span','Typography'));
-      const typeSelect=node('select');typeSelect.setAttribute('aria-label','Typography');
-      for(const [value,label] of [['classic','Classic'],['compact','Compact']]){const option=node('option',label);option.value=value;typeSelect.append(option);}
-      typeSelect.value=data.typography==='compact'?'compact':'classic';typeSelect.addEventListener('change',()=>{data.typography=typeSelect.value;sync('typography');save();});typography.append(typeSelect);
-      document.querySelector('#extras-rail .extras-heading').after(themes,typography);
+      const appearanceUI=setupCVAppearance({data,onChange(field){sync(field);save();}});appearance=appearanceUI.panel;
       const modes=node('div',undefined,'cv-view-switch');modes.setAttribute('role','group');modes.setAttribute('aria-label','CV view');
       for(const mode of ['edit','preview']){
         const button=node('button',mode==='edit'?'Edit':'Preview');button.dataset.cvView=mode;
         button.addEventListener('click',()=>{if(previewing===(mode==='preview'))return;openResume(mode==='edit'?null:['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);});
         modes.append(button);
       }
+      modes.append(appearanceUI.toggle);
       document.querySelector('.resume-toolbar').prepend(modes);
+      const help=node('p','Click text to edit. Changes save automatically.','cv-edit-help');document.querySelector('#resume').append(help);
     }
     extrasRail=setupExtrasRail({editable:()=>!previewing,onLayout:alignPicture});
     addEventListener('beforeunload',event=>{if(adapter.dirty){event.preventDefault();event.returnValue='';}});

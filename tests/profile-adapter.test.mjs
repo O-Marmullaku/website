@@ -36,3 +36,12 @@ test('classic and compact typography survive saves and reject unknown styles',as
  for(const typography of ['classic','compact']){state.typography=typography;const saved=toCV(state,new Map());saved.editor=validateEditor(saved.editor);assert.equal(fromProfile({display_name:'Owner',role:'Title',cv:saved}).typography,typography);}
  const saved=toCV(state,new Map());saved.editor.data.typography='unknown';assert.throws(()=>validateEditor(saved.editor),/typography/);
 });
+
+test('entry styles survive saves and accept only plain or timeline',async()=>{
+ const {validateEditor}=await import('../supabase/functions/marmullaku-access/editor.mjs');
+ const state=fromProfile({display_name:'Owner',role:'Title',cv:{contact:[],skills:[],languages:[],profile:'',experience:[],education:[],certs:[],interests:''}});
+ assert.equal(state.entryStyle,'plain');
+ for(const entryStyle of ['plain','timeline']){state.entryStyle=entryStyle;const saved=toCV(state,new Map());saved.editor=validateEditor(saved.editor);assert.equal(fromProfile({display_name:'Owner',role:'Title',cv:saved}).entryStyle,entryStyle);}
+ const saved=toCV(state,new Map());saved.editor.data.entryStyle='unknown';assert.throws(()=>validateEditor(saved.editor),/entry style/);
+ delete saved.editor.data.entryStyle;assert.equal(validateEditor(saved.editor).data.entryStyle,'plain');
+});
