@@ -100,6 +100,8 @@ html.cv-printing[data-live] #resume .cv-page-continuation .resume-column:first-c
 
 /* The document action sits at the right center of the whole entry. */
 html[data-live] #resume .cv-document-card{padding-right:44px;cursor:pointer;border-radius:5px;transition:background .18s}
+html[data-live] #resume .cv-row.cv-document-card{padding-block:4px;margin-bottom:12px}
+html[data-live] #resume .cv-row.cv-document-card:last-child{margin-bottom:0}
 html[data-live] #resume .cv-document-card:hover,html[data-live] #resume .cv-document-card:focus-within{background:color-mix(in srgb,var(--cv-tint) 55%,white)}
 html[data-live] #resume .cv-row-timeline.cv-document-card:not(:has(.cv-row-logo)){padding-right:140px}
 html[data-live] #resume .resume-column:first-child .cv-document-card{padding-right:36px}

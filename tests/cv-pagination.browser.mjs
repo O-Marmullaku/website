@@ -32,11 +32,13 @@ try{
  },base);
  const inspect=()=>page.evaluate(()=>({ids:[...document.querySelectorAll('.cv-row')].map(row=>row.dataset.rowId),pages:document.querySelectorAll('.cv-page').length,expected:window.expectedIDs,overflows:[...document.querySelectorAll('.cv-page')].some(page=>[...page.querySelectorAll('.cv-row')].some(row=>row.getBoundingClientRect().bottom>page.querySelector('.paper-foot').getBoundingClientRect().top))}));
  let result=await inspect();assert(result.pages>1);assert.deepEqual(result.ids,result.expected);assert.equal(result.overflows,false);
- const offsets=await page.locator('[data-section=experience] .cv-row').evaluateAll(rows=>rows.map(row=>row.querySelector('.cv-cell-title > .cv-row-text').getBoundingClientRect().top-row.getBoundingClientRect().top));
+ const offsets=await page.locator('[data-section=experience] .cv-row').evaluateAll(rows=>rows.map(row=>row.querySelector('.cv-cell-title > .cv-row-text').getBoundingClientRect().top-row.getBoundingClientRect().top-parseFloat(getComputedStyle(row).paddingTop)));
  assert(offsets.every(offset=>Math.abs(offset)<1),'attachment controls must not move a title off the row baseline');
  const card=page.locator('.cv-document-card').first(),cardBounds=await card.boundingBox(),actionBounds=await card.locator('.document-attachments').boundingBox();
  assert(Math.abs(actionBounds.y+actionBounds.height/2-cardBounds.y-cardBounds.height/2)<1,'PDF action is vertically centered in its card');
  assert(Math.abs(actionBounds.x+actionBounds.width-cardBounds.x-cardBounds.width)<1,'PDF action is at the right edge of its card');
+ const contentBounds=await card.locator('.cv-row-content').boundingBox();
+ assert(Math.abs(contentBounds.y-cardBounds.y-(cardBounds.y+cardBounds.height-contentBounds.y-contentBounds.height))<1,'hover card has equal space above and below its content');
  await page.getByRole('button',{name:'Edit title for experience row 8',exact:true}).click();
  await page.locator('[contenteditable="plaintext-only"]').fill('Changed role');await page.locator('[contenteditable="plaintext-only"]').press('Enter');
  await page.waitForTimeout(100);assert.equal(await page.getByText('Changed role',{exact:true}).count(),1);
