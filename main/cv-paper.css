@@ -1,0 +1,101 @@
+/* One paper composition; themes change ink and tint, never geometry. */
+:root{--cv-ink:#102b4d;--cv-accent:#173f67;--cv-muted:#405b78;--cv-tint:#edf3f6;--cv-rule:#c5d2dc}
+:root[data-cv-theme=charcoal]{--cv-ink:#252b32;--cv-accent:#424851;--cv-muted:#515b66;--cv-tint:#f0f1f2;--cv-rule:#cdd1d5}
+:root[data-cv-theme=forest]{--cv-ink:#183b30;--cv-accent:#285445;--cv-muted:#466254;--cv-tint:#eef4ef;--cv-rule:#c6d6cb}
+:root[data-cv-theme=burgundy]{--cv-ink:#4c2432;--cv-accent:#73394a;--cv-muted:#76505f;--cv-tint:#f5eff1;--cv-rule:#dccbd1}
+html[data-live] #resume .paper{font-family:Arial,Helvetica,sans-serif;color:var(--cv-ink);background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+html[data-live] #resume .cv-page .resume-sections{grid-template-columns:25% minmax(0,1fr)}
+html[data-live] #resume .resume-column:first-child{background:var(--cv-tint);border:0;padding:0 16px}
+html[data-live] #resume .resume-column:last-child{padding:34px 28px 8px 34px}
+html[data-live] #resume .paper-header{display:block;text-align:left;background:transparent;padding:0;margin:0 0 22px;min-height:0}
+html[data-live] #resume .paper-header>div{width:100%}
+html[data-live] #resume .paper-header .editable{display:block;text-align:left;padding:0;min-height:0}
+html[data-live] #resume .paper-header h2{font-size:38px;line-height:1.12;letter-spacing:-.035em;color:var(--cv-ink);font-weight:700;margin:0 0 10px}
+html[data-live] #resume .cv-last-name{color:var(--cv-muted);font-weight:400}
+html[data-live] #resume .paper-header p{font-size:10px;line-height:1.5;letter-spacing:2px;text-transform:uppercase;color:var(--cv-accent);font-weight:600;min-height:15px;margin:0}
+html[data-live] #resume .paper-header .editable[data-field=role]{padding:0}
+html[data-live] #resume .cv-portrait{width:100%;margin:32px 0 28px;aspect-ratio:.78;background:#f3f4f5;object-fit:cover;object-position:50% 35%}
+html[data-live] #resume .resume-section{padding-bottom:26px}
+html[data-live] #resume .section-heading,html[data-live] #resume .resume-column:first-child .section-heading,html[data-live] #resume .resume-column:last-child .section-heading{display:flex;align-items:center;gap:12px;padding:0;margin:0 0 18px;background:transparent;border:0;min-height:16px}
+html[data-live] #resume .section-heading::after{content:'';height:1px;background:var(--cv-rule);flex:1}
+html[data-live] #resume .section-heading h3,html[data-live] #resume .resume-column:first-child .section-heading h3{font-size:11px;font-weight:700;line-height:1.5;letter-spacing:1.8px;text-transform:uppercase;color:var(--cv-accent)}
+html[data-live] #resume .section-heading>.edit{right:-20px;background:#fff;color:var(--cv-accent)}
+html[data-live] #resume [data-section=profile] .section-heading{height:0;min-height:0;margin:0}
+html[data-live] #resume [data-section=profile] .section-heading h3,html[data-live] #resume [data-section=profile] .section-heading::after{display:none}
+html[data-live] #resume [data-section=profile] .section-heading>.edit{top:9px}
+html[data-live] #resume .section-copy,html[data-live] #resume .cv-row-text{font-size:12px;line-height:1.5;color:var(--cv-ink);min-height:0}
+html[data-live] #resume .section-copy{margin:0}
+html[data-live] #resume .cv-rows{gap:0}
+html[data-live] #resume .cv-row{padding:0 0 12px;margin:0 0 12px;border-bottom:1px solid var(--cv-rule)}
+html[data-live] #resume .cv-row:last-child{border:0;margin-bottom:0}
+html[data-live] #resume .cv-row-timeline{grid-template-columns:86px minmax(0,1fr);gap:0 14px}
+html[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html[data-live] #resume [data-section=experience] .cv-row-timeline{grid-template-columns:86px minmax(0,1fr) 94px}
+html[data-live] #resume .cv-row-timeline>.cv-cell-date{border:0;padding:0}
+html[data-live] #resume .cv-cell-date .cv-row-text{font-size:11px;font-style:normal;color:var(--cv-muted);font-variant-numeric:tabular-nums}
+html[data-live] #resume .cv-cell{padding:0;min-height:0}
+html[data-live] #resume .cv-cell-detail .cv-row-text{color:var(--cv-muted)}
+html[data-live] #resume .cv-cell-body{margin-top:7px}
+html[data-live] #resume .cv-row-logo{width:94px;max-height:64px;object-fit:contain;justify-self:end;align-self:center}
+html[data-live] #resume [data-section=experience] .cv-rows::after{display:none}
+html[data-live] #resume .resume-column:first-child .cv-rows{margin:0}
+html[data-live] #resume .resume-column:first-child .cv-row{border:0;margin:0 0 17px;padding:0}
+html[data-live] #resume .cv-contact-label{display:none}
+html[data-live] #resume .cv-row-language .cv-cell-title{display:flex;gap:0 3px;padding:0}
+html[data-live] #resume .cv-language-description{font-size:12px;color:var(--cv-ink)}
+html[data-live] #resume .cv-language-dots{gap:6px;margin-top:8px}
+html[data-live] #resume .cv-language-dots i{width:11px;height:11px;background:var(--cv-rule)}
+html[data-live] #resume .cv-language-dots i.filled{background:var(--cv-accent)}
+html[data-live] #resume .paper-foot{margin:0 28px 0 calc(25% + 34px);border-color:var(--cv-rule);color:var(--cv-muted)}
+html[data-live] #resume .cv-running-head{color:var(--cv-muted);background:var(--cv-tint)}
+/* Owner controls are overlays so Edit and Preview retain identical page breaks. */
+html[data-live] #resume .cv-row-options{right:-19px}
+html[data-live] #resume .cv-cell>.cv-edit{right:-17px;top:0}
+html[data-live] #resume .cv-add-row{right:-18px;bottom:0;min-height:24px;height:24px;padding:2px 4px}
+html[data-live] #resume .cv-cell-title:has(>.document-attachments){padding-right:0}
+html[data-live] #resume .cv-cell-title>.document-attachments{right:-17px;top:20px}
+.cv-theme-picker{margin:0 0 24px;padding:0;border:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.cv-theme-picker legend{color:#c3d3e4;font-size:12px;margin-bottom:10px}
+.cv-theme-picker label{position:relative;display:flex;align-items:center;gap:8px;min-height:40px;padding:8px;font-size:12px;color:#e5edf7;border:1px solid transparent;border-radius:6px;cursor:pointer}
+.cv-theme-picker label:has(:checked){border-color:#9bcaff;background:#20344b}
+.cv-theme-picker label:has(:focus-visible){outline:2px solid #9bcaff;outline-offset:2px}
+.cv-theme-picker input{position:absolute;opacity:0;width:1px;height:1px;padding:0}
+.cv-theme-dot{width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 1px #ffffff55;flex:none}
+.preview-view .cv-theme-picker{display:none}
+@media(max-width:680px){
+ html[data-live] #resume .cv-page .resume-sections{display:block}
+ html[data-live] #resume .resume-column:first-child{padding:1px 22px 12px}
+ html[data-live] #resume .resume-column:last-child{padding:24px 26px 8px}
+ html[data-live] #resume .paper-header{padding:28px 24px 6px;margin:0;background:#fff}
+ html[data-live] #resume .paper-header h2{font-size:30px}
+ html[data-live] #resume .paper-header p{font-size:10px;letter-spacing:1.3px}
+ html[data-live] #resume .cv-portrait{width:140px;margin:22px auto;aspect-ratio:.78}
+ html[data-live] #resume .cv-row-timeline,html[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html[data-live] #resume [data-section=experience] .cv-row-timeline{grid-template-columns:68px minmax(0,1fr);gap:0 10px}
+ html[data-live] #resume .cv-row-logo{grid-column:2;width:86px;max-height:54px;justify-self:start;margin-top:10px}
+ html[data-live] #resume .cv-row-text,html[data-live] #resume .section-copy,html[data-live] #resume .cv-language-description{font-size:14px}
+ html[data-live] #resume .cv-cell-date .cv-row-text{font-size:12px}
+ html[data-live] #resume .paper-foot{margin-inline:24px}
+ html[data-live] #resume .cv-cell>.cv-edit{width:32px;height:32px;right:-22px;min-width:0;min-height:0}
+ html[data-live] #resume .cv-add-row{right:-20px}
+ html[data-live] #resume:not(.preview-view) [contenteditable=plaintext-only]{font-size:inherit}
+}
+/* Print uses the desktop geometry even when initiated from a phone. */
+html.cv-printing[data-live] #resume .cv-page .resume-sections{display:grid;grid-template-columns:25% minmax(0,1fr)}
+html.cv-printing[data-live] #resume .resume-column:first-child{padding:0 16px}
+html.cv-printing[data-live] #resume .resume-column:last-child{padding:34px 28px 8px 34px}
+html.cv-printing[data-live] #resume .paper-header{padding:0;margin:0 0 22px}
+html.cv-printing[data-live] #resume .paper-header h2{font-size:38px}
+html.cv-printing[data-live] #resume .paper-header p{font-size:10px;min-height:15px}
+html.cv-printing[data-live] #resume .cv-portrait{width:100%;margin:32px 0 28px}
+html.cv-printing[data-live] #resume .cv-row-timeline{grid-template-columns:86px minmax(0,1fr);gap:0 14px}
+html.cv-printing[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html.cv-printing[data-live] #resume [data-section=experience] .cv-row-timeline{grid-template-columns:86px minmax(0,1fr) 94px}
+html.cv-printing[data-live] #resume .cv-row-logo{width:94px;max-height:64px;grid-column:auto;justify-self:end;margin:0}
+html.cv-printing[data-live] #resume .cv-row-text,html.cv-printing[data-live] #resume .section-copy,html.cv-printing[data-live] #resume .cv-language-description{font-size:12px}
+html.cv-printing[data-live] #resume .cv-cell-date .cv-row-text{font-size:11px}
+html.cv-printing[data-live] #resume .paper-foot{margin:0 28px 0 calc(25% + 34px)}
+@media print{.cv-theme-picker{display:none!important}html[data-live] #resume .cv-page{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+
+html[data-live] #resume .resume-column:last-child [data-section=profile] .section-heading{height:0;min-height:0;margin:0;padding:0}
+html[data-live] #resume .cv-row-list{padding-left:12px}
+html[data-live] #resume .resume-column:first-child [data-section=contact] .cv-row{padding-left:24px}
+html[data-live] #resume .cv-contact-icon{position:absolute;left:0;top:2px;width:15px;height:15px;fill:none;stroke:var(--cv-accent);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+html.cv-printing[data-live] #resume .cv-page-continuation .resume-column:first-child{padding-top:16px}

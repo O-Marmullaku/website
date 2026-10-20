@@ -1,16 +1,16 @@
 import {setupExtrasRail} from '../main/cv-extras-rail.mjs?v=centered-paper';
-import {setupCVPagination} from './cv-pagination.mjs?v=a4-pages';
+import {setupCVPagination} from './cv-pagination.mjs?v=paper-themes';
 import {setupImageMagnifier} from './image-magnifier.mjs?v=a4-pages';
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
-import { createRowEditor } from "./cv-row-editor.mjs?v=original-composition";
+import { createRowEditor } from "./cv-row-editor.mjs?v=paper-themes";
 import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {
   const live = document.documentElement.dataset.live === 'true';
-  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=accounts-2')).createLiveAdapter() : null;
+  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=paper-themes')).createLiveAdapter() : null;
   const fileStore = adapter || {putPDF,getPDF,deletePDF};
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
@@ -27,6 +27,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   const initial = {
     name: "Osman Marmullaku",
     role: "Job title",
+    theme: "navy",
     contact: "Email address\nPortfolio website",
     skills: "Interface design\nWeb development\nCreative technology",
     languages: "Add your languages",
@@ -156,8 +157,14 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     return e;
   }
   function sync(field, except) {
+    if(field==='theme'){document.documentElement.dataset.cvTheme=['navy','charcoal','forest','burgundy'].includes(data.theme)?data.theme:'navy';return;}
+
     document.querySelectorAll(`[data-value="${field}"]`).forEach((el) => {
-      if (el !== except) el.textContent = data[field];
+      if (el !== except) {
+        if(field==='name'&&el.id==='resume-name'){
+          const [first,...rest]=data.name.split(' ');el.replaceChildren(node('span',first,'cv-first-name'),document.createTextNode(' '),node('span',rest.join(' '),'cv-last-name'));
+        }else el.textContent = data[field];
+      }
     });
     decoratePictureAnchor();
     renderDocumentLinks();
@@ -208,6 +215,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   const portrait = document.querySelector(".paper-header > img");
   portrait.className = "cv-portrait";
   sidebar.prepend(portrait);
+  mainColumn.prepend(document.querySelector(".paper-header"));
   for (const field of ['contact','languages','certificates'])
     sidebar.append(document.querySelector(`[data-section="${field}"]`));
   for (const field of ['profile','education','experience','skills','interests'])
@@ -1056,8 +1064,16 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     const download=node('button','','text-button cv-download');download.setAttribute('aria-label','Save as PDF');
     download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Save as PDF</span>';
     download.addEventListener('click',()=>window.print());
+    addEventListener('beforeprint',()=>{finish(true);rowEditor.finish(true);});
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     if(adapter.editable){
+      const themes=node('fieldset',undefined,'cv-theme-picker');themes.append(node('legend','Color theme'));
+      for(const [value,label,color] of [['navy','Navy','#173f67'],['charcoal','Charcoal','#424851'],['forest','Forest green','#285445'],['burgundy','Burgundy','#73394a']]){
+        const option=node('label'),input=node('input');input.type='radio';input.name='cv-theme';input.value=value;input.checked=(data.theme||'navy')===value;
+        const dot=node('span',undefined,'cv-theme-dot');dot.style.background=color;
+        option.append(input,dot,node('span',label));input.addEventListener('change',()=>{if(input.checked){data.theme=value;sync('theme');save();}});themes.append(option);
+      }
+      document.querySelector('#extras-rail .extras-heading').after(themes);
       const modes=node('div',undefined,'cv-view-switch');modes.setAttribute('role','group');modes.setAttribute('aria-label','CV view');
       for(const mode of ['edit','preview']){
         const button=node('button',mode==='edit'?'Edit':'Preview');button.dataset.cvView=mode;

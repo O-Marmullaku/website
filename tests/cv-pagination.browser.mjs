@@ -6,7 +6,7 @@ const base=process.env.TEST_BASE_URL||'http://localhost:8000';
 try{
  const page=await browser.newPage({viewport:{width:1920,height:1000}});
  await page.goto(base);
- await page.setContent(`<html data-live="true"><head><link rel="stylesheet" href="${base}/profile/editor.css"><link rel="stylesheet" href="${base}/main/profile-live.css"></head><body>
+ await page.setContent(`<html data-live="true"><head><link rel="stylesheet" href="${base}/profile/editor.css"><link rel="stylesheet" href="${base}/main/profile-live.css"><link rel="stylesheet" href="${base}/main/cv-paper.css"></head><body>
  <button id="focus-origin">Edit</button><button id="undo-row" hidden>Undo</button><input id="row-logo" type="file"><p id="resume-status"></p>
  <dialog id="resume" open><div class="resume-workspace"><article class="paper"><header class="paper-header"><div><h2 id="resume-name">Test profile</h2></div></header><div class="resume-sections"><div class="resume-column"><img class="cv-portrait" alt=""></div><div class="resume-column"><section class="resume-section" data-section="experience" data-field="experience"><div class="section-heading"><h3>Experience</h3></div></section></div></div><div class="paper-foot">example.test <span></span></div></article></div></dialog></body></html>`);
  await page.evaluate(async base=>{
@@ -18,6 +18,7 @@ try{
    const section=document.createElement('section');section.className='resume-section';section.dataset.section=section.dataset.field=name;section.innerHTML=`<div class="section-heading"><h3>${name}</h3></div>`;
    document.querySelector('.resume-column').append(section);
   }
+  document.querySelector('.resume-column:last-child').prepend(document.querySelector('.paper-header'));
   let pagination;
   const rows=Object.fromEntries(Object.keys(rowLayouts).map(field=>[field,[]]));
   rows.experience=Array.from({length:12},(_,i)=>({id:crypto.randomUUID(),date:'2020–2024',title:`Role ${i+1}`,detail:'Example company',body:'A complete entry with meaningful work. '.repeat(6)}));
@@ -38,6 +39,12 @@ try{
  for(let i=0;i<3;i++)await page.evaluate(()=>window.pagination.layout());
  result=await inspect();assert.deepEqual(result.ids,result.expected);assert.equal(result.overflows,false);
  await page.evaluate(()=>{window.pagination.restore();window.pagination.layout();});assert.deepEqual((await inspect()).ids,result.expected);
+ const positions=()=>page.evaluate(()=>[...document.querySelectorAll('.cv-page')].map(p=>[...p.querySelectorAll('.cv-row')].map(r=>({id:r.dataset.rowId,y:Math.round(r.getBoundingClientRect().top-p.getBoundingClientRect().top),h:Math.round(r.getBoundingClientRect().height)}))));
+ const baseline=await positions();
+ await page.evaluate(()=>document.querySelector('#resume').classList.add('preview-view'));
+ assert.deepEqual(await positions(),baseline,'Edit and Preview use identical geometry');
+ for(const theme of ['navy','charcoal','forest','burgundy']){await page.evaluate(theme=>document.documentElement.dataset.cvTheme=theme,theme);assert.deepEqual(await positions(),baseline);}
+ await page.evaluate(()=>dispatchEvent(new Event('beforeprint')));assert.deepEqual(await positions(),baseline,'A4 print preserves row positions and page breaks');await page.evaluate(()=>dispatchEvent(new Event('afterprint')));
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);assert.deepEqual((await inspect()).ids,result.expected);assert.equal((await inspect()).overflows,false);
  console.log('PASS: live A4 pagination preserves entry order and editing across repeated layouts and mobile resize');
 }finally{await browser.close();}

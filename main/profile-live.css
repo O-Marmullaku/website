@@ -253,21 +253,3 @@ html[data-live] #resume .cv-section-continuation .section-heading h3{font-size:1
  html[data-live] #resume .cv-page:last-child{break-after:auto}
 }
 html.cv-printing[data-live] #resume .resume-workspace{width:794px;max-width:none}
-html.cv-printing[data-live] #resume .cv-page .resume-sections{display:grid;grid-template-columns:27.5% minmax(0,1fr)}
-html.cv-printing[data-live] #resume .cv-page .resume-column:last-child{padding:14px 18px 8px}
-html.cv-printing[data-live] #resume .resume-section{padding-bottom:20px}
-html.cv-printing[data-live] #resume .cv-row{padding-right:20px}
-html.cv-printing[data-live] #resume .cv-row-timeline{grid-template-columns:minmax(75px,24%) minmax(0,1fr);gap:0 12px}
-html.cv-printing[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html.cv-printing[data-live] #resume [data-section=experience] .cv-row-timeline{grid-template-columns:minmax(75px,24%) minmax(0,1fr) 122px}
-html.cv-printing[data-live] #resume .cv-row-logo{width:122px;max-height:74px;justify-self:end}
-html.cv-printing[data-live] #resume [data-section=experience] .cv-rows{position:relative}
-html.cv-printing[data-live] #resume [data-section=experience] .cv-rows::after{content:'';position:absolute;inset:0 154px 0 auto;width:1px;background:#909090;pointer-events:none}
-html.cv-printing[data-live] #resume .cv-cell{min-height:0;padding:0}
-html.cv-printing[data-live] #resume .cv-row-text{font-size:12px;min-height:19px}
-html.cv-printing[data-live] #resume .section-copy{font-size:13px}
-html.cv-printing[data-live] #resume .cv-language-description{font-size:12px}
-html.cv-printing[data-live] #resume .paper-header{min-height:64px}
-html.cv-printing[data-live] #resume .paper-header h2{font-size:28px}
-html.cv-printing[data-live] #resume .paper-header p{font-size:11px;min-height:14px}
-html.cv-printing[data-live] #resume .paper-header .editable[data-field=role]{padding:0}
-html.cv-printing[data-live] #resume .cv-portrait{width:calc(100% - 18px);margin:22px 9px 26px}

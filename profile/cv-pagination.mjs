@@ -2,7 +2,7 @@
 export function setupCVPagination(paper) {
   const workspace=paper.parentElement,body=paper.querySelector('.resume-sections');
   const stack=document.createElement('div');stack.className='cv-paper-stack';paper.before(stack);stack.append(paper);
-  const columns=[...body.children],portrait=paper.querySelector('.cv-portrait');
+  const columns=[...body.children],portrait=paper.querySelector('.cv-portrait'),header=paper.querySelector('.paper-header');
   const sections=columns.map(column=>[...column.querySelectorAll(':scope > .resume-section')]);
   let pages=[paper],fragments=[],pending=0,busy=false;
   const make=(tag,cls,text)=>{const el=document.createElement(tag);el.className=cls;if(text)el.textContent=text;return el;};
@@ -74,6 +74,7 @@ export function setupCVPagination(paper) {
       restore();
       // Phone text reflows at reading size rather than shrinking a desktop sheet to illegible type.
       const phone=innerWidth<=680&&!document.documentElement.classList.contains('cv-printing');
+      if(header){if(phone)paper.prepend(header);else columns[1].prepend(header);}
       const tallest=phone?Math.max(0,...Array.from(paper.querySelectorAll('.cv-row'),row=>row.getBoundingClientRect().height)):0;
       workspace.style.setProperty('--cv-page-height',`${Math.max(paper.clientWidth*Math.SQRT2,phone?Math.max(1123,tallest+200):0)}px`);
       [portrait,...sections.flat()].filter(element=>!element.hidden).forEach(element=>element.remove());
