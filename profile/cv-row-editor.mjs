@@ -1,4 +1,4 @@
-import { rowLayouts, moveRow, contactLabel } from "./cv-rows.mjs?v=original-composition";
+import { rowLayouts, moveRow, contactLabel } from "./cv-rows.mjs?v=reference-layout";
 
 export function createRowEditor({
   rows,
@@ -159,8 +159,8 @@ export function createRowEditor({
       const content = node("div", "cv-row-content");
       if(fieldName==='contact'){
         const label=contactLabel(row);if(label)content.append(node('strong','cv-contact-label',label));
-        const shapes={Address:'<path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',Telephone:'<path d="m5 3 4 4-2 3c2 4 3 5 7 7l3-2 4 4-3 3C9 21 3 15 2 6Z"/>','E-mail':'<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 6 9 7 9-7"/>',Website:'<path d="m10 13 4-4m-6 7-2 2a4 4 0 0 1-6-6l5-5a4 4 0 0 1 6 0m2 1 2-2a4 4 0 0 1 6 6l-5 5a4 4 0 0 1-6 0"/>',date:'<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/>'};
-        const shape=shapes[label]||(/^\d{1,2}\.\d{1,2}\.\d{4}/.test(row.title)?shapes.date:null);
+        const shapes={Address:'<path d="M20 10c0 6-8 11-8 11S4 16 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/>',Phone:'<path d="m5 3 4 4-2 3c2 4 3 5 7 7l3-2 4 4-3 3C9 21 3 15 2 6Z"/>','E-mail':'<rect x="3" y="5" width="18" height="14" rx="1"/><path d="m3 6 9 7 9-7"/>',Website:'<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18M5 6.5h14M5 17.5h14"/>','Date of birth / hometown':'<rect x="3" y="5" width="18" height="16" rx="1"/><path d="M7 3v4m10-4v4M3 11h18m-13 4h2m4 0h2"/>'};
+        const shape=shapes[label];
         if(shape){const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');icon.classList.add('cv-contact-icon');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');icon.innerHTML=shape;item.append(icon);}
       }
       field(
@@ -182,6 +182,7 @@ export function createRowEditor({
           field(content, row, "body", `Edit description for ${label}`);
       }
       if (fieldName === 'certificates') {
+        const icon=document.createElementNS('http://www.w3.org/2000/svg','svg');icon.classList.add('cv-certificate-icon');icon.setAttribute('viewBox','0 0 24 24');icon.setAttribute('aria-hidden','true');icon.innerHTML='<path d="M5 2h9l5 5v15H5ZM14 2v6h5M8 12h8M8 16h8"/>';item.append(icon);
         field(content,row,'detail',`Edit issuer for ${label}`,'Issuer');
         field(content,row,'date',`Edit date for ${label}`,'Date');
       }
@@ -222,7 +223,7 @@ export function createRowEditor({
         const logo = node("img", "cv-row-logo");
         logo.src = row.logo;
         logo.alt = row.title ? `${row.title} logo` : "Organisation logo";
-        item.append(logo);
+        content.prepend(logo);
       }
       const options = node("details", "cv-row-options cv-owner");
       const summary = node("summary", "");

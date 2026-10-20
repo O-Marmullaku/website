@@ -6,7 +6,7 @@ import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
-import { createRowEditor } from "./cv-row-editor.mjs?v=clean-editing";
+import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
 import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {

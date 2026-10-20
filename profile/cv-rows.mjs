@@ -9,9 +9,10 @@ export const rowLayouts = {
 };
 export function contactLabel(row) {
   if(/^mailto:/i.test(row.href||''))return 'E-mail';
-  if(/^tel:/i.test(row.href||''))return 'Telephone';
+  if(/^tel:/i.test(row.href||''))return 'Phone';
   if(/^https?:/i.test(row.href||''))return 'Website';
   if(/\n.*\b\d{4}\b/.test(row.title||''))return 'Address';
+  if(/^\d{1,2}\.\d{1,2}\.\d{4}\b/.test(row.title||''))return 'Date of birth / hometown';
   return '';
 }
 const text = (value) => (typeof value === "string" ? value.slice(0, 5000) : "");
