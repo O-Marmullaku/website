@@ -838,7 +838,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
         doc.anchor.rowId &&
         document.querySelector(`[data-row-id="${doc.anchor.rowId}"]`);
       if (doc.anchor.rowId && !row) continue;
-      const host = row?.querySelector(".cv-cell-title") || section;
+      const host = row || section;
       let links = host.querySelector(":scope > .document-attachments");
       if (!links) {
         links = node("div", undefined, "document-attachments");

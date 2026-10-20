@@ -25,8 +25,8 @@ try{
   rows.experience[1].href='https://example.com';
   window.expectedIDs=rows.experience.map(row=>row.id);
   window.rowEditor=createRowEditor({rows,isReadOnly:()=>false,beforeEdit:()=>{},attachPDF:()=>{},beforeRender:()=>pagination?.restore(),onChange:()=>pagination?.schedule()});
-  const attachment=document.createElement('div');attachment.className='document-attachments';attachment.innerHTML='<div class="document-attachment"><button class="document-link" aria-label="Example attachment">PDF</button></div>';
-  document.querySelector('.cv-cell-title').append(attachment);
+  const attachment=document.createElement('div');attachment.className='document-attachments';attachment.innerHTML='<div class="document-attachment"><button class="document-link" aria-label="Example attachment"><svg aria-hidden="true" viewBox="0 0 24 24"></svg><span>Example attachment</span></button></div>';
+  document.querySelector('.cv-row').append(attachment);
   pagination=setupCVPagination(document.querySelector('.paper'));window.pagination=pagination;pagination.layout();
  },base);
  const inspect=()=>page.evaluate(()=>({ids:[...document.querySelectorAll('.cv-row')].map(row=>row.dataset.rowId),pages:document.querySelectorAll('.cv-page').length,expected:window.expectedIDs,overflows:[...document.querySelectorAll('.cv-page')].some(page=>[...page.querySelectorAll('.cv-row')].some(row=>row.getBoundingClientRect().bottom>page.querySelector('.paper-foot').getBoundingClientRect().top))}));
@@ -40,7 +40,15 @@ try{
  result=await inspect();assert.deepEqual(result.ids,result.expected);assert.equal(result.overflows,false);
  await page.evaluate(()=>{window.pagination.restore();window.pagination.layout();});assert.deepEqual((await inspect()).ids,result.expected);
  const positions=()=>page.evaluate(()=>[...document.querySelectorAll('.cv-page')].map(p=>[...p.querySelectorAll('.cv-row')].map(r=>({id:r.dataset.rowId,y:Math.round(r.getBoundingClientRect().top-p.getBoundingClientRect().top),h:Math.round(r.getBoundingClientRect().height)}))));
+ await page.locator('#resume').evaluate(el=>el.scrollTop=0);
  const baseline=await positions();
+ const documentButton=page.getByRole('button',{name:'Example attachment',exact:true});
+ await page.mouse.move(0,0);await page.waitForTimeout(280);const compact=await documentButton.boundingBox();
+ await page.locator('.cv-row').first().hover();await page.waitForTimeout(280);
+ assert((await documentButton.boundingBox()).width>compact.width+40,'hovering the entry expands its document label');
+ assert.deepEqual(await positions(),baseline,'document expansion does not shift entries or page breaks');
+ await page.mouse.move(0,0);await documentButton.focus();await page.waitForTimeout(280);
+ assert((await documentButton.boundingBox()).width>compact.width+40,'keyboard focus expands the label');
  await page.evaluate(()=>document.querySelector('#resume').classList.add('preview-view'));
  assert.deepEqual(await positions(),baseline,'Edit and Preview use identical geometry');
  for(const theme of ['navy','charcoal','forest','burgundy']){await page.evaluate(theme=>document.documentElement.dataset.cvTheme=theme,theme);assert.deepEqual(await positions(),baseline);}
