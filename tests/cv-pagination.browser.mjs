@@ -39,6 +39,7 @@ try{
  assert(Math.abs(actionBounds.x+actionBounds.width-cardBounds.x-cardBounds.width)<1,'PDF action is at the right edge of its card');
  const contentBounds=await card.locator('.cv-row-content').boundingBox();
  assert(Math.abs(contentBounds.y-cardBounds.y-(cardBounds.y+cardBounds.height-contentBounds.y-contentBounds.height))<1,'hover card has equal space above and below its content');
+ assert(await card.evaluate(e=>{const r=e.getBoundingClientRect();return document.elementFromPoint(r.left-4,r.top+r.height/2)===e;}),'the rounded outer edge belongs to the clickable card');
  await page.getByRole('button',{name:'Edit title for experience row 8',exact:true}).click();
  await page.locator('[contenteditable="plaintext-only"]').fill('Changed role');await page.locator('[contenteditable="plaintext-only"]').press('Enter');
  await page.waitForTimeout(100);assert.equal(await page.getByText('Changed role',{exact:true}).count(),1);
@@ -80,5 +81,8 @@ try{
   if(style==='timeline')assert.equal(await page.locator('[data-section=experience] .cv-row-content').first().evaluate(e=>getComputedStyle(e,'::before').width),'7px');
  }
  await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);assert.deepEqual((await inspect()).ids,result.expected);assert.equal((await inspect()).overflows,false);
+ await page.emulateMedia({media:'print'});
+ assert.equal(await card.evaluate(e=>getComputedStyle(e,'::after').display),'none','hover decoration stays out of printed CVs');
+ assert.equal(await card.locator('.cv-cell-title .cv-row-text').evaluate(e=>getComputedStyle(e).color),await page.locator('.paper').first().evaluate(e=>getComputedStyle(e).color),'print uses normal document ink even when a card is focused');
  console.log('PASS: live A4 pagination preserves entry order and editing across repeated layouts and mobile resize');
 }finally{await browser.close();}

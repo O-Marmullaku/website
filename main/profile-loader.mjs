@@ -20,7 +20,7 @@ if (window===parent) {
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
   }
-  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=balanced-card-hover';
+  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=warm-card-hover';
   await new Promise((resolve,reject)=>{paperStyle.onload=resolve;paperStyle.onerror=()=>reject(new Error('Could not load CV styles.'));document.head.append(paperStyle);});
   await import('../profile/editor.js?v=document-cards');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

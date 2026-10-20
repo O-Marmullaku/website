@@ -99,19 +99,24 @@ html[data-live] #resume .cv-contact-icon{position:absolute;left:0;top:2px;width:
 html.cv-printing[data-live] #resume .cv-page-continuation .resume-column:first-child{padding-top:16px}
 
 /* The document action sits at the right center of the whole entry. */
-html[data-live] #resume .cv-document-card{padding-right:44px;cursor:pointer;border-radius:5px;transition:background .18s}
+html[data-live] #resume .cv-document-card{padding-right:44px;cursor:pointer;border-radius:12px}
 html[data-live] #resume .cv-row.cv-document-card{padding-block:4px;margin-bottom:12px}
 html[data-live] #resume .cv-row.cv-document-card:last-child{margin-bottom:0}
-html[data-live] #resume .cv-document-card:hover,html[data-live] #resume .cv-document-card:focus-within{background:color-mix(in srgb,var(--cv-tint) 55%,white)}
+html[data-live] #resume .cv-document-card::after{content:'';position:absolute;inset:0 -8px;border-radius:12px;background:color-mix(in srgb,var(--cv-accent) 5%,#fffaf2);box-shadow:0 8px 24px -10px color-mix(in srgb,var(--cv-ink) 28%,transparent);opacity:0;transform:translateY(2px);pointer-events:auto;z-index:0;transition:opacity .2s,transform .24s cubic-bezier(.16,1,.3,1),box-shadow .2s}
+html[data-live] #resume .cv-document-card>:is(.cv-cell,.cv-row-content,.cv-row-logo){position:relative;z-index:1}
+html[data-live] #resume .cv-document-card:hover::after,html[data-live] #resume .cv-document-card:focus-within::after{opacity:1;transform:none}
+html[data-live] #resume .cv-document-card:active::after{transform:scale(.995,.98);box-shadow:0 3px 12px -6px color-mix(in srgb,var(--cv-ink) 24%,transparent)}
+html[data-live] #resume .cv-document-card:hover .cv-cell-title .cv-row-text,html[data-live] #resume .cv-document-card:focus-within .cv-cell-title .cv-row-text{color:var(--cv-accent)}
 html[data-live] #resume .cv-row-timeline.cv-document-card:not(:has(.cv-row-logo)){padding-right:140px}
 html[data-live] #resume .resume-column:first-child .cv-document-card{padding-right:36px}
-html[data-live] #resume .cv-row>.document-attachments{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-end;max-width:128px;margin:0;opacity:.8;pointer-events:auto;gap:4px}
+html[data-live] #resume .cv-row>.document-attachments{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-end;max-width:128px;margin:0;opacity:.8;pointer-events:auto;gap:4px;z-index:2}
 html[data-live] #resume .cv-row:hover>.document-attachments,html[data-live] #resume .cv-row:focus-within>.document-attachments{opacity:1}
 html[data-live] #resume .document-attachment{max-width:100%;min-width:0}
-html[data-live] #resume .document-link{display:inline-flex;align-items:center;justify-content:flex-start;width:max-content;max-width:28px;height:28px;min-height:28px;gap:0;padding:6px;border:1px solid transparent;border-radius:5px;background:transparent;color:var(--cv-muted);overflow:hidden;box-shadow:none;transition:max-width .24s cubic-bezier(.2,.8,.2,1),gap .24s,background .2s,border-color .2s}
+html[data-live] #resume .document-link{display:inline-flex;align-items:center;justify-content:flex-start;width:max-content;max-width:28px;height:28px;min-height:28px;gap:0;padding:6px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--cv-muted);overflow:hidden;box-shadow:none;transition:max-width .24s cubic-bezier(.2,.8,.2,1),gap .24s,background .2s,border-color .2s,color .2s}
 html[data-live] #resume .document-link svg{width:14px;height:14px;flex:none}
 html[data-live] #resume .document-link span{position:static;width:auto;height:auto;max-width:0;margin:0;padding:0;clip-path:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0;font:11px/1.3 Arial,Helvetica,sans-serif;transition:max-width .24s cubic-bezier(.2,.8,.2,1),opacity .18s}
 html[data-live] #resume .cv-row:hover .document-link,html[data-live] #resume .cv-row:focus-within .document-link,html[data-live] #resume .resume-section:hover>.document-attachments .document-link,html[data-live] #resume .resume-section:focus-within>.document-attachments .document-link{max-width:128px;gap:6px;background:var(--cv-tint);border-color:var(--cv-rule);color:var(--cv-accent)}
+html[data-live] #resume .cv-document-card:hover .document-link,html[data-live] #resume .cv-document-card:focus-within .document-link{background:var(--cv-accent);border-color:transparent;color:#fff}
 html[data-live] #resume .cv-row:hover .document-link span,html[data-live] #resume .cv-row:focus-within .document-link span,html[data-live] #resume .resume-section:hover>.document-attachments .document-link span,html[data-live] #resume .resume-section:focus-within>.document-attachments .document-link span{max-width:230px;opacity:1}
 html[data-live] #resume .document-link:focus-visible{outline:2px solid var(--cv-accent);outline-offset:2px}
 html[data-live] #resume .resume-column:first-child .cv-row .document-link{max-width:28px;gap:0}
@@ -124,7 +129,7 @@ html[data-live] #resume .resume-column:first-child .cv-row .document-link span{m
  html[data-live] #resume .cv-row .document-link{width:44px;height:44px;min-height:44px;max-width:44px;padding:6px;gap:0;justify-content:center;background:var(--cv-tint);border-color:var(--cv-rule)}
  html[data-live] #resume .cv-row .document-link span{position:absolute;width:1px;height:1px;max-width:0;overflow:hidden;clip-path:inset(50%)}
 }
-@media print{html[data-live] #resume .cv-document-card{background:transparent!important}html[data-live] #resume .cv-row>.document-attachments{display:none!important}}
+@media print{html[data-live] #resume .cv-document-card{background:transparent!important}html[data-live] #resume .cv-document-card::after{display:none!important}html[data-live] #resume .cv-document-card .cv-cell-title .cv-row-text{color:var(--cv-ink)}html[data-live] #resume .cv-row>.document-attachments{display:none!important}}
 html.cv-printing[data-live] #resume .document-link{height:28px;min-height:28px}
 html.cv-printing[data-live] #resume .cv-document-card{padding-right:44px}
 html.cv-printing[data-live] #resume .cv-row.cv-document-card{margin-right:0}
