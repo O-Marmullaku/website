@@ -60,7 +60,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     documentURL = null,
     documentGeneration = 0,
     documentTrigger = null;
-  let sharing,pagination,appearance;
+  let sharing,pagination;
   let viewerPromise,
     cvRows,
     rowEditor,
@@ -363,7 +363,6 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     finish(true);
     cancelAttachment();
     previewing = !!allowed;
-    if(previewing&&appearance?.matches(':popover-open'))appearance.hidePopover();
     documentAccess = !allowed || allowed.includes("documents");
     closeDocument();
     $("resume").classList.toggle("preview-view", previewing);
@@ -1078,15 +1077,16 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     addEventListener('beforeprint',()=>{finish(true);rowEditor.finish(true);});
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     if(adapter.editable){
-      const appearanceUI=setupCVAppearance({data,onChange(field){sync(field);save();}});appearance=appearanceUI.panel;
-      const modes=node('div',undefined,'cv-view-switch');modes.setAttribute('role','group');modes.setAttribute('aria-label','CV view');
+      const appearanceUI=setupCVAppearance({data,onChange(field){sync(field);save();}});
+      const controls=node('div',undefined,'cv-view-switch');
+      const modes=node('div',undefined,'cv-mode-options');modes.setAttribute('role','group');modes.setAttribute('aria-label','CV view');
       for(const mode of ['edit','preview']){
         const button=node('button',mode==='edit'?'Edit':'Preview');button.dataset.cvView=mode;
         button.addEventListener('click',()=>{if(previewing===(mode==='preview'))return;openResume(mode==='edit'?null:['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);});
         modes.append(button);
       }
-      modes.append(appearanceUI.toggle);
-      document.querySelector('.resume-toolbar').prepend(modes);
+      controls.append(modes,appearanceUI.toggle);
+      document.querySelector('.resume-toolbar').prepend(controls);
       const help=node('p','Click text to edit. Changes save automatically.','cv-edit-help');document.querySelector('#resume').append(help);
     }
     extrasRail=setupExtrasRail({editable:()=>!previewing,onLayout:alignPicture});
