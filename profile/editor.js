@@ -1069,7 +1069,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     extrasRail=setupExtrasRail({editable:()=>!previewing,onLayout:alignPicture});
     addEventListener('beforeunload',event=>{if(adapter.dirty){event.preventDefault();event.returnValue='';}});
     if(new URLSearchParams(location.search).get('view')==='settings'&&adapter.editable) $('settings-panel').showModal();
-    else openResume(adapter.editable ? null : ['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);
+    else openResume(['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);
     await document.fonts.ready;
     await portrait.decode().catch(()=>{});
     pagination=setupCVPagination(document.querySelector('.paper'));
