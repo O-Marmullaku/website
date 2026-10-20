@@ -27,13 +27,16 @@ try{
   window.rowEditor=createRowEditor({rows,isReadOnly:()=>document.querySelector("#resume").classList.contains("preview-view"),beforeEdit:()=>{},attachPDF:()=>{},beforeRender:()=>pagination?.restore(),onChange:()=>pagination?.schedule()});
   const attachment=document.createElement('div');attachment.className='document-attachments';attachment.innerHTML='<div class="document-attachment"><button class="document-link" aria-label="Example attachment"><svg aria-hidden="true" viewBox="0 0 24 24"></svg><span>Example attachment</span></button></div>';
   attachment.querySelector('button').addEventListener('click',()=>window.documentOpens=(window.documentOpens||0)+1);
-  document.querySelector('.cv-row').append(attachment);
+  const attachedRow=document.querySelector('.cv-row');attachedRow.classList.add('cv-document-card');attachedRow.append(attachment);
   pagination=setupCVPagination(document.querySelector('.paper'));window.pagination=pagination;pagination.layout();
  },base);
  const inspect=()=>page.evaluate(()=>({ids:[...document.querySelectorAll('.cv-row')].map(row=>row.dataset.rowId),pages:document.querySelectorAll('.cv-page').length,expected:window.expectedIDs,overflows:[...document.querySelectorAll('.cv-page')].some(page=>[...page.querySelectorAll('.cv-row')].some(row=>row.getBoundingClientRect().bottom>page.querySelector('.paper-foot').getBoundingClientRect().top))}));
  let result=await inspect();assert(result.pages>1);assert.deepEqual(result.ids,result.expected);assert.equal(result.overflows,false);
  const offsets=await page.locator('[data-section=experience] .cv-row').evaluateAll(rows=>rows.map(row=>row.querySelector('.cv-cell-title > .cv-row-text').getBoundingClientRect().top-row.getBoundingClientRect().top));
  assert(offsets.every(offset=>Math.abs(offset)<1),'attachment controls must not move a title off the row baseline');
+ const card=page.locator('.cv-document-card').first(),cardBounds=await card.boundingBox(),actionBounds=await card.locator('.document-attachments').boundingBox();
+ assert(Math.abs(actionBounds.y+actionBounds.height/2-cardBounds.y-cardBounds.height/2)<1,'PDF action is vertically centered in its card');
+ assert(Math.abs(actionBounds.x+actionBounds.width-cardBounds.x-cardBounds.width)<1,'PDF action is at the right edge of its card');
  await page.getByRole('button',{name:'Edit title for experience row 8',exact:true}).click();
  await page.locator('[contenteditable="plaintext-only"]').fill('Changed role');await page.locator('[contenteditable="plaintext-only"]').press('Enter');
  await page.waitForTimeout(100);assert.equal(await page.getByText('Changed role',{exact:true}).count(),1);

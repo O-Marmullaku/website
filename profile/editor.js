@@ -880,7 +880,17 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     document
       .querySelectorAll(".document-attachments:empty")
       .forEach((el) => el.remove());
+    document.querySelectorAll('.cv-row').forEach(row=>{
+      row.classList.toggle('cv-document-card',!!row.querySelector(':scope > .document-attachments .document-link'));
+    });
   }
+  $('resume').addEventListener('click',event=>{
+    const row=event.target.closest('.cv-document-card');
+    if(!row||pickingPicture||event.defaultPrevented||event.target.closest('button,a,summary,input,select,textarea,[contenteditable="plaintext-only"]'))return;
+    if(!previewing&&event.target.closest('.cv-row-text'))return;
+    if(getSelection()?.toString())return;
+    row.querySelector('.document-link')?.click();
+  });
   function renderDocumentLibrary() {
     $("pdf-list").replaceChildren();
     document.querySelector(".pdf-library").hidden =
