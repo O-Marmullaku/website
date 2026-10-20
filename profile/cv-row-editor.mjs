@@ -34,6 +34,7 @@ export function createRowEditor({
     finish(true);
     undo = structuredClone(rows);
     undoButton.hidden = false;
+    undoButton.textContent="Undo";undoButton.setAttribute("aria-label","Undo last change");
   }
   function finish(keep = true) {
     if (!active) return;
@@ -51,8 +52,8 @@ export function createRowEditor({
     editor.value.removeAttribute("role");
     editor.value.removeAttribute("aria-label");
     editor.value.removeAttribute("aria-multiline");
+    prepareField(editor.value);
     editor.host.classList.remove("editing");
-    editor.button.removeAttribute("aria-pressed");
     commit();
     if (editor.key === 'href') paint(Object.keys(rows).find(key=>rows[key].includes(editor.row)));
   }
@@ -69,7 +70,6 @@ export function createRowEditor({
     value.setAttribute("aria-label", button.getAttribute("aria-label"));
     value.setAttribute("aria-multiline", String(key === "body"));
     host.classList.add("editing");
-    button.setAttribute("aria-pressed", "true");
     value.addEventListener(
       "input",
       () => {
@@ -102,6 +102,13 @@ export function createRowEditor({
     getSelection().removeAllRanges();
     getSelection().addRange(range);
   }
+  function prepareField(value){
+    const readOnly=isReadOnly();value.tabIndex=readOnly?(value.tagName==='A'?0:-1):0;
+    if(!value.isContentEditable){
+      if(readOnly){value.removeAttribute('role');value.removeAttribute('aria-label');}
+      else{value.setAttribute('role','button');value.setAttribute('aria-label',value.dataset.editLabel);}
+    }
+  }
   function field(host, row, key, label, placeholder = "") {
     const wrapper = node("div", "cv-cell cv-cell-" + key);
     const value = node(key === "title" && row.href ? "a" : key === "title" ? "p" : "div", "cv-row-text", row[key]);
@@ -111,17 +118,15 @@ export function createRowEditor({
     }
     value.dataset.rowText = key;
     value.dataset.placeholder = placeholder;
-    const button = node("button", "edit cv-edit");
-    button.setAttribute("aria-label", label);
-    button.innerHTML = '<svg aria-hidden="true"><use href="#pencil"/></svg>';
-    button.addEventListener("pointerdown", (event) => {
-      if (active) event.preventDefault();
-    });
-    button.addEventListener("click", () => edit(value, button, row, key));
+    value.dataset.editLabel=label;
+    prepareField(value);
     value.addEventListener('click',event=>{
-      if(!isReadOnly()&&!value.isContentEditable){event.preventDefault();edit(value,button,row,key);}
+      if(!isReadOnly()&&!value.isContentEditable){event.preventDefault();edit(value,value,row,key);}
     });
-    wrapper.append(value, button);
+    value.addEventListener('keydown',event=>{
+      if(!isReadOnly()&&!value.isContentEditable&&['Enter',' ','F2'].includes(event.key)){event.preventDefault();edit(value,value,row,key);}
+    });
+    wrapper.append(value);
     host.append(wrapper);
   }
   function action(menu, label, callback, disabled = false) {
@@ -148,6 +153,7 @@ export function createRowEditor({
       const item = node("div", "cv-row cv-row-" + layout);
       item.dataset.rowId = row.id;
       const label = `${fieldName} row ${index + 1}`;
+      let languageLevel;
       if (layout === "timeline")
         field(item, row, "date", `Edit dates for ${label}`, "Dates");
       const content = node("div", "cv-row-content");
@@ -209,7 +215,7 @@ export function createRowEditor({
           paint(fieldName);
           commit();
         });
-        content.append(dots, level);
+        content.append(dots);languageLevel=level;
       }
       item.append(content);
       if (row.logo) {
@@ -224,11 +230,12 @@ export function createRowEditor({
       summary.innerHTML =
         '<svg aria-hidden="true"><use href="#more-icon"/></svg>';
       const menu = node("div", "cv-row-menu");
+      if(languageLevel){const label=node('label','cv-menu-label','Language level');label.append(languageLevel);menu.append(label);}
       if (fieldName === "contact") {
         action(menu, "Edit link", () => {
           let cell=content.querySelector('.cv-cell-href');
           if (!cell) {field(content,row,'href',`Edit link for ${label}`,'https://, mailto: or tel:');cell=content.querySelector('.cv-cell-href');}
-          cell.querySelector('button').click();
+          cell.querySelector('[data-row-text]').click();
         });
       }
       action(
@@ -278,7 +285,7 @@ export function createRowEditor({
           });
       }
       action(menu, "Attach PDF", () => attachPDF(fieldName, row.id));
-      action(menu, "Duplicate row", () => {
+      action(menu, "Duplicate entry", () => {
         checkpoint();
         rows[fieldName].splice(index + 1, 0, {
           ...row,
@@ -287,7 +294,7 @@ export function createRowEditor({
         paint(fieldName);
         commit();
       });
-      action(menu, "Remove row", () => {
+      action(menu, "Delete entry", () => {
         checkpoint();
         rows[fieldName].splice(index, 1);
         paint(fieldName);
@@ -307,15 +314,9 @@ export function createRowEditor({
     }
     let add = section.querySelector(".cv-add-row");
     if (!add) {
-      add = node(
-        "button",
-        "cv-add-row cv-owner",
-        rowLayouts[fieldName] === "timeline" ? "Add row" : "Add item",
-      );
-      add.setAttribute(
-        "aria-label",
-        `Add ${rowLayouts[fieldName] === "timeline" ? "row" : "item"} to ${fieldName}`,
-      );
+      const names={contact:'contact detail',skills:'skill',languages:'language',experience:'experience',education:'education',certificates:'certificate',interests:'interest'};
+      add = node('button','cv-add-row cv-owner',`+ Add ${names[fieldName]}`);
+      add.setAttribute('aria-label',`Add ${names[fieldName]}`);
       add.addEventListener("click", () => {
         if (isReadOnly()) return;
         beforeEdit();
@@ -333,7 +334,7 @@ export function createRowEditor({
         paint(fieldName);
         commit();
         section
-          .querySelector(`[data-row-id="${row.id}"] .cv-cell-title button`)
+          .querySelector(`[data-row-id="${row.id}"] .cv-cell-title [data-row-text]`)
           .click();
       });
       section.append(add);
@@ -381,8 +382,9 @@ export function createRowEditor({
   Object.keys(rowLayouts).forEach(paint);
   return {
     finish,
+    syncMode(){document.querySelectorAll(".cv-row-text[data-edit-label]").forEach(prepareField);},
     editFirst(fieldName) {
-      sections[fieldName]?.querySelector(".cv-cell-title button")?.click();
+      sections[fieldName]?.querySelector(".cv-cell-title [data-row-text]")?.click();
     },
   };
 }

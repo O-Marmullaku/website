@@ -24,8 +24,9 @@ try{
   rows.experience=Array.from({length:12},(_,i)=>({id:crypto.randomUUID(),date:'2020–2024',title:`Role ${i+1}`,detail:'Example company',body:'A complete entry with meaningful work. '.repeat(6)}));
   rows.experience[1].href='https://example.com';
   window.expectedIDs=rows.experience.map(row=>row.id);
-  window.rowEditor=createRowEditor({rows,isReadOnly:()=>false,beforeEdit:()=>{},attachPDF:()=>{},beforeRender:()=>pagination?.restore(),onChange:()=>pagination?.schedule()});
+  window.rowEditor=createRowEditor({rows,isReadOnly:()=>document.querySelector("#resume").classList.contains("preview-view"),beforeEdit:()=>{},attachPDF:()=>{},beforeRender:()=>pagination?.restore(),onChange:()=>pagination?.schedule()});
   const attachment=document.createElement('div');attachment.className='document-attachments';attachment.innerHTML='<div class="document-attachment"><button class="document-link" aria-label="Example attachment"><svg aria-hidden="true" viewBox="0 0 24 24"></svg><span>Example attachment</span></button></div>';
+  attachment.querySelector('button').addEventListener('click',()=>window.documentOpens=(window.documentOpens||0)+1);
   document.querySelector('.cv-row').append(attachment);
   pagination=setupCVPagination(document.querySelector('.paper'));window.pagination=pagination;pagination.layout();
  },base);
@@ -38,6 +39,13 @@ try{
  await page.waitForTimeout(100);assert.equal(await page.getByText('Changed role',{exact:true}).count(),1);
  const firstTitle=page.locator('.cv-cell-title .cv-row-text').first(),originalTitle=await firstTitle.textContent();
  await firstTitle.click();assert.equal(await firstTitle.getAttribute('contenteditable'),'plaintext-only');await firstTitle.fill('Cancelled edit');await firstTitle.press('Escape');assert.equal(await firstTitle.textContent(),originalTitle);
+ assert.equal(await page.evaluate(()=>window.documentOpens||0),0,'text editing does not open its PDF');
+ await page.getByRole('button',{name:'Example attachment',exact:true}).click();assert.equal(await page.evaluate(()=>window.documentOpens),1);assert.equal(await page.locator('[contenteditable="plaintext-only"]').count(),0,'PDF control does not start editing');
+ await firstTitle.focus();await firstTitle.press('Enter');assert.equal(await firstTitle.getAttribute('contenteditable'),'plaintext-only');await firstTitle.press('Escape');
+ assert.equal(await page.locator('.cv-cell button').count(),0,'text fields do not have duplicate pencil controls');
+ await page.getByRole('button',{name:'Add education',exact:true}).click();await page.locator('[contenteditable="plaintext-only"]').fill('Temporary education');await page.locator('[contenteditable="plaintext-only"]').press('Enter');
+ const added=page.locator('.cv-row').filter({has:page.getByText('Temporary education',{exact:true})});await added.locator('summary').click();await added.getByRole('button',{name:'Delete entry',exact:true}).click();
+ assert.equal(await page.getByText('Temporary education',{exact:true}).count(),0);
  for(let i=0;i<3;i++)await page.evaluate(()=>window.pagination.layout());
  result=await inspect();assert.deepEqual(result.ids,result.expected);assert.equal(result.overflows,false);
  await page.evaluate(()=>{window.pagination.restore();window.pagination.layout();});assert.deepEqual((await inspect()).ids,result.expected);
@@ -51,7 +59,8 @@ try{
  assert.deepEqual(await positions(),baseline,'document expansion does not shift entries or page breaks');
  await page.mouse.move(0,0);await documentButton.focus();await page.waitForTimeout(280);
  assert((await documentButton.boundingBox()).width>compact.width+40,'keyboard focus expands the label');
- await page.evaluate(()=>document.querySelector('#resume').classList.add('preview-view'));
+ await page.evaluate(()=>{document.querySelector('#resume').classList.add('preview-view');window.rowEditor.syncMode();});
+ assert.equal(await page.locator('.cv-row-text[role=button]').count(),0,'Preview text has no editing actions');
  assert.deepEqual(await positions(),baseline,'Edit and Preview use identical geometry');
  for(const theme of ['navy','blue-gray','charcoal','forest','burgundy']){await page.evaluate(theme=>document.documentElement.dataset.cvTheme=theme,theme);assert.deepEqual(await positions(),baseline);}
  await page.evaluate(()=>dispatchEvent(new Event('beforeprint')));assert.deepEqual(await positions(),baseline,'A4 print preserves row positions and page breaks');await page.evaluate(()=>dispatchEvent(new Event('afterprint')));

@@ -57,7 +57,8 @@ export async function createLiveAdapter() {
     await uploads.get(value);
   }
   let pending, timer, running=false, failure,blocked=false;
-  const status=message=>{for(const id of ['save-status','resume-status']){const el=document.getElementById(id);if(el)el.textContent=message;}};
+  let statusTimer;
+  const status=message=>{clearTimeout(statusTimer);for(const id of ['save-status','resume-status']){const el=document.getElementById(id);if(el)el.textContent=message;}if(message==='Saved')statusTimer=setTimeout(()=>{for(const id of ['save-status','resume-status']){const el=document.getElementById(id);if(el?.textContent==='Saved')el.textContent='';}},2400);};
   async function drain() {
     if (running||blocked) return;
     running=true;failure=null;

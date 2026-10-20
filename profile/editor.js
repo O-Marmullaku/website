@@ -6,12 +6,12 @@ import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
-import { createRowEditor } from "./cv-row-editor.mjs?v=appearance-panel";
+import { createRowEditor } from "./cv-row-editor.mjs?v=clean-editing";
 import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {
   const live = document.documentElement.dataset.live === 'true';
-  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=appearance-panel')).createLiveAdapter() : null;
+  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=clean-editing')).createLiveAdapter() : null;
   const fileStore = adapter || {putPDF,getPDF,deletePDF};
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
@@ -208,7 +208,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     edit.dataset.edit = field;
     edit.setAttribute("aria-label", `Edit ${label.toLowerCase()}`);
     edit.innerHTML = pencil;
-    heading.append(edit);
+    if(!rowLayouts[field]){edit.classList.add("cv-copy-edit");block.append(edit);}
     const value = node("p", undefined, "section-copy");
     value.dataset.value = field;
     block.append(heading, value);
@@ -367,6 +367,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     documentAccess = !allowed || allowed.includes("documents");
     closeDocument();
     $("resume").classList.toggle("preview-view", previewing);
+    rowEditor.syncMode();
     $("resume-mode").textContent = sharing?.isGuest
       ? "CV"
       : previewing
