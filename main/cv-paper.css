@@ -30,7 +30,7 @@ html[data-live] #resume .cv-row{padding:0 0 8px;margin:0 0 4px;border:0}
 html[data-live] #resume .cv-row:last-child{border:0;margin-bottom:0;padding-bottom:0}
 html[data-live] #resume .cv-row-timeline,html[data-live] #resume [data-section=experience] .cv-row-timeline{grid-template-columns:140px minmax(0,1fr);gap:0 20px;align-items:start}
 html[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html[data-live] #resume [data-section=experience] .cv-row-timeline:has(.cv-row-logo){grid-template-columns:140px minmax(0,1fr)}
-html[data-live] #resume .cv-row-timeline .cv-cell-title .cv-row-text{font-weight:700}
+html[data-live] #resume .cv-row-timeline .cv-cell-title .cv-row-text{font-family:'Fira Sans',Arial,sans-serif;font-weight:500;font-synthesis:none;letter-spacing:0}
 html[data-live] #resume .cv-row-timeline>.cv-cell-date{grid-column:1;grid-row:1;border:0;padding:0}
 html[data-live] #resume .cv-row-timeline>.cv-row-content{grid-column:2;grid-row:1}
 html[data-live] #resume .cv-cell-date .cv-row-text{font-size:14px;font-style:normal;color:var(--cv-ink);font-variant-numeric:tabular-nums}
@@ -42,7 +42,7 @@ html[data-live] #resume [data-section=experience] .cv-rows::after{display:none}
 html[data-live] #resume .resume-column:first-child .cv-rows{margin:0}
 html[data-live] #resume .resume-column:first-child .cv-row{border:0;margin:0 0 20px;padding:0}
 html[data-live] #resume .resume-column:first-child .cv-row:last-child{margin-bottom:0}
-html[data-live] #resume .cv-contact-label{display:block;margin-bottom:3px;font-size:13px;line-height:1.35;color:var(--cv-accent)}
+html[data-live] #resume .cv-contact-label{display:block;margin-bottom:3px;font-size:13px;font-weight:500;line-height:1.35;color:var(--cv-accent)}
 html[data-live] #resume .cv-row-language .cv-cell-title{display:flex;gap:0 3px;padding:0;font-size:14.5px;line-height:1.35}
 html[data-live] #resume .cv-language-description{font-size:14.5px;color:var(--cv-ink)}
 html[data-live] #resume .cv-language-dots{gap:7px;margin-top:8px}
@@ -114,15 +114,22 @@ html[data-live] #resume .resume-column:first-child .cv-document-card{padding-rig
 html[data-live] #resume .cv-row>.document-attachments{position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;align-items:flex-end;max-width:128px;margin:0;opacity:.8;pointer-events:auto;gap:4px;z-index:2}
 html[data-live] #resume .cv-row:hover>.document-attachments,html[data-live] #resume .cv-row:focus-within>.document-attachments{opacity:1}
 html[data-live] #resume .document-attachment{max-width:100%;min-width:0}
-html[data-live] #resume .document-link{display:inline-flex;align-items:center;justify-content:flex-start;width:max-content;max-width:28px;height:28px;min-height:28px;gap:0;padding:6px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--cv-muted);overflow:hidden;box-shadow:none;transition:max-width .24s cubic-bezier(.2,.8,.2,1),gap .24s,background .2s,border-color .2s,color .2s}
+html[data-live] #resume .document-link{display:inline-flex;align-items:center;justify-content:center;width:28px;max-width:28px;height:28px;min-height:28px;padding:6px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--cv-muted);box-shadow:none;transition:background .2s,border-color .2s,color .2s}
 html[data-live] #resume .document-link svg{width:14px;height:14px;flex:none}
-html[data-live] #resume .document-link span{position:static;width:auto;height:auto;max-width:0;margin:0;padding:0;clip-path:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:0;font:11px/1.3 Arial,Helvetica,sans-serif;transition:max-width .24s cubic-bezier(.2,.8,.2,1),opacity .18s}
-html[data-live] #resume .cv-row:hover .document-link,html[data-live] #resume .cv-row:focus-within .document-link,html[data-live] #resume .resume-section:hover>.document-attachments .document-link,html[data-live] #resume .resume-section:focus-within>.document-attachments .document-link{max-width:128px;gap:6px;background:var(--cv-tint);border-color:var(--cv-rule);color:var(--cv-accent)}
+html[data-live] #resume .document-link span{position:absolute;width:1px;height:1px;margin:-1px;padding:0;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+html[data-live] #resume .cv-row:hover .document-link,html[data-live] #resume .cv-row:focus-within .document-link,html[data-live] #resume .resume-section:hover>.document-attachments .document-link,html[data-live] #resume .resume-section:focus-within>.document-attachments .document-link{background:var(--cv-tint);border-color:var(--cv-rule);color:var(--cv-accent)}
 html[data-live] #resume .cv-document-card:hover .document-link,html[data-live] #resume .cv-document-card:focus-within .document-link{background:var(--cv-accent);border-color:transparent;color:#fff}
-html[data-live] #resume .cv-row:hover .document-link span,html[data-live] #resume .cv-row:focus-within .document-link span,html[data-live] #resume .resume-section:hover>.document-attachments .document-link span,html[data-live] #resume .resume-section:focus-within>.document-attachments .document-link span{max-width:230px;opacity:1}
 html[data-live] #resume .document-link:focus-visible{outline:2px solid var(--cv-accent);outline-offset:2px}
-html[data-live] #resume .resume-column:first-child .cv-row .document-link{max-width:28px;gap:0}
-html[data-live] #resume .resume-column:first-child .cv-row .document-link span{max-width:0;opacity:0}
+.cv-document-hint{position:fixed;inset:auto;margin:0;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:0;overflow:auto;border:1px solid var(--cv-rule,#9eafc1);border-radius:10px;background:#fff;color:var(--cv-ink,#10243d);box-shadow:0 12px 32px -10px #10243d55;opacity:0;transform:translateX(-4px);transition:opacity .16s,transform .2s cubic-bezier(.16,1,.3,1)}
+.cv-document-hint:popover-open{opacity:1;transform:none}
+@starting-style{.cv-document-hint:popover-open{opacity:0;transform:translateX(-4px)}}
+.cv-document-hint button{display:block;width:100%;padding:14px 16px;border:0;border-radius:9px;background:transparent;color:inherit;text-align:left;cursor:pointer;font:14px/1.45 'Fira Sans',Arial,sans-serif}
+.cv-document-hint button:hover{background:var(--cv-tint,#eaf2f6)}
+.cv-document-hint button:focus-visible{outline:2px solid var(--cv-accent,#173f67);outline-offset:-4px}
+.document-hint-name{display:block;overflow-wrap:anywhere;font-weight:500}
+.document-hint-action{display:flex;align-items:center;gap:8px;margin-top:8px;color:var(--cv-accent,#173f67);font-size:13px}
+.document-hint-action svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+@media print{.cv-document-hint{display:none!important}}
 @media(max-width:680px),(hover:none){
  html[data-live] #resume .cv-row>.document-attachments{opacity:1}
  html[data-live] #resume .cv-document-card,html[data-live] #resume .cv-row-timeline.cv-document-card:not(:has(.cv-row-logo)),html[data-live] #resume .resume-column:first-child .cv-document-card{padding-right:52px}

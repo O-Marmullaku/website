@@ -5,13 +5,15 @@ const browser=await firefox.launch({headless:true,...(process.env.FIREFOX_EXECUT
 const base=process.env.TEST_BASE_URL||'http://localhost:8000';
 try{
  const page=await browser.newPage({viewport:{width:1920,height:1000}});
- await page.goto(base);
+ // Establish the origin without leaving homepage scripts running behind this isolated fixture.
+ await page.goto(base+'/robots.txt');
  await page.setContent(`<html data-live="true"><head><link rel="stylesheet" href="${base}/profile/editor.css"><link rel="stylesheet" href="${base}/main/profile-live.css"><link rel="stylesheet" href="${base}/main/cv-paper.css"></head><body>
  <button id="focus-origin">Edit</button><button id="undo-row" hidden>Undo</button><input id="row-logo" type="file"><p id="resume-status"></p>
  <dialog id="resume" open><div class="resume-workspace"><article class="paper"><header class="paper-header"><div><h2 id="resume-name">Test profile</h2></div></header><div class="resume-sections"><div class="resume-column"><img class="cv-portrait" alt=""></div><div class="resume-column"><section class="resume-section" data-section="experience" data-field="experience"><div class="section-heading"><h3>Experience</h3></div></section></div></div><div class="paper-foot">example.test <span></span></div></article></div></dialog></body></html>`);
  await page.evaluate(async base=>{
   const {setupCVPagination}=await import(base+'/profile/cv-pagination.mjs');
   const {createRowEditor}=await import(base+'/profile/cv-row-editor.mjs');
+  const {setupDocumentHints}=await import(base+'/profile/document-hints.mjs');
   const {rowLayouts}=await import(base+'/profile/cv-rows.mjs');
   for(const name of Object.keys(rowLayouts)){
    if(name==='experience')continue;
@@ -28,6 +30,8 @@ try{
   const attachment=document.createElement('div');attachment.className='document-attachments';attachment.innerHTML='<div class="document-attachment"><button class="document-link" aria-label="Example attachment"><svg aria-hidden="true" viewBox="0 0 24 24"></svg><span>Example attachment</span></button></div>';
   attachment.querySelector('button').addEventListener('click',()=>window.documentOpens=(window.documentOpens||0)+1);
   const attachedRow=document.querySelector('.cv-row');attachedRow.classList.add('cv-document-card');attachedRow.append(attachment);
+  setupDocumentHints(document.querySelector('#resume'));
+  await document.fonts.ready;
   pagination=setupCVPagination(document.querySelector('.paper'));window.pagination=pagination;pagination.layout();
  },base);
  const inspect=()=>page.evaluate(()=>({ids:[...document.querySelectorAll('.cv-row')].map(row=>row.dataset.rowId),pages:document.querySelectorAll('.cv-page').length,expected:window.expectedIDs,overflows:[...document.querySelectorAll('.cv-page')].some(page=>[...page.querySelectorAll('.cv-row')].some(row=>row.getBoundingClientRect().bottom>page.querySelector('.paper-foot').getBoundingClientRect().top))}));
@@ -38,7 +42,7 @@ try{
  assert(Math.abs(actionBounds.y+actionBounds.height/2-cardBounds.y-cardBounds.height/2)<1,'PDF action is vertically centered in its card');
  assert(Math.abs(actionBounds.x+actionBounds.width-cardBounds.x-cardBounds.width)<1,'PDF action is at the right edge of its card');
  const contentBounds=await card.locator('.cv-row-content').boundingBox();
- assert(Math.abs(contentBounds.y-cardBounds.y-(cardBounds.y+cardBounds.height-contentBounds.y-contentBounds.height))<1,'hover card has equal space above and below its content');
+ assert(Math.abs(contentBounds.y-cardBounds.y-(cardBounds.y+cardBounds.height-contentBounds.y-contentBounds.height))<1,'hover card has equal space above and below its content: '+JSON.stringify({cardBounds,contentBounds}));
  assert(await card.evaluate(e=>{const r=e.getBoundingClientRect();return document.elementFromPoint(r.left-4,r.top+r.height/2)===e;}),'the rounded outer edge belongs to the clickable card');
  await page.getByRole('button',{name:'Edit title for experience row 8',exact:true}).click();
  await page.locator('[contenteditable="plaintext-only"]').fill('Changed role');await page.locator('[contenteditable="plaintext-only"]').press('Enter');
@@ -60,11 +64,23 @@ try{
  const baseline=await positions();
  const documentButton=page.getByRole('button',{name:'Example attachment',exact:true});
  await page.mouse.move(0,0);await page.waitForTimeout(280);const compact=await documentButton.boundingBox();
- await page.locator('.cv-row').first().hover();await page.waitForTimeout(280);
- assert((await documentButton.boundingBox()).width>compact.width+40,'hovering the entry expands its document label');
- assert.deepEqual(await positions(),baseline,'document expansion does not shift entries or page breaks');
- await page.mouse.move(0,0);await documentButton.focus();await page.waitForTimeout(280);
- assert((await documentButton.boundingBox()).width>compact.width+40,'keyboard focus expands the label');
+ const filename='Arbeitszeugnis Siemens · Software Development and Internal Business Applications 2023–2024.pdf';
+ await documentButton.locator('span').evaluate((el,name)=>el.textContent=name,filename);
+ await page.locator('.cv-row').first().hover();
+ const hint=page.locator('.cv-document-hint');await hint.waitFor({state:'visible'});
+ assert.equal(await hint.locator('.document-hint-name').textContent(),filename,'the popup retains the full filename');
+ assert((await hint.boundingBox()).x>=((await card.boundingBox()).x+(await card.boundingBox()).width+8),'the popup sits outside the entry on the right');
+ assert.deepEqual(await documentButton.boundingBox(),compact,'the compact document action does not expand over text');
+ assert(await hint.locator('.document-hint-name').evaluate(e=>e.scrollWidth<=e.clientWidth&&getComputedStyle(e).whiteSpace==='normal'),'long document names wrap without clipping');
+ assert.deepEqual(await positions(),baseline,'the popup does not shift entries or page breaks');
+ const beforeScroll=await hint.boundingBox();
+ await page.locator('#resume').evaluate(async el=>{el.scrollTop+=20;await new Promise(requestAnimationFrame);});
+ assert(await hint.isVisible(),'the focused document hint remains available while scrolling');
+ assert(Math.abs((await hint.boundingBox()).y-beforeScroll.y+20)<1,'the hint follows its entry during scrolling');
+ await page.locator('#resume').evaluate(async el=>{el.scrollTop=0;await new Promise(requestAnimationFrame);});
+ await hint.getByRole('button').click();assert.equal(await page.evaluate(()=>window.documentOpens),2,'clicking the popup opens its document');
+ await page.mouse.move(0,0);await documentButton.focus();await hint.waitFor({state:'visible'});
+ await documentButton.press('Escape');await hint.waitFor({state:'hidden'});assert(await page.locator('#resume').isVisible(),'Escape dismisses the hint without closing the CV');
  await page.evaluate(()=>{document.querySelector('#resume').classList.add('preview-view');window.rowEditor.syncMode();});
  assert.equal(await page.locator('.cv-row-text[role=button]').count(),0,'Preview text has no editing actions');
  assert.deepEqual(await positions(),baseline,'Edit and Preview use identical geometry');

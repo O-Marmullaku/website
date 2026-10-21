@@ -2,6 +2,7 @@ import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail} from '../main/cv-extras-rail.mjs?v=centered-paper';
 import {setupCVPagination} from './cv-pagination.mjs?v=paper-themes';
 import {setupImageMagnifier} from './image-magnifier.mjs?v=a4-pages';
+import {setupDocumentHints} from './document-hints.mjs?v=readable-documents';
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
@@ -15,6 +16,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   const fileStore = adapter || {putPDF,getPDF,deletePDF};
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
+  setupDocumentHints($('resume'));
   const sections = [
     ["contact", "Contact"],
     ["skills", "Skills"],
@@ -859,7 +861,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
         item = node("div", undefined, "document-attachment");
         item.dataset.documentId = doc.id;
         const button = node("button", undefined, "document-link");
-        button.title = doc.name;
+        button.setAttribute('aria-label',`Open ${doc.name}`);
         button.innerHTML =
           '<svg aria-hidden="true"><use href="#pdf-icon"/></svg>';
         button.append(node("span", doc.name));
