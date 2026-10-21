@@ -247,3 +247,51 @@ html.cv-printing[data-live] #resume .resume-column:first-child .cv-document-card
 html.cv-printing[data-live] #resume .resume-column:first-child [data-section=contact] .cv-row{padding-left:36px;padding-right:0}
 html.cv-printing[data-live] #resume .resume-column:first-child [data-section=certificates] .cv-row{padding-left:38px}
 html.cv-printing[data-live] #resume .cv-row{min-height:0}
+
+/* Experience responds in place; only the studio logo travels into its project list. */
+html[data-live] #resume [data-section=experience] .cv-row:not(.cv-document-card)::after{content:'';position:absolute;inset:-4px -8px 4px;border-radius:12px;background:color-mix(in srgb,var(--cv-accent) 5%,#fffaf2);opacity:0;pointer-events:none;transition:opacity .18s}
+html[data-live] #resume [data-section=experience] .cv-row:not(.cv-document-card):is(:hover,:focus-within,.projects-open)::after{opacity:1}
+html[data-live] #resume [data-section=experience] .cv-row>.cv-row-content,html[data-live] #resume [data-section=experience] .cv-row>.cv-cell-date{position:relative;z-index:1}
+html[data-live] #resume [data-section=experience] .cv-row-logo{transition:transform .28s cubic-bezier(.16,1,.3,1),opacity .16s}
+html[data-live] #resume [data-section=experience] .cv-row:is(:hover,:focus-within) .cv-row-logo{transform:translateX(5px)}
+html[data-live] #resume .cv-project-trigger{position:relative;float:right;width:94px;height:64px;margin:4px 0 8px 14px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--cv-accent);cursor:pointer;overflow:visible}
+html[data-live] #resume .cv-project-trigger .cv-row-logo{float:none;display:block;width:64px;height:64px;max-height:64px;margin:0 auto;object-fit:contain}
+html[data-live] #resume .cv-project-trigger>span{position:absolute;inset:auto 0 0;display:flex;justify-content:center;align-items:center;gap:5px;font:12px/1.3 'Fira Sans',Arial,sans-serif;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .24s}
+html[data-live] #resume .projects-open .cv-project-trigger>img{visibility:hidden}
+html[data-live] #resume .projects-open .cv-project-trigger>span{opacity:1;transform:translateY(-18px)}
+html[data-live] #resume .cv-project-trigger:focus-visible{outline:2px solid var(--cv-accent);outline-offset:4px}
+.cv-project-trigger svg,.cv-project-panel svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.cv-project-panel{position:fixed;inset:auto;margin:0;padding:20px;max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);overflow:visible;border:0;border-radius:12px;background:#fff;color:var(--cv-ink,#10243d);box-shadow:0 14px 42px -8px #05152766;font:14px/1.45 'Fira Sans',Arial,sans-serif}
+.cv-project-panel>header{display:flex;align-items:center;gap:14px;margin-bottom:18px}
+.cv-project-panel .project-studio-logo{display:block;width:54px;height:54px;object-fit:contain;transform-origin:0 0;position:relative;z-index:2}
+.cv-project-panel h3{margin:0;font:500 21px/1.2 'Fira Sans',Arial,sans-serif;color:inherit}
+.cv-project-panel .project-panel-close{display:grid;place-items:center;width:32px;height:32px;min-height:32px;margin-left:auto;padding:6px;border:0;border-radius:6px;background:transparent;color:var(--cv-muted);cursor:pointer}
+.cv-project-panel .project-panel-close:hover{background:var(--cv-tint)}
+.project-panel-list{display:grid;gap:16px}
+.project-preview{display:flex;align-items:center;gap:12px;min-width:0;color:inherit;text-decoration:none}
+.project-preview>img{width:40px;height:40px;object-fit:contain;flex:none}
+.project-preview>div{flex:1;min-width:0}
+.project-preview strong{display:block;font-weight:500;font-size:14px}
+.project-preview p{margin:3px 0 0;color:var(--cv-muted,#405b78);font-size:12px;line-height:1.45}
+a.project-preview:hover strong{text-decoration:underline;text-underline-offset:3px}
+.project-catalogue{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;margin-top:18px;border-top:1px solid var(--cv-rule,#9eafc1);padding-top:12px;color:var(--cv-accent,#173f67);font-weight:500;text-decoration:none}
+.project-catalogue:hover{text-decoration:underline;text-underline-offset:3px}
+.cv-project-panel :is(a,button):focus-visible{outline:2px solid var(--cv-accent,#173f67);outline-offset:4px;border-radius:3px}
+.cv-project-panel:popover-open :is(h3,.project-panel-close,.project-panel-list,.project-catalogue){animation:project-reveal .28s .1s both cubic-bezier(.16,1,.3,1)}
+@keyframes project-reveal{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+@media(max-width:680px){
+ html[data-live] #resume .cv-project-trigger{float:none;display:block;width:86px;height:54px;margin:0 0 10px}
+ html[data-live] #resume .cv-project-trigger .cv-row-logo{width:54px;height:54px;max-height:54px}
+ .cv-project-panel{padding:16px;overflow:auto}
+ .cv-project-panel .project-panel-close{width:44px;height:44px;min-height:44px}
+ a.project-preview{min-height:44px}
+}
+@media print{
+ .cv-project-panel{display:none!important}
+ html[data-live] #resume [data-section=experience] .cv-row::after{display:none!important}
+ html[data-live] #resume .cv-project-trigger{display:block!important;float:right;width:94px;height:64px;margin:4px 0 8px 14px}
+ html[data-live] #resume .cv-project-trigger .cv-row-logo{visibility:visible!important;width:64px;height:64px;max-height:64px;transform:none!important}
+ html[data-live] #resume .cv-project-trigger>span{display:none}
+}
+html.cv-printing[data-live] #resume .cv-project-trigger{display:block;float:right;width:94px;height:64px;margin:4px 0 8px 14px}
+html.cv-printing[data-live] #resume .cv-project-trigger .cv-row-logo{visibility:visible;width:64px;height:64px;max-height:64px;transform:none}

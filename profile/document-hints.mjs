@@ -1,3 +1,16 @@
+export function positionRowHint(hint,row,width=260,minWidth=180){
+  const bounds=row.getBoundingClientRect(),viewport=document.documentElement.clientWidth;
+  if(bounds.bottom<12||bounds.top>innerHeight-12)return false;
+  const space=viewport-bounds.right-24,beside=space>=minWidth;
+  hint.style.width=`${Math.min(width,beside?space:viewport-24)}px`;
+  if(!hint.matches(':popover-open'))hint.showPopover();
+  const box=hint.getBoundingClientRect();
+  hint.style.left=`${beside?bounds.right+12:Math.max(12,Math.min(viewport-box.width-12,bounds.right-box.width))}px`;
+  const top=beside?bounds.top+(bounds.height-box.height)/2:bounds.top-box.height-12>=12?bounds.top-box.height-12:bounds.bottom+12;
+  hint.style.top=`${Math.max(12,Math.min(innerHeight-box.height-12,top))}px`;
+  return true;
+}
+
 export function setupDocumentHints(root) {
   const hint=document.createElement('aside');
   hint.className='cv-document-hint';hint.popover='manual';hint.setAttribute('aria-label','Supporting document');
@@ -18,20 +31,12 @@ export function setupDocumentHints(root) {
     const name=button.querySelector('span')?.textContent||button.getAttribute('aria-label');
     hint.querySelector('.document-hint-name').textContent=name;
     hint.querySelector('button').setAttribute('aria-label',`Open ${name}`);
+    root.dispatchEvent(new CustomEvent('cv-hint-open',{detail:hint}));
     position();
   }
   function position(){
     if(!source?.isConnected)return hide();
-    const bounds=row.getBoundingClientRect(),viewport=document.documentElement.clientWidth;
-    if(bounds.bottom<12||bounds.top>innerHeight-12)return hide();
-    const space=viewport-bounds.right-24,beside=space>=180;
-    hint.style.width=`${Math.min(260,beside?space:viewport-24)}px`;
-    if(!hint.matches(':popover-open'))hint.showPopover();
-    const box=hint.getBoundingClientRect();
-    const left=beside?bounds.right+12:Math.max(12,Math.min(viewport-box.width-12,bounds.right-box.width));
-    const top=beside?bounds.top+(bounds.height-box.height)/2:bounds.top-box.height-12>=12?bounds.top-box.height-12:bounds.bottom+12;
-    hint.style.left=`${left}px`;
-    hint.style.top=`${Math.max(12,Math.min(innerHeight-box.height-12,top))}px`;
+    if(!positionRowHint(hint,row))hide();
   }
   const scheduleClose=()=>{cancelClose();closing=setTimeout(hide,140);};
   root.addEventListener('pointerover',event=>{
@@ -60,6 +65,7 @@ export function setupDocumentHints(root) {
   },true);
   root.addEventListener('scroll',()=>{if(source)position();},true);
   root.addEventListener('close',hide);
+  root.addEventListener('cv-hint-open',event=>{if(event.detail!==hint)hide();});
   addEventListener('resize',hide);
   addEventListener('beforeprint',hide);
 }

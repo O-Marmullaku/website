@@ -2,7 +2,8 @@ import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=quiet-extras';
 import {setupCVPagination} from './cv-pagination.mjs?v=paper-themes';
 import {setupImageMagnifier} from './image-magnifier.mjs?v=a4-pages';
-import {setupDocumentHints} from './document-hints.mjs?v=readable-documents';
+import {setupDocumentHints} from './document-hints.mjs?v=experience-projects-2';
+import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
 import { resolveQuote } from "./picture-anchor.mjs";
 import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
@@ -17,6 +18,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   const key = "marmullaku-profile-mockup-v1",
     $ = (id) => document.getElementById(id);
   setupDocumentHints($('resume'));
+  let experienceProjects;
   const sections = [
     ["contact", "Contact"],
     ["skills", "Skills"],
@@ -253,6 +255,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("pdf-file").click();
     },
   });
+  experienceProjects=setupExperienceProjects($('resume'));
   Object.keys(initial).forEach(sync);
   function finish(keep) {
     rowEditor?.finish(keep);
@@ -885,6 +888,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     document.querySelectorAll('.cv-row').forEach(row=>{
       row.classList.toggle('cv-document-card',!!row.querySelector(':scope > .document-attachments .document-link'));
     });
+    experienceProjects?.sync();
   }
   $('resume').addEventListener('click',event=>{
     const row=event.target.closest('.cv-document-card');
