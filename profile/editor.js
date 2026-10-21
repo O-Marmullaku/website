@@ -1,5 +1,5 @@
 import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
-import {setupExtrasRail} from '../main/cv-extras-rail.mjs?v=centered-paper';
+import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=quiet-extras';
 import {setupCVPagination} from './cv-pagination.mjs?v=paper-themes';
 import {setupImageMagnifier} from './image-magnifier.mjs?v=a4-pages';
 import {setupDocumentHints} from './document-hints.mjs?v=readable-documents';
@@ -895,9 +895,11 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   });
   function renderDocumentLibrary() {
     $("pdf-list").replaceChildren();
+    const attachedIDs=new Set([...document.querySelectorAll('#resume .paper .document-attachment')].filter(item=>!item.closest('[data-section]')?.hidden).map(item=>item.dataset.documentId));
+    const library=libraryDocuments(documents.filter(documentVisible),attachedIDs,previewing);
     document.querySelector(".pdf-library").hidden =
-      previewing && !documentAccess;
-    for (const doc of documents.filter(documentVisible)) {
+      previewing && (!documentAccess || !library.length);
+    for (const doc of library) {
       const item = node("div", undefined, "pdf-item"),
         open = node("button", doc.name, "text-button pdf-name");
       const icon=node('span',undefined,'pdf-file-icon');icon.innerHTML='<svg aria-hidden="true"><use href="#pdf-icon"/></svg>';open.prepend(icon);
