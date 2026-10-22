@@ -1,6 +1,5 @@
 import {validateCV} from '../supabase/functions/marmullaku-access/handler.mjs';
 import {decodeUpload,editorAssets} from '../supabase/functions/marmullaku-access/editor.mjs';
-import {sectionLabels} from './section-timing.mjs';
 
 // Same request contract as the site, backed only by browser-owned sample data.
 export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset,ownerID='osman'}) {
@@ -13,7 +12,7 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset,ownerI
     let link,allowed=available(own.id);
     const record=(profile_id,kind,label,details={})=>{const current=load();current.events.unshift({link_id:link.id,profile_id,kind,label,...details,created_at:new Date().toISOString()});current.events=current.events.slice(0,1000);save(current);};
     if(options.token||['welcome','read','event'].includes(action)) {
-      link=state.links.find(link=>link.token===options.token&&!link.revoked);
+      link=state.links.find(link=>link.token===options.token&&!link.revoked&&(!link.expires_at||Date.parse(link.expires_at)>Date.now()));
       if(!link)fail('This link is unavailable.',404);
       allowed=available(link.profile_id);
     }
@@ -25,10 +24,6 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset,ownerI
       const profile=state.profiles.find(profile=>profile.id===target);
       if(action==='welcome'){record(target,'visit','Opened link');return {profile:publicProfile(profile),profiles:state.profiles.filter(profile=>allowed.includes(profile.id)).map(publicProfile),company:link.company,message:link.message};}
       if(action==='event'){
-        if(body.kind==='section'){
-          if(!Object.hasOwn(sectionLabels,body.section)||!Number.isInteger(body.seconds)||body.seconds<2||body.seconds>3600)fail('Invalid section timing.');
-          record(target,'section',sectionLabels[body.section]+' in view',{section:body.section,seconds:body.seconds});return {recorded:true};
-        }
         if(!['picture','link','button'].includes(body.kind))fail('Invalid activity.');
         const data=profile.cv.editor?.data||{};record(target,body.kind,body.kind==='picture'?'Viewed photo: '+(data.pictureCaption||''):('Opened '+(data[body.kind+'Label']||body.kind)));return {recorded:true};
       }
@@ -67,7 +62,10 @@ export function createPreviewAPI({load,save,putAsset,getAsset,removeAsset,ownerI
       state.family=state.family.filter(grant=>grant.owner_id!==own.id||grant.recipient_id!==body.recipient_id);
       state.family.push({owner_id:own.id,recipient_id:body.recipient_id,enabled:body.enabled});save(state);return {saved:true};
     }
-    if(action==='links')return {links:state.links.map(({token,...link})=>link),events:[...state.events].sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at))};
+    if(action==='links') {
+      const links=state.links.filter(link=>link.profile_id===own.id);
+      return {links:links.map(({token,...link})=>link),events:state.events.filter(event=>links.some(link=>link.id===event.link_id)).sort((a,b)=>Date.parse(b.created_at)-Date.parse(a.created_at))};
+    }
     if(action==='create') {
       const company=String(body.company||'').trim();if(!company||company.length>120)fail('Enter a company name.');
       const link={id:crypto.randomUUID(),profile_id:own.id,company,message:'',created_at:new Date().toISOString(),expires_at:null,revoked:false,token:token()};

@@ -1,5 +1,5 @@
 import { normalizeRows } from '../profile/cv-rows.mjs?v=accounts-2';
-import { validatePDF } from '../profile/pdf-store.mjs';
+import { validatePDF } from '../profile/pdf-store.mjs?v=cleanup';
 
 // The editor's media are in-memory previews; only private asset IDs are saved.
 export function fromProfile(profile) {
@@ -56,7 +56,7 @@ export async function createLiveAdapter() {
     })().catch(error=>{uploads.delete(value);throw error;}));
     await uploads.get(value);
   }
-  let pending, timer, running=false, failure,blocked=false;
+  let pending, timer, running=false, failure,blocked=false,discarded=false;
   let statusTimer;
   const status=message=>{clearTimeout(statusTimer);for(const id of ['save-status','resume-status']){const el=document.getElementById(id);if(el)el.textContent=message;}if(message==='Saved')statusTimer=setTimeout(()=>{for(const id of ['save-status','resume-status']){const el=document.getElementById(id);if(el?.textContent==='Saved')el.textContent='';}},2400);};
   async function drain() {
@@ -81,12 +81,20 @@ export async function createLiveAdapter() {
     while(running) await new Promise(resolve=>setTimeout(resolve,50));
     await drain();if(failure||blocked)throw failure||new Error('Reload before editing again.');
   }
+  async function settle() {
+    if(discarded)return true;
+    try {await flush();return true;}
+    catch(error){
+      if(!blocked&&!(error.status>=400&&error.status<500))throw error;
+      if(!confirm(blocked?'Your CV changed in another tab. Leave without saving your edits?':'Your changes could not be saved. Leave without saving your edits?'))return false;
+      clearTimeout(timer);pending=null;discarded=true;return true;
+    }
+  }
   return {state,profile,editable,guest,request,
-    save(value){if(!editable)return;pending=structuredClone(value);status('Saving…');clearTimeout(timer);timer=setTimeout(drain,700);},flush,
+    save(value){if(!editable)return;pending=structuredClone(value);discarded=false;clearTimeout(timer);if(blocked){status(failure.message+' Your edits remain open.');return;}status('Saving…');timer=setTimeout(drain,700);},flush,settle,
     async putPDF(file){await validatePDF(file);return (await upload(new File([file],file.name,{type:'application/pdf'}))).id;},getPDF:getFile,
     async deletePDF(id){await request('remove-file',{id});},
     track(kind){if(guest&&['picture','link','button'].includes(kind))request('event',{kind}).catch(()=>{});},
-    async close(){await flush();parent.postMessage({type:'marmullaku-close'},location.origin);},
     get dirty(){return !!pending||running;}
   };
 }

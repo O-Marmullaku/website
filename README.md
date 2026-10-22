@@ -10,4 +10,12 @@ Public hosting always uses the normal authenticated backend. Ordinary company in
 
 CV and settings transitions are shared in `main/profile-motion.mjs`. The outer window keeps the editor visible while drafts flush and the exit animation completes; the frame is removed afterward.
 
-The reader and inline editor share the white A4 presentation in `main/profile-live.css`. The paper is centered independently; extras open from More about me in a side drawer at every width. Preview lists only documents without a link on the paper; Edit retains the complete file library. Supporting PDFs overlay the right side without resizing the paper. `profile/` is the production editor; `mockup/` holds the isolated sample experience. Backend setup is documented in [supabase/README.md](supabase/README.md).
+The reader and inline editor share the white A4 presentation in `main/cv-paper.css`, layered over editor and live-window styles. The paper is centered independently; extras open from More about me in a side drawer at every width. Preview lists only documents without a link on the paper; Edit retains the complete file library. Supporting PDFs overlay the right side without resizing the paper.
+
+`main/profile-bridge.js` opens `/profile/`, whose loader waits for styles before starting the canonical `profile/editor.js`. `profile/editor.html` supplies its template; direct navigation redirects through the homepage. Both `/` and `/mockup/` use this editor. The mockup swaps account services for browser-owned sample data, with separate storage. Keep both attachment database names when changing storage, so existing uploads remain readable. Backend setup is documented in [supabase/README.md](supabase/README.md).
+
+After changing `index.html`, regenerate its mockup counterpart with `node mockup/sync-homepage.mjs`.
+
+## Checks
+
+Run `node --test tests/*.test.mjs` for the unit suite. Browser checks are the four `tests/*.browser.mjs` scripts; run them against the local server. They use Playwright (or the module URL supplied in `PLAYWRIGHT_MODULE`) and Firefox (optionally supplied in `FIREFOX_EXECUTABLE`). The full-site check also accepts `CHROMIUM_EXECUTABLE` to run in Chrome. It uses isolated synthetic profiles and blocks live backend requests, covering both homepage routes at desktop and phone widths, inline edits, close/save behavior, project panels, attachments and PDF rendering.

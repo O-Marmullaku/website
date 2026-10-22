@@ -1,7 +1,0 @@
-.footer-identity.signed-account{gap:5px;flex-wrap:wrap;align-items:center}
-.signed-account>span{color:#aebed1}
-.footer-account-control{display:inline-flex;align-items:center;gap:8px;min-height:40px;padding:0 6px;color:#d0deee;text-decoration:none;border-radius:5px;transition:background .18s,color .18s}
-.footer-account-control:hover{color:#edf5ff;background:#20314b}
-.footer-account-control:focus-visible{outline:2px solid #8ec5ff;outline-offset:3px}
-.footer-account-gear{display:flex;color:#93b4d7}
-.footer-account-gear svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}

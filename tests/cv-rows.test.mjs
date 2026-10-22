@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { normalizeRows, rowText, moveRow } from "../mockup/cv-rows.mjs";
+import { normalizeRows, rowText, moveRow } from "../profile/cv-rows.mjs";
 const makeId = () => crypto.randomUUID();
 test("existing paragraphs migrate into editable rows without losing their text", () => {
   const rows = normalizeRows(

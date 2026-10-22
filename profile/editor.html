@@ -42,128 +42,15 @@
         </symbol>
       </defs>
     </svg>
-    <header class="site-header">
-      <a href="../">Marmullaku</a>
-    </header>
-    <main id="family-home">
-      <div class="intro">
-        <div>
-          <h1>Welcome</h1>
-          <p>CVs from the Marmullaku family.</p>
-        </div>
-        <p id="save-status" role="status"></p>
-      </div>
-      <div class="family">
-        <article class="profile-card own-card">
-          <div class="portrait">
-            <img
-              class="office"
-              src="../main/pictures/offices/office_01.webp"
-              alt=""
-            /><img
-              src="../main/pictures/portraits/osman.webp"
-              alt="Osman Marmullaku"
-            />
-          </div>
-          <div class="card-content">
-            <div class="editable name-field" data-field="name">
-              <h2 data-value="name"></h2>
-            </div>
-            <div class="editable role-field" data-field="role">
-              <p data-value="role"></p>
-              <button
-                class="edit"
-                data-edit="role"
-                aria-label="Edit your title"
-              >
-                <svg><use href="#pencil" /></svg>
-              </button>
-            </div>
-            <button class="resume-button" id="resume-open">
-              View CV <span aria-hidden="true">↗</span>
-            </button>
-          </div>
-        </article>
-        <article class="profile-card sibling-card">
-          <div class="portrait">
-            <img
-              class="office"
-              src="../main/pictures/offices/office_01.webp"
-              alt=""
-            /><img
-              src="../main/pictures/portraits/diellza.webp"
-              alt="Diellza Marmullaku"
-            />
-          </div>
-          <div class="card-content">
-            <h2>Diellza Marmullaku</h2>
-            <p>Private CV</p>
-            <span class="sibling-note">Shared with you when invited</span>
-          </div>
-        </article>
-        <article class="profile-card sibling-card">
-          <div class="portrait">
-            <img
-              class="office"
-              src="../main/pictures/offices/office_01.webp"
-              alt=""
-            /><img
-              src="../main/pictures/portraits/drilona.webp"
-              alt="Drilona Marmullaku"
-            />
-          </div>
-          <div class="card-content">
-            <h2>Drilona Marmullaku</h2>
-            <p>Private CV</p>
-            <span class="sibling-note">Shared with you when invited</span>
-          </div>
-        </article>
-      </div>
-    </main>
-    <main id="company-view" hidden>
-      <div id="company-preview-bar" hidden>
-        <span>Company preview</span
-        ><button class="text-button" id="back-to-settings">
-          Back to settings
-        </button>
-      </div>
-      <div class="intro">
-        <div>
-          <h1 id="company-welcome"></h1>
-          <p id="company-message">Choose a CV.</p>
-        </div>
-      </div>
-      <div class="family" id="company-profiles"></div>
-    </main>
-    <footer>
-      <div class="footer-identity">
-        <p class="signed-in">
-          Signed in as
-          <a id="settings-open" href="#profile-settings" data-value="name"
-            >Osman Marmullaku</a
-          ><button
-            id="settings-icon-open"
-            class="footer-settings"
-            aria-label="Open profile settings"
-          >
-            <svg aria-hidden="true"><use href="#settings-icon" /></svg>
-          </button>
-        </p>
-      </div>
-      <span>All rights reserved</span>
-    </footer>
-
+    <p id="save-status" role="status" hidden></p>
     <dialog id="resume" aria-labelledby="resume-name">
       <div class="resume-toolbar">
         <span class="mobile-edit-note">Desktop recommended</span>
-        <span id="resume-mode">Your CV</span
-        ><span id="resume-status" role="status"></span
+        <span id="resume-status" role="status"></span
         ><button class="text-button cv-owner" id="undo-row" hidden>
           Undo row change</button
         ><button class="text-button" id="cancel-attachment" hidden>
           Cancel attachment</button
-        ><button class="text-button" id="exit-preview" hidden>
-          Back to editing</button
         ><button class="icon-button" data-close="resume" aria-label="Close CV">
           <svg><use href="#close" /></svg>
         </button>
@@ -353,8 +240,7 @@
         </div>
         <p class="search-help">Choose a suggestion or add a company.</p>
         <div class="sharing-actions">
-          <button class="secondary" id="preview-company">Preview</button
-          ><button class="primary" id="create-link">Create link</button>
+          <button class="primary" id="create-link">Create link</button>
         </div>
         <p class="context-help">
           Each link opens your full CV, documents and extras.
@@ -384,6 +270,6 @@
       </div>
       <p id="settings-status" role="status"></p>
     </dialog>
-    <script type="module" src="editor.js?v=preview-split"></script>
+    <script>if(window===parent)location.replace('./'+location.search+location.hash);</script>
   </body>
 </html>

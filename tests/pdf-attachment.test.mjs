@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { validatePDF } from "../mockup/pdf-store.mjs";
+import { validatePDF } from "../profile/pdf-store.mjs";
 
 test("accepts PDF bytes independently of the filename and browser MIME label", async () => {
   await validatePDF(

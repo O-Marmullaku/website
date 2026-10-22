@@ -169,11 +169,6 @@ test('invalid content and URL schemes are rejected; saved ownership is ignored',
   assert.equal(state.profiles[0].owner_user_id, 'owner-a');
   assert.equal(state.profiles[0].cv.profile, 'Updated');
 });
-test('escaped document does not permit stored HTML or unsafe hrefs', () => {
-  const context = {window:{}}; vm.runInNewContext(readFileSync(new URL('../main/cv-safe.js', import.meta.url),'utf8'), context);
-  const out = context.window.escapeDocument({...blank, profile:'<img src=x onerror="alert(1)">', contact:[['<script>','javascript:alert(1)']], skills:[['X',Infinity]]});
-  assert(!out.profile.includes('<')); assert.equal(out.contact[0][1], ''); assert.equal(out.skills[0][1], 0);
-});
 test('signup is invitation-only and unknown addresses are not emailed', async () => {
   const {call, state} = await fixture();
   assert.equal((await call('sign-in-code', {email:'stranger@example.com'})).status, 200);

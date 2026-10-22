@@ -1,5 +1,5 @@
-import {createPreviewAPI} from './preview-api.mjs?v=paper-documents';
-import {createAssetStore,getPDF as originalAsset} from './pdf-store.mjs?v=paper-documents';
+import {createPreviewAPI} from './preview-api.mjs?v=cleanup';
+import {createAssetStore,getPDF as originalAsset} from '../profile/pdf-store.mjs?v=cleanup';
 import {profilesToSeed,applyCopyUpdates} from './profile-seed.mjs?v=cv-copy';
 
 const key='marmullaku-site-preview-v1',signedOut='marmullaku-preview-signed-out';

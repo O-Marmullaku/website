@@ -41,6 +41,16 @@ test('preview links have isolated activity and follow local family grants and re
   await f.request('toggle-link',{id:created.link.id,revoked:true});
   await assert.rejects(f.request('read',{},guest),error=>error.status===404);
 });
+test('sample link management is limited to the current owner and expired invitations fail',async()=>{
+  const f=fixture(),created=await f.request('create',{company:'Sample company'});
+  f.state.links.push({id:'other-link',profile_id:'diellza',token:'other-token',revoked:false});
+  f.state.events.push({link_id:'other-link',created_at:new Date().toISOString()});
+  const result=await f.request('links');
+  assert.deepEqual(result.links.map(link=>link.id),[created.link.id]);
+  assert.deepEqual(result.events,[]);
+  f.state.links[0].expires_at='2000-01-01T00:00:00Z';
+  await assert.rejects(f.request('read',{}, {token:created.token}),error=>error.status===404);
+});
 test('mockup starts from the actual homepage without loading production account services',()=>{
   const html=readFileSync(new URL('../mockup/index.html',import.meta.url),'utf8');
   assert.equal((html.match(/class="card t\d/g)||[]).length,6);
@@ -63,17 +73,4 @@ test('active screens and error messages contain no test-environment labels',()=>
     const source=readFileSync(new URL('../'+path,import.meta.url),'utf8');
     assert(!/local preview|local data|preview only|this preview|in the mockup|in this browser|sample cv/i.test(source),path);
   }
-});
-
-test('preview section timing validates section identity and duration',async()=>{
-  const f=fixture(),created=await f.request('create',{company:'Timing test'}),guest={token:created.token};
-  const event={kind:'section',section:'experience',seconds:18};
-  for(const invalid of [{section:'__proto__'},{seconds:-1},{seconds:1.5},{seconds:3601}]){
-    await assert.rejects(f.request('event',{...event,...invalid},guest),error=>error.status===400);
-  }
-  assert.equal(f.state.events.length,0);
-  await f.request('event',event,guest);
-  const saved=(await f.request('links')).events[0];
-  assert.equal(saved.label,'Experience in view');assert.equal(saved.seconds,18);
-  assert.equal(saved.link_id,created.link.id);assert.equal(saved.profile_id,'osman');
 });

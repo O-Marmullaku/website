@@ -1,22 +1,17 @@
 import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=quiet-extras';
-import {setupCVPagination} from './cv-pagination.mjs?v=paper-themes';
+import {setupCVPagination} from './cv-pagination.mjs?v=cleanup';
 import {setupImageMagnifier} from './image-magnifier.mjs?v=a4-pages';
-import {setupDocumentHints} from './document-hints.mjs?v=experience-projects-2';
+import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
 import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
 import { resolveQuote } from "./picture-anchor.mjs";
-import { putPDF, getPDF, deletePDF } from "./pdf-store.mjs";
 import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
-import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
 
 (async () => {
-  const live = document.documentElement.dataset.live === 'true';
-  const adapter = live ? await (await import('../main/profile-adapter.mjs?v=clean-editing')).createLiveAdapter() : null;
-  const fileStore = adapter || {putPDF,getPDF,deletePDF};
-  const key = "marmullaku-profile-mockup-v1",
-    $ = (id) => document.getElementById(id);
+  const adapter = await (await import('../main/profile-adapter.mjs?v=cleanup')).createLiveAdapter();
+  const $ = (id) => document.getElementById(id);
   setupDocumentHints($('resume'));
   let experienceProjects;
   const sections = [
@@ -70,7 +65,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     rowEditor,
     uploadAnchor = null;
   try {
-    const stored = adapter ? adapter.state : JSON.parse(localStorage.getItem(key));
+    const stored = adapter.state;
     cvRows = stored?.cvRows;
     if (stored && typeof stored === "object")
       for (const field of Object.keys(initial))
@@ -153,9 +148,6 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     .join(",");
   for (const field of Object.keys(rowLayouts))
     data[field] = rowText(cvRows[field]);
-  if (!live) data.name = initial.name;
-  if (!live && !/^data:image\/(png|jpeg|webp);base64,/.test(data.picture))
-    data.picture = initial.picture;
   const pencil = '<svg aria-hidden="true"><use href="#pencil"/></svg>';
   function node(tag, text, cls) {
     const e = document.createElement(tag);
@@ -180,25 +172,9 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   }
   function save() {
     pagination?.schedule();
-    if (adapter) {adapter.save({...data,extraTypes,pictureAnchor,documents,cvRows});return;}
-    let message = "Saved";
-    try {
-      localStorage.setItem(
-        key,
-        JSON.stringify({
-          ...data,
-          extraTypes,
-          pictureAnchor,
-          documents,
-          cvRows,
-        }),
-      );
-    } catch {
-      message = "Could not save your changes. Keep this page open and try again.";
-    }
-    $("save-status").textContent = message;
-    $("resume-status").textContent = message;
+    adapter.save({...data,extraTypes,pictureAnchor,documents,cvRows});
   }
+
   const sidebar = node("div", undefined, "resume-column"),
     mainColumn = node("div", undefined, "resume-column");
   $("resume-sections").append(sidebar, mainColumn);
@@ -363,7 +339,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       if(value&&!value.isContentEditable){const button=value.closest('[data-field]')?.querySelector('[data-edit]');if(button)start(button);}
     }
   });
-  function openResume(allowed = null, company = "") {
+  function openResume(allowed = null) {
     pagination?.restore();
     finish(true);
     cancelAttachment();
@@ -372,13 +348,6 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     closeDocument();
     $("resume").classList.toggle("preview-view", previewing);
     rowEditor.syncMode();
-    $("resume-mode").textContent = sharing?.isGuest
-      ? "CV"
-      : previewing
-        ? `${company || "Company"} preview`
-        : "Your CV";
-    $("resume-status").textContent = "";
-    $("exit-preview").hidden = !!adapter || !previewing || sharing?.isGuest;
     document.querySelectorAll('[data-cv-view]').forEach(button=>button.setAttribute('aria-pressed',String((button.dataset.cvView==='preview')===previewing)));
     document
       .querySelectorAll("[data-section]")
@@ -395,21 +364,21 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     requestAnimationFrame(alignPicture);
     pagination?.layout();
   }
-  $("resume-open").addEventListener("click", () => openResume());
-  $("exit-preview").addEventListener("click", () => openResume());
-  for (const id of ["settings-open", "settings-icon-open"])
-    $(id).addEventListener("click", (event) => {
-      event.preventDefault();
-      finish(true);
-      sharing?.refresh();
-      $("settings-panel").showModal();
-    });
   let closing=false;
+  const pendingUploads=new Set();
+  window.flushProfile=async()=>{
+    finish(true);cancelAttachment();
+    const dialogs=[$('resume'),$('settings-panel')];
+    dialogs.forEach(dialog=>{dialog.inert=true;});
+    try {await Promise.all(pendingUploads);return await adapter.settle();}
+    catch(error){$('resume-status').textContent=$('settings-status').textContent=error.message;throw error;}
+    finally{dialogs.forEach(dialog=>{dialog.inert=false;});}
+  };
   async function closeDialog(id) {
     if(closing)return;closing=true;
     finish(true);cancelAttachment();
     try {
-      if(adapter&&!(id==='settings-panel'&&$('resume').open))await adapter.close();
+      if(!(id==='settings-panel'&&$('resume').open))parent.postMessage({type:'marmullaku-close'},location.origin);
       else {await $(id).animate([{opacity:1},{opacity:0,transform:'translateY(8px)'}],{duration:180}).finished;$(id).close();}
     } catch(error){$('resume-status').textContent=$('settings-status').textContent=error.message;}
     finally{closing=false;}
@@ -418,6 +387,11 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
   for(const id of ['resume','settings-panel']) {
     $(id).addEventListener('click',event=>{if(event.target===$(id))closeDialog(id);});
     $(id).addEventListener('cancel',event=>{event.preventDefault();if(id==='resume'&&!$('document-reader').hidden)closeDocument(true);else closeDialog(id);});
+    $(id).addEventListener('close',()=>{
+      if($(id).open||(id==='settings-panel'&&$('resume').open))return;
+      // Repeated Escape can force a native close; keep the draft visible until settled.
+      $(id).showModal();closeDialog(id);
+    });
   }
   function safeURL(value) {
     try {
@@ -692,7 +666,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
         image.alt = data.pictureCaption;
         image.addEventListener('error',()=>{
           image.hidden=true;
-          if(adapter&&!adapter.editable)block.remove();
+          if(!adapter.editable)block.remove();
           else {change.textContent='Choose another picture';block.prepend(node('p','Picture unavailable.','picture-unavailable'));}
         },{once:true});
         const change = node("button", data.picture ? "Change picture" : "Add picture", "text-button");
@@ -818,17 +792,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     $("link-editor").hidePopover();
   });
   $('cancel-link')?.addEventListener('click',()=>{ $('link-editor').hidePopover();document.querySelector(`[data-url-type="${$('link-form').dataset.type}"]`)?.focus({preventScroll:true}); });
-  function documentVisible(doc) {
-    if (adapter) return !previewing || documentAccess;
-    return (
-      !previewing ||
-      (documentAccess &&
-        doc.anchor &&
-        (!doc.anchor.rowId ||
-          document.querySelector(`[data-row-id="${doc.anchor.rowId}"]`)) &&
-        !document.querySelector(`[data-section="${doc.anchor.field}"]`)?.hidden)
-    );
-  }
+  function documentVisible() {return !previewing || documentAccess;}
   function renderDocumentLinks() {
     document.querySelectorAll(".document-attachment").forEach((item) => {
       const doc = documents.find((doc) => doc.id === item.dataset.documentId);
@@ -939,18 +903,12 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
         remove.disabled = true;
         try {
           const previous=documents;
-          if (adapter) {
-            documents = documents.filter((value) => value.id !== doc.id);
-            save();
-            try {await adapter.flush();}
-            catch(error){documents=previous;save();throw error;}
-            try {await fileStore.deletePDF(doc.id);}
-            catch {$("resume-status").textContent='Removed from CV. The stored file could not be removed.';}
-          } else {
-            await fileStore.deletePDF(doc.id);
-            documents = documents.filter((value) => value.id !== doc.id);
-            save();
-          }
+          documents = documents.filter((value) => value.id !== doc.id);
+          save();
+          try {await adapter.flush();}
+          catch(error){documents=previous;save();throw error;}
+          try {await adapter.deletePDF(doc.id);}
+          catch {$("resume-status").textContent='Removed from CV. The stored file could not be removed.';}
           closeDocument();
           renderDocumentLibrary();
           renderDocumentLinks();
@@ -1015,7 +973,7 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     documentEntry.finished.catch(()=>{});
     $("close-document").focus({ preventScroll: true });
     try {
-      const file = await fileStore.getPDF(id);
+      const file = await adapter.getPDF(id);
       if (generation !== documentGeneration) return;
       if (!file)
         throw new Error(
@@ -1046,14 +1004,15 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       $("add-extra").open = false;
       $("pdf-file").click();
     });
-  $("pdf-file").addEventListener("change", async () => {
+  $("pdf-file").addEventListener("change", () => {
     const file = $("pdf-file").files[0];
     if (!file) return;
+    const anchor = uploadAnchor;
+    uploadAnchor = null;
     $("resume-status").textContent = "Adding PDF…";
+    const uploading=(async()=>{
     try {
-      const id = await fileStore.putPDF(file);
-      const anchor = uploadAnchor;
-      uploadAnchor = null;
+      const id = await adapter.putPDF(file);
       documents.push({ id, name: file.name.slice(0, 180), anchor });
       save();
       renderDocumentLibrary();
@@ -1066,16 +1025,11 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
     } finally {
       $("pdf-file").value = "";
     }
+    })();
+    pendingUploads.add(uploading);
+    uploading.finally(()=>pendingUploads.delete(uploading));
   });
-  sharing = adapter ? await (await import('../main/live-sharing.mjs?v=cv-draft-repair')).createLiveSharing(adapter,openResume) : createSharingUI({
-    name: data.name,
-    onOpenCV: openResume,
-    beforePreview() {
-      finish(true);
-      cancelAttachment();
-      closeDocument();
-    },
-  });
+  sharing = await (await import('../main/live-sharing.mjs?v=cleanup')).createLiveSharing(adapter,window.flushProfile);
   document.addEventListener("click", (event) => {
     const link = event.target.closest("#extra-blocks a");
     if (link)
@@ -1085,8 +1039,9 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       );
   });
   renderExtras();
-  if (adapter) {
-    portrait.src = `../main/pictures/portraits/${adapter.profile.id}.webp`;
+  {
+    const card=parent.document.querySelector(`.role[data-i18n="${adapter.profile.id}"]`)?.closest('.card');
+    portrait.src = card?.querySelector('.who')?.src || `../main/pictures/portraits/${adapter.profile.id}.webp`;
     document.querySelector('.paper-foot span').textContent = '';
     document.querySelector('.pdf-help').textContent = 'PDF · up to 10 MB';
     const download=node('button','','text-button cv-download');download.setAttribute('aria-label','Save as PDF');
@@ -1108,17 +1063,19 @@ import { createSharingUI } from "./sharing-ui.mjs?v=accounts-2";
       const help=node('p','Click text to edit. Changes save automatically.','cv-edit-help');document.querySelector('#resume').append(help);
     }
     extrasRail=setupExtrasRail({editable:()=>!previewing,onLayout:alignPicture});
-    addEventListener('beforeunload',event=>{if(adapter.dirty){event.preventDefault();event.returnValue='';}});
+    addEventListener('beforeunload',event=>{if(adapter.dirty||pendingUploads.size){event.preventDefault();event.returnValue='';}});
     if(new URLSearchParams(location.search).get('view')==='settings'&&adapter.editable) $('settings-panel').showModal();
     else openResume(['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);
-    await document.fonts.ready;
+    let fontTimeout;
+    await Promise.race([document.fonts.ready,new Promise(resolve=>{fontTimeout=setTimeout(resolve,3000);})]);
+    clearTimeout(fontTimeout);
     await portrait.decode().catch(()=>{});
     pagination=setupCVPagination(document.querySelector('.paper'));
+    document.fonts.addEventListener('loadingdone',pagination.schedule);
     pagination.layout();
     setupImageMagnifier();
     parent.postMessage({type:'marmullaku-ready'},location.origin);
   }
 })().catch(error=>{
-  if(document.documentElement.dataset.live==='true') parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);
-  else console.error(error);
+  parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);
 });

@@ -1,7 +1,11 @@
 (() => {
   const key = 'marmullaku-sibling-session';
-  let session;
-  try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch { session = null; }
+  let session, refreshing;
+  function read() {
+    try { session = JSON.parse(sessionStorage.getItem(key) || 'null'); } catch {}
+    return session;
+  }
+  read();
   function store(value) {
     session = value;
     try { value ? sessionStorage.setItem(key, JSON.stringify(value)) : sessionStorage.removeItem(key); } catch {}
@@ -10,9 +14,30 @@
     const c = window.MARMULLAKU_BACKEND;
     const r = await fetch(`${c.url}/auth/v1/${path}`, {method, cache: 'no-store', referrerPolicy: 'no-referrer', headers: {apikey: c.publishableKey, 'Content-Type': 'application/json', ...(jwt ? {Authorization: `Bearer ${jwt}`} : {})}, body: JSON.stringify(body)});
     let data;
-    try { data = await r.json(); } catch { throw new Error('Could not connect. Please try again.'); }
-    if (!r.ok) throw new Error(data.error_code === 'invalid_credentials' || data.code === 'invalid_credentials' ? 'Incorrect email or password.' : data.msg || data.error_description || data.message || 'Sign-in failed. Please try again.');
+    try { data = await r.json(); } catch { throw Object.assign(new Error('Could not connect. Please try again.'), {status:r.status}); }
+    if (!r.ok) throw Object.assign(new Error(data.error_code === 'invalid_credentials' || data.code === 'invalid_credentials' ? 'Incorrect email or password.' : data.msg || data.error_description || data.message || 'Sign-in failed. Please try again.'), {status:r.status});
     return data;
+  }
+  function refresh() {
+    if (refreshing) return refreshing;
+    const previous = session;
+    const unchanged = () => read()?.access_token === previous.access_token;
+    refreshing = auth('token?grant_type=refresh_token', {refresh_token: previous.refresh_token})
+      .then(next => {
+        // An iframe may have refreshed or signed out while this request was in flight.
+        if (unchanged()) store({...next, expires_at: Date.now() + next.expires_in * 1000});
+        if (!session) throw Object.assign(new Error('Please sign in.'), {status:401});
+      })
+      .catch(error => {
+        if (!unchanged() && session) return;
+        if ([400,401].includes(error.status)) {
+          store(null);
+          throw Object.assign(new Error('Your session has expired. Please sign in again.'), {status:401});
+        }
+        throw error;
+      })
+      .finally(() => { refreshing = null; });
+    return refreshing;
   }
   window.siblingSession = {
     async signIn(email, password) {
@@ -36,14 +61,12 @@
       await auth('user', {password}, {method: 'PUT', jwt: session.access_token});
     },
     async request(action, data, options={}) {
-      try { session=JSON.parse(sessionStorage.getItem(key)||'null'); } catch {}
+      read();
       if (!session) throw Object.assign(new Error('Please sign in.'), {status: 401});
       if (Date.now() > session.expires_at - 60000) {
-        try {
-          const next = await auth('token?grant_type=refresh_token', {refresh_token: session.refresh_token});
-          store({...next, expires_at: Date.now() + next.expires_in * 1000});
-        } catch { store(null); throw Object.assign(new Error('Your session has expired. Please sign in again.'), {status: 401}); }
+        await refresh();
       }
+      if (!session) throw Object.assign(new Error('Please sign in.'), {status:401});
       return window.marmullakuRequest(action, data, {...options,jwt: session.access_token});
     },
     get active() { return !!session; },

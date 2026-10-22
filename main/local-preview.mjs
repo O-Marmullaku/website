@@ -1,5 +1,5 @@
-import {createPreviewAPI} from '../mockup/preview-api.mjs?v=all-profiles';
-import {putPreviewAsset,getPDF,deletePDF} from '../mockup/pdf-store.mjs?v=site-preview';
+import {createPreviewAPI} from '../mockup/preview-api.mjs?v=cleanup';
+import {putPreviewAsset,getPDF,deletePDF} from '../profile/pdf-store.mjs?v=cleanup';
 
 export const isLocalPreview=host=>['localhost','127.0.0.1','[::1]'].includes(host);
 const key='marmullaku-local-profiles-v1';

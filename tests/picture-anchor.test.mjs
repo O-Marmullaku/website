@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { resolveQuote } from "../mockup/picture-anchor.mjs";
+import { resolveQuote } from "../profile/picture-anchor.mjs";
 
 test("an attached phrase survives an insertion before it", () => {
   assert.equal(

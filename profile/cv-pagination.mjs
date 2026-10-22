@@ -67,7 +67,9 @@ export function setupCVPagination(paper) {
   function layout(){
     pending=0;
     const dialog=paper.closest('dialog');
-    if(busy||!dialog?.open||stack.getAnimations().some(animation=>animation.playState==='running')||document.querySelector('[contenteditable="plaintext-only"]'))return;
+    if(busy||!dialog?.open||document.querySelector('[contenteditable="plaintext-only"]'))return;
+    const moving=stack.getAnimations().filter(animation=>animation.playState==='running');
+    if(moving.length){Promise.allSettled(moving.map(animation=>animation.finished)).then(schedule);return;}
     const scrollTop=dialog.scrollTop;
     busy=true;
     try{
@@ -96,7 +98,7 @@ export function setupCVPagination(paper) {
   }
   function schedule(){cancelAnimationFrame(pending);pending=requestAnimationFrame(layout);}
   addEventListener('resize',schedule);
-  addEventListener('beforeprint',()=>{document.documentElement.classList.add('cv-printing');layout();});
+  addEventListener('beforeprint',()=>{stack.getAnimations().forEach(animation=>animation.finish());document.documentElement.classList.add('cv-printing');layout();});
   addEventListener('afterprint',()=>{document.documentElement.classList.remove('cv-printing');layout();});
   document.addEventListener('load',event=>{if(event.target.matches?.('.cv-portrait,.cv-row-logo'))schedule();},true);
   return {restore,layout,schedule};

@@ -155,103 +155,6 @@
     footer p { margin: 0; }
     @media (min-width: 1280px) { footer [data-i18n="rights"] { margin-right: -72px; } }
 
-    /* the opened résumé: the sheet comes off the desk and unrolls into a full paper document that scrolls in the window */
-    .sheet { padding: 0; border: 0; background: none; width: 100%; height: 100%; max-width: none; max-height: none; color: var(--print);
-      overflow-y: auto; overscroll-behavior: contain; scrollbar-color: #4a4a4d transparent; }
-    .sheet.unrolling { overflow: hidden; }
-    .sheet::backdrop { background: rgba(6,12,22,.78); transition: opacity .5s var(--ease); }
-    .sheet.closing::backdrop { opacity: 0; }
-    @starting-style { .sheet[open]::backdrop { opacity: 0; } }
-    .paper { --w: min(794px, 100vw - 32px); position: relative; background: var(--paper); border-radius: 2px; box-shadow: 0 2px 4px rgba(0,0,0,.3), 0 40px 80px -20px rgba(0,0,0,.8);
-      width: var(--w); height: calc(var(--w) * 1.4142); margin: 48px auto 0; transform-origin: 50% 0; display: flex; flex-direction: column;
-      padding: 3.6em 4.4em 2.4em; font-size: calc(var(--w) * 15 / 794); line-height: 1.55; }
-    /* A4 pages like a PDF viewer: fixed ratio, type scales with the page width so the layout never reflows; a gap between pages */
-    .paper + .paper { margin-top: 24px; }
-    .sheet { padding-bottom: 64px; }
-    .page2 { transition: opacity .4s var(--ease); }
-    .sheet:not(.settled) .page2 { opacity: 0; }
-    .paper:focus { outline: none; }
-    /* save / share / close: stays put in the window corner while the paper scrolls under it; labels drop down on hover */
-    .tools { position: fixed; top: 16px; right: 16px; z-index: 1; display: flex; gap: 10px; transition: opacity .3s; }
-    .sheet:not(.settled) .tools { opacity: 0; pointer-events: none; }
-    .tool { position: relative; width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--paper); color: var(--print);
-      box-shadow: var(--paper-shadow); display: grid; place-items: center; cursor: pointer; transition: transform .3s var(--ease), background-color .2s, color .2s; }
-    .tool:hover { transform: scale(1.06); }
-    .tool:active { background: var(--ink); color: #fff; transform: scale(.94); }
-    .tool::after { content: attr(aria-label); position: absolute; top: calc(100% + 8px); right: 0; padding: 4px 10px; border-radius: 6px; white-space: nowrap;
-      background: #0b1a2e; color: var(--text); font: 500 13px/1.4 var(--display); opacity: 0; transform: translateY(-4px); pointer-events: none;
-      transition: opacity .2s, transform .2s var(--ease); }
-    .tool:hover::after, .tool:focus-visible::after, .tool.done::after { opacity: 1; transform: none; }
-    .tool.done { background: var(--ink); color: #fff; }
-    /* links out to the work itself, beside each job */
-    .job { display: grid; grid-template-columns: 1fr auto; column-gap: 1em; }
-    .job > ul { grid-column: 1 / -1; }
-    .job .when, .job b, .job .org { grid-column: 1; }
-    .proj { grid-column: 2; grid-row: 1 / 4; align-self: start; display: grid; gap: .35em; justify-items: end; }
-    .proj a { font-size: .78em; line-height: 1.3; padding: .2em .7em; border: 1px solid #d8d8d8; border-radius: 999px; color: var(--print); text-decoration: none;
-      white-space: nowrap; transition: border-color .2s, color .2s, background-color .2s; }
-    .proj a:hover { border-color: var(--ink); color: var(--ink); background: #f2f7ff; }
-    /* Save as PDF prints just the pages, edge to edge on A4 */
-    @page { size: A4; margin: 0; }
-    @media print {
-      body > :not(.sheet), .tools, .sheet::backdrop { display: none !important; }
-      html { overflow: visible !important; }
-      body { background: none; }
-      .sheet { position: static; overflow: visible; height: auto; padding: 0; }
-      .paper { --w: 210mm; margin: 0; box-shadow: none; border-radius: 0; break-after: page; }
-      .filtering .job:not(.hit) { opacity: 1; }
-    }
-    .cv-head { display: flex; align-items: center; gap: 1.6em; padding-bottom: 1.4em; border-bottom: 2px solid var(--print); }
-    .cv-photo { width: 7.5em; aspect-ratio: 1; flex: none; background: var(--tray); overflow: hidden; display: grid; place-items: center;
-      font-family: var(--display); font-weight: 500; font-size: 1em; }
-    .cv-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; display: block; filter: grayscale(1) contrast(1.05); }
-    .cv-name { font-family: var(--display); font-weight: 500; font-size: 2.6em; line-height: 1.05; margin: 0 0 .2em; }
-    .cv-role { margin: 0; color: var(--print-muted); font-size: 1.1em; }
-    .cv-body { display: grid; grid-template-columns: 1fr 2fr; gap: 2.2em; padding: 1.6em 0; }
-    .cv-body h3 { font-family: var(--display); font-weight: 500; font-size: .95em; letter-spacing: .14em; text-transform: uppercase; margin: 0 0 .8em; }
-    .cv-body section + section { margin-top: 1.6em; }
-    /* unwritten lines, printed as faint rules until the content arrives */
-    .draft { display: grid; gap: .7em; }
-    .draft i { display: block; height: .55em; background: #ebebeb; border-radius: 1px; }
-    .draft i:nth-child(3n) { width: 72%; } .draft i:nth-child(4n) { width: 88%; } .draft i:nth-child(5n) { width: 54%; }
-    .cv-note { margin: 1.4em 0 0; color: var(--print-muted); font-style: italic; }
-    .cv-foot { margin-top: auto; padding-top: .8em; border-top: 1px solid #dcdcdc; display: flex; justify-content: space-between; gap: 1em; color: var(--print-muted); font-size: .9em; }
-    .cv-foot a { color: var(--print); font-weight: 600; text-underline-offset: 3px; }
-    .cv-foot a:hover { color: var(--ink); }
-    /* sections print in one after another as the page unrolls (re-rendered on every open, so it replays) */
-    .cv-body section { animation: up .7s var(--ease) backwards; animation-delay: calc(450ms + var(--i, 0) * 90ms); }
-    .cv-body p { margin: 0; }
-    .cv-body ul { list-style: none; margin: 0; padding: 0; }
-    .contact { display: grid; gap: .3em; }
-    .contact a { color: var(--print); text-underline-offset: 3px; text-decoration-color: #c8c8c8; }
-    .contact a:hover { color: var(--ink); text-decoration-color: currentColor; }
-    .hint { color: var(--print-muted); font-size: .85em; margin: -.4em 0 .8em !important; }
-    /* skills: a level bar under each; hover or select one to trace it through the experience column */
-    .skills { display: grid; gap: .2em; }
-    .skill { all: unset; box-sizing: border-box; display: block; width: 100%; cursor: pointer; position: relative; padding: .25em 0 .6em; transition: color .2s; }
-    .skill::before, .skill::after { content: ""; position: absolute; left: 0; bottom: .2em; height: 3px; border-radius: 2px; }
-    .skill::before { right: 0; background: #ececec; }
-    .skill::after { width: var(--lvl); background: var(--print); transform-origin: 0 50%; transition: background-color .2s;
-      animation: fill 1.1s var(--ease) backwards; animation-delay: calc(900ms + var(--n) * 70ms); }
-    @keyframes fill { from { transform: scaleX(0); } }
-    .skill:hover, .skill.on { color: var(--ink); }
-    .skill:hover::after, .skill.on::after { background: var(--ink); }
-    .skill[aria-pressed="true"] { font-weight: 600; }
-    .skill:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
-    .langs { display: grid; grid-template-columns: auto 1fr; gap: .3em 1em; margin: 0; }
-    .langs dd { margin: 0; color: var(--print-muted); text-align: right; }
-    /* experience: each job folds open; jobs that don't use the traced skill step back */
-    .job, .edu { border-left: 2px solid #e4e4e4; padding: .1em 0 .1em 1em; transition: opacity .3s, border-color .3s; }
-    .job + .job, .edu + .edu { margin-top: 1em; }
-    .filtering .job:not(.hit) { opacity: .3; }
-    .job.hit { border-color: var(--ink); }
-    .job.hit b { color: var(--ink); }
-    .when { display: block; color: var(--print-muted); font-size: .85em; letter-spacing: .04em; }
-    .org { display: block; color: var(--print-muted); }
-    .job ul { margin-top: .4em; display: grid; gap: .2em; }
-    .job li { padding-left: 1em; position: relative; }
-    .job li::before { content: ""; position: absolute; left: 0; top: .7em; width: .35em; height: 1px; background: var(--print); }
-
     @media (max-width: 720px) {
       .people { --gap: 14px; --fade: 40px; }
     }
@@ -263,14 +166,8 @@
       .lang button { font-size: 12px; padding: 5px 8px; white-space: nowrap; }
       .hero { padding-block: 28px 24px; }
       .lead { font-size: 16px; }
-      /* an A4 page at phone width would mean 7px type, so here the pages reflow into one column and grow to fit */
-      .paper { --w: calc(100vw - 24px); height: auto; min-height: calc(var(--w) * 1.4142); margin-top: 72px; padding: 40px 22px 32px; font-size: 14px; }
-      .cv-body { grid-template-columns: 1fr; gap: 0; }
-      .cv-body > div + div { margin-top: 2em; }
-      .cv-head { flex-direction: column; align-items: flex-start; gap: 1em; }
     }
   </style>
-  <link rel="stylesheet" href="main/cv-playground.css" />
 </head>
 <body>
   <header class="nav" id="nav">
@@ -294,7 +191,7 @@
         <div class="media"><img class="bg" src="main/pictures/offices/office_01.webp" alt="" /><img class="who" src="main/pictures/portraits/osman.webp" alt="" width="800" height="1000" /></div>
         <div class="content">
           <h2 class="name"><button class="open" type="button">Osman Marmullaku</button></h2>
-          <p class="role" data-i18n="osman">Lorem ipsum dolor</p>
+          <p class="role" data-i18n="osman">Résumé in preparation</p>
           <div class="footer-row">
             <span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
           </div>
@@ -304,7 +201,7 @@
         <div class="media"><img class="bg" src="main/pictures/offices/office_02.webp" alt="" /><img class="who" src="main/pictures/portraits/diellza.webp" alt="" width="800" height="1000" /></div>
         <div class="content">
           <h2 class="name"><button class="open" type="button">Diellza Marmullaku</button></h2>
-          <p class="role" data-i18n="diellza">Lorem ipsum dolor</p>
+          <p class="role" data-i18n="diellza">Résumé in preparation</p>
           <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
         </div>
       </li>
@@ -312,7 +209,7 @@
         <div class="media"><img class="bg" src="main/pictures/offices/office_03.webp" alt="" /><img class="who" src="main/pictures/portraits/drilona.webp" alt="" width="800" height="1000" /></div>
         <div class="content">
           <h2 class="name"><button class="open" type="button">Drilona Marmullaku</button></h2>
-          <p class="role" data-i18n="drilona">Lorem ipsum dolor</p>
+          <p class="role" data-i18n="drilona">Résumé in preparation</p>
           <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
         </div>
       </li>
@@ -320,7 +217,7 @@
         <div class="media"><img class="bg" src="main/pictures/offices/office_04.webp" alt="" /><img class="who" src="main/pictures/portraits/woman.png" alt="" width="1143" height="1376" /></div>
         <div class="content">
           <h2 class="name"><button class="open" type="button">Drenusha Marmullaku</button></h2>
-          <p class="role" data-i18n="drenusha">Lorem ipsum dolor</p>
+          <p class="role" data-i18n="drenusha">Résumé in preparation</p>
           <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
         </div>
       </li>
@@ -328,7 +225,7 @@
         <div class="media"><img class="bg" src="main/pictures/offices/office_05.webp" alt="" /><img class="who" src="main/pictures/portraits/woman.png" alt="" width="1143" height="1376" /></div>
         <div class="content">
           <h2 class="name"><button class="open" type="button">Dredhza Marmullaku</button></h2>
-          <p class="role" data-i18n="dredhza">Lorem ipsum dolor</p>
+          <p class="role" data-i18n="dredhza">Résumé in preparation</p>
           <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
         </div>
       </li>
@@ -336,7 +233,7 @@
         <div class="media"><img class="bg" src="main/pictures/offices/office_06.webp" alt="" /><img class="who" src="main/pictures/portraits/man.png" alt="" width="1146" height="1372" /></div>
         <div class="content">
           <h2 class="name"><button class="open" type="button">Ali Marmullaku</button></h2>
-          <p class="role" data-i18n="ali">Lorem ipsum dolor</p>
+          <p class="role" data-i18n="ali">Résumé in preparation</p>
           <div class="footer-row"><span class="cta" aria-hidden="true"><span data-i18n="view">View résumé</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></div>
         </div>
       </li>
@@ -379,111 +276,73 @@
     <button class="access-action" id="access-continue" type="button" hidden>View CV</button>
     <p class="access-error" id="access-error" role="alert"></p>
   </dialog>
-  <dialog class="sheet" id="sheet" aria-labelledby="cv-name">
-    <div class="tools">
-      <button class="tool" type="button" id="save" data-i18n-label="save" aria-label="Save as PDF"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
-      <button class="tool" type="button" id="share" data-i18n-label="share" aria-label="Share link"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></button>
-      <button class="tool" type="button" id="close" data-i18n-label="close" aria-label="Close"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
-    </div>
-    <div class="cv-workspace"><div class="cv-pages">
-    <article class="paper" tabindex="-1" autofocus>
-      <header class="cv-head">
-        <div class="cv-photo" id="cv-photo"></div>
-        <div>
-          <h2 class="cv-name" id="cv-name"></h2>
-          <p class="cv-role" id="cv-role"></p>
-        </div>
-      </header>
-      <p class="cv-note" id="cv-note" data-i18n="draft">Résumé in preparation</p>
-      <div class="cv-body">
-        <div>
-          <section><h3 data-i18n="cvContact">Contact</h3><div class="draft"><i></i><i></i><i></i></div></section>
-          <section><h3 data-i18n="cvSkills">Skills</h3><div class="draft"><i></i><i></i><i></i><i></i><i></i></div></section>
-          <section><h3 data-i18n="cvLanguages">Languages</h3><div class="draft"><i></i><i></i><i></i></div></section>
-        </div>
-        <div>
-          <section><h3 data-i18n="cvProfile">Profile</h3><div class="draft"><i></i><i></i><i></i><i></i></div></section>
-          <section><h3 data-i18n="cvExperience">Experience</h3><div class="draft"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></section>
-          <section><h3 data-i18n="cvEducation">Education</h3><div class="draft"><i></i><i></i><i></i><i></i></div></section>
-        </div>
-      </div>
-      <div class="cv-foot"><span>marmullaku.ch</span><a id="cv-link" target="_blank" rel="noopener" hidden><span data-i18n="projects">Projects</span> ↗</a><span id="cv-pg">1 / 1</span></div>
-    </article>
-    <article class="paper page2" id="page2" hidden>
-      <div class="cv-body"></div>
-      <div class="cv-foot"><span>marmullaku.ch</span><span>2 / 2</span></div>
-    </article>
-    </div><aside class="project-rail" id="project-rail" aria-label="Project previews" hidden></aside><aside class="playground" id="playground" aria-label="Project preview" popover="auto" tabindex="-1" hidden></aside></div>
-  </dialog>
-
-  <script src="mockup/site-services.js?v=paper-documents"></script>
-  <script src="main/cv-safe.js"></script>
-  <script src="main/cv-playground.js"></script>
+  <script src="mockup/site-services.js?v=cleanup"></script>
   <script>
     const T = {
-      en: {
-        language: "Language", welcome: "Welcome", view: "View résumé",
-        intro: "This is the digital résumé collection of the Marmullaku family. Please click on your candidate to proceed.",
-        osman: "Lorem ipsum dolor", projects: "Projects",
-        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
-        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
-        rights: "All rights reserved",
-        close: "Close", draft: "Résumé in preparation", cvContact: "Contact", cvSkills: "Skills", cvLanguages: "Languages",
-        cvProfile: "Profile", cvExperience: "Experience", cvEducation: "Education", cvCerts: "Certifications", cvInterests: "Interests", save: "Save as PDF", share: "Share link", copied: "Link copied", cvHint: "Select a skill to trace it through the experience."
+      "en": {
+        "view": "View résumé",
+        "language": "Language",
+        "welcome": "Welcome",
+        "intro": "This is the digital résumé collection of the Marmullaku family. Please click on your candidate to proceed.",
+        "rights": "All rights reserved",
+        "close": "Close",
+        "draft": "Résumé in preparation"
       },
-      de: {
-        language: "Sprache", welcome: "Willkommen", view: "Lebenslauf ansehen",
-        intro: "Dies ist die digitale Lebenslaufsammlung der Familie Marmullaku. Bitte wählen Sie Ihre Kandidatin oder Ihren Kandidaten aus.",
-        osman: "Lorem ipsum dolor", projects: "Projekte",
-        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
-        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
-        rights: "Alle Rechte vorbehalten",
-        close: "Schliessen", draft: "Lebenslauf in Vorbereitung", cvContact: "Kontakt", cvSkills: "Kompetenzen", cvLanguages: "Sprachen",
-        cvProfile: "Profil", cvExperience: "Berufserfahrung", cvEducation: "Ausbildung", cvCerts: "Zertifikate", cvInterests: "Interessen", save: "Als PDF speichern", share: "Link teilen", copied: "Link kopiert", cvHint: "Kompetenz wählen, um sie in der Berufserfahrung hervorzuheben."
+      "de": {
+        "view": "Lebenslauf ansehen",
+        "language": "Sprache",
+        "welcome": "Willkommen",
+        "intro": "Dies ist die digitale Lebenslaufsammlung der Familie Marmullaku. Bitte wählen Sie Ihre Kandidatin oder Ihren Kandidaten aus.",
+        "rights": "Alle Rechte vorbehalten",
+        "close": "Schliessen",
+        "draft": "Lebenslauf in Vorbereitung"
       },
-      fr: {
-        language: "Langue", welcome: "Bienvenue", view: "Voir le CV",
-        intro: "Voici la collection de CV numériques de la famille Marmullaku. Veuillez cliquer sur le profil qui vous intéresse.",
-        osman: "Lorem ipsum dolor", projects: "Projets",
-        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
-        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
-        rights: "Tous droits réservés",
-        close: "Fermer", draft: "CV en préparation", cvContact: "Contact", cvSkills: "Compétences", cvLanguages: "Langues",
-        cvProfile: "Profil", cvExperience: "Expérience", cvEducation: "Formation", cvCerts: "Certifications", cvInterests: "Centres d’intérêt", save: "Enregistrer en PDF", share: "Partager le lien", copied: "Lien copié", cvHint: "Choisissez une compétence pour la retrouver dans l’expérience."
+      "fr": {
+        "view": "Voir le CV",
+        "language": "Langue",
+        "welcome": "Bienvenue",
+        "intro": "Voici la collection de CV numériques de la famille Marmullaku. Veuillez cliquer sur le profil qui vous intéresse.",
+        "rights": "Tous droits réservés",
+        "close": "Fermer",
+        "draft": "CV en préparation"
       },
-      th: {
-        language: "ภาษา", welcome: "ยินดีต้อนรับ", view: "ดูประวัติ",
-        intro: "นี่คือคลังประวัติดิจิทัลของครอบครัว Marmullaku กรุณาคลิกเลือกผู้สมัครที่คุณสนใจ",
-        osman: "Lorem ipsum dolor", projects: "ผลงาน",
-        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
-        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
-        rights: "สงวนลิขสิทธิ์",
-        close: "ปิด", draft: "กำลังจัดทำประวัติย่อ", cvContact: "ติดต่อ", cvSkills: "ทักษะ", cvLanguages: "ภาษา",
-        cvProfile: "ประวัติโดยย่อ", cvExperience: "ประสบการณ์ทำงาน", cvEducation: "การศึกษา", cvCerts: "ใบรับรอง", cvInterests: "ความสนใจ", save: "บันทึกเป็น PDF", share: "แชร์ลิงก์", copied: "คัดลอกลิงก์แล้ว", cvHint: "เลือกทักษะเพื่อดูว่าใช้ในงานใดบ้าง"
+      "th": {
+        "view": "ดูประวัติ",
+        "language": "ภาษา",
+        "welcome": "ยินดีต้อนรับ",
+        "intro": "นี่คือคลังประวัติดิจิทัลของครอบครัว Marmullaku กรุณาคลิกเลือกผู้สมัครที่คุณสนใจ",
+        "rights": "สงวนลิขสิทธิ์",
+        "close": "ปิด",
+        "draft": "กำลังจัดทำประวัติย่อ"
       },
-      zh: {
-        language: "语言", welcome: "欢迎", view: "查看简历",
-        intro: "这里是马尔穆拉库家族的数字简历集。请点击您感兴趣的候选人。",
-        osman: "Lorem ipsum dolor", projects: "项目",
-        diellza: "Lorem ipsum dolor", drilona: "Lorem ipsum dolor", drenusha: "Lorem ipsum dolor",
-        dredhza: "Lorem ipsum dolor", ali: "Lorem ipsum dolor",
-        rights: "版权所有",
-        close: "关闭", draft: "简历准备中", cvContact: "联系方式", cvSkills: "技能", cvLanguages: "语言",
-        cvProfile: "个人简介", cvExperience: "工作经历", cvEducation: "教育背景", cvCerts: "证书", cvInterests: "兴趣爱好", save: "保存为 PDF", share: "分享链接", copied: "链接已复制", cvHint: "选择一项技能，查看它在工作经历中的应用。"
+      "zh": {
+        "view": "查看简历",
+        "language": "语言",
+        "welcome": "欢迎",
+        "intro": "这里是马尔穆拉库家族的数字简历集。请点击您感兴趣的候选人。",
+        "rights": "版权所有",
+        "close": "关闭",
+        "draft": "简历准备中"
       }
     };
 
     const publicProfiles = new Map();
+    document.addEventListener('marmullaku-profile-updated',event=>{
+      const {id,role}=event.detail;
+      publicProfiles.set(id,{...publicProfiles.get(id),id,role});
+      const label=document.querySelector(`.role[data-i18n="${id}"]`);
+      if(label)label.textContent=role||T[document.documentElement.lang].draft;
+    });
     const langBtns = document.querySelectorAll("#lang button");
     function setLang(lang) {
       const t = T[lang];
       document.documentElement.lang = lang;
       langBtns.forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
-      document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t[el.dataset.i18n]; });
+      document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t[el.dataset.i18n] || (el.matches('.role') ? t.draft : el.textContent); });
       document.querySelectorAll("[data-i18n-label]").forEach(el => { el.setAttribute("aria-label", t[el.dataset.i18nLabel]); });
       publicProfiles.forEach(p => {
         const role = document.querySelector(`.role[data-i18n="${p.id}"]`);
-        if (role) { role.textContent = p.role || t.draft; role.closest('.card').querySelector('.open').textContent = p.display_name; }
+        if (role) { role.textContent = p.role || t.draft; if(p.display_name)role.closest('.card').querySelector('.open').textContent = p.display_name; }
       });
       try { localStorage.setItem("lang", lang); } catch (e) {}
     }
@@ -493,7 +352,7 @@
     const browser = (navigator.language || "en").slice(0, 2);
     setLang(T[saved] ? saved : T[browser] ? browser : "en");
     window.marmullakuRequest('directory').then(({profiles}) => {
-      profiles.forEach(p => publicProfiles.set(p.id, p));
+      profiles.forEach(p => publicProfiles.set(p.id, {...p,...publicProfiles.get(p.id)}));
       setLang(document.documentElement.lang);
     }).catch(() => {});
 
@@ -545,191 +404,22 @@
     }
     new ResizeObserver(fit).observe(track); // also runs once on load
 
-    // résumé sheet: the clicked card is lifted off the desk and grows into a full A4 page (FLIP via the Web Animations API,
-    // which runs whatever the OS animation setting is)
-    const sheet = document.getElementById("sheet"), paper = sheet.querySelector(".paper");
-    const cvPhoto = document.getElementById("cv-photo"), cvName = document.getElementById("cv-name"),
-      cvRole = document.getElementById("cv-role"), cvLink = document.getElementById("cv-link"),
-      cvNote = document.getElementById("cv-note"), cvBody = paper.querySelector(".cv-body"),
-      page2 = document.getElementById("page2"), cvBody2 = page2.querySelector(".cv-body"), cvPg = document.getElementById("cv-pg");
-    const draftHTML = cvBody.innerHTML;
-    let card = null, busy = false, cardFade = null, pinned = null;
-
-    // returns the two pages' bodies: page 1 the résumé proper, page 2 education and the rest
-    function render(d) {
-      const t = T[document.documentElement.lang], h = k => `<h3 data-i18n="${k}">${t[k]}</h3>`;
-      const when = x => `<span class="when">${x.when}</span><b>${x.title}</b><span class="org">${x.org}</span>`;
-      return [`<div>
-        <section style="--i:0">${h("cvContact")}<ul class="contact">${d.contact.map(([s, href]) =>
-          `<li>${href ? `<a href="${href}"${href.startsWith("http") ? ' target="_blank" rel="noopener"' : ""}>${s}</a>` : s}</li>`).join("")}</ul></section>
-        <section style="--i:2">${h("cvSkills")}<ul class="skills">${d.skills.map(([s, lvl], n) =>
-          `<li><span class="skill" style="--lvl:${lvl}%;--n:${n}">${s}</span></li>`).join("")}</ul></section>
-        <section style="--i:4">${h("cvLanguages")}<dl class="langs">${d.languages.map(([l, lvl]) => `<dt>${l}</dt><dd>${lvl}</dd>`).join("")}</dl></section>
-      </div><div>
-        <section style="--i:1">${h("cvProfile")}<p>${d.profile}</p></section>
-        <section style="--i:3">${h("cvExperience")}${d.experience.map(x =>
-          `<div class="job" data-tags="${x.tags.join("|")}">${when(x)}<ul>${x.points.map(p => `<li>${p}</li>`).join("")}</ul></div>`).join("")}</section>
-      </div>`, `<div>
-        <section>${h("cvInterests")}<p>${d.interests}</p></section>
-      </div><div>
-        <section>${h("cvEducation")}${d.education.map(x => `<div class="edu">${when(x)}</div>`).join("")}</section>
-        <section style="--i:1">${h("cvCerts")}${d.certs.map(x => `<div class="edu">${when(x)}</div>`).join("")}</section>
-      </div>`];
-    }
-    let selectProject = null, previewTimer = null;
-    const preview = document.getElementById("playground"), rail = document.getElementById("project-rail");
-    function positionRail() {
-      const job = cvBody.children[1]?.querySelector("section"), workspace = sheet.querySelector(".cv-workspace");
-      if (job) rail.style.top = (job.getBoundingClientRect().top - workspace.getBoundingClientRect().top) + "px";
-    }
-    new ResizeObserver(positionRail).observe(paper);
-    function openPreview(button) {
-      if (!selectProject) return;
-      clearTimeout(previewTimer);
-      selectProject(button.dataset.project);
-      preview.hidden = false;
-      const rect = button.getBoundingClientRect();
-      preview.style.left = Math.max(16, Math.min(rect.left, innerWidth - 376)) + "px";
-      preview.style.top = Math.max(16, Math.min(rect.top, innerHeight - 700)) + "px";
-      if (!preview.matches(":popover-open")) preview.showPopover();
-      preview.style.top = Math.max(16, Math.min(rect.top, innerHeight - preview.offsetHeight - 16)) + "px";
-      rail.querySelectorAll("[data-project]").forEach(b => b.setAttribute("aria-expanded", String(b === button)));
-    }
-    function collapsePreview() {
-      clearTimeout(previewTimer);
-      previewTimer = setTimeout(() => {
-        if (preview.matches(":popover-open")) preview.hidePopover();
-      }, 220);
-    }
-    rail.addEventListener("pointerover", e => {
-      const button = e.target.closest("[data-project]");
-      if (e.pointerType === "mouse" && button && !button.contains(e.relatedTarget)) openPreview(button);
-    });
-    rail.addEventListener("pointerleave", collapsePreview);
-    rail.addEventListener("focusin", e => { const button = e.target.closest("[data-project]"); if (button) openPreview(button); });
-    rail.addEventListener("click", e => {
-      const button = e.target.closest("[data-project]"); if (button) openPreview(button);
-
-    });
-    preview.addEventListener("pointerenter", () => clearTimeout(previewTimer));
-    preview.addEventListener("pointerleave", collapsePreview);
-    preview.addEventListener("focusin", () => clearTimeout(previewTimer));
-    function blurPreview(e) {
-      if (!rail.contains(e.relatedTarget) && !preview.contains(e.relatedTarget)) collapsePreview();
-    }
-    rail.addEventListener("focusout", blurPreview);
-    preview.addEventListener("focusout", blurPreview);
-    preview.addEventListener("toggle", e => {
-      if (e.newState === "closed") rail.querySelectorAll("[data-project]").forEach(b => b.setAttribute("aria-expanded", "false"));
-    });
-
-    // keyframe that lays the paper exactly over the card it came from (optionally lifted off it): scaled down to the card's
-    // width around its top edge, with everything below the card's height clipped away; the open animation then unclips it
-    // downwards, so the sheet unrolls into the full-length document
-    function fromCard(lift = 0, grow = 1) {
-      const r = card.getBoundingClientRect(), p = paper.getBoundingClientRect();
-      const k = grow * r.width / p.width;
-      const dx = r.left + r.width / 2 - (p.left + p.width / 2), dy = r.top - p.top - lift - (grow - 1) * r.height / 2;
-      // rounded like the card (6px on screen, so 6/k before the scale), easing into square paper corners
-      return { transform: `translate(${dx}px, ${dy}px) scale(${k})`,
-        clipPath: `inset(0px 0px ${Math.max(0, p.height - r.height / k)}px 0px round ${6 / k}px)` };
-    }
-    // wide enough to let the paper's shadow through once it has landed
-    const unclipped = { transform: "none", clipPath: "inset(-80px -80px -80px -80px round 2px)" };
-    const key = c => c.querySelector(".role").dataset.i18n;
-    function open(c, authorizedProfile) {
-      if (!authorizedProfile || authorizedProfile.id !== key(c)) return window.marmullakuServicesReady.then(() => window.requestPrivateCV(c));
-      if (busy) return;
-      busy = true; card = c;
-      if (!window.marmullakuInvitationURL) history.replaceState(null, "", "#" + key(c));
-      cvPhoto.replaceChildren(Object.assign(new Image(), { src: c.querySelector(".media .who").src, alt: "" }));
-      cvName.textContent = authorizedProfile.display_name;
-      cvRole.textContent = authorizedProfile.role;
-      cvLink.hidden = true;
-      cvLink.removeAttribute("href");
-      const d = escapeDocument(authorizedProfile.cv);
-      const playground = document.getElementById("playground");
-      const interactive = !!d;
-      if (playground.matches(":popover-open")) playground.hidePopover();
-      playground.hidden = true;
-      clearTimeout(previewTimer);
-      rail.hidden = !interactive;
-      rail.innerHTML = interactive ? `
-        <section class="rail-section"><h3>Previews</h3><div class="sample-previews">${(d.experience[0]?.demos || []).filter(([id]) => ["sample-one", "sample-two"].includes(id)).map(([id, label]) => `<button type="button" class="preview-thumb" data-project="${id}" aria-label="Preview ${label.toLowerCase()}" aria-expanded="false" aria-controls="playground"><img src="main/pictures/previews/${id}.svg" alt="${label} sample" /><span>${label}</span></button>`).join("")}</div></section>
-        ` : "";
-      rail.hidden = !rail.querySelector('.preview-thumb');
-      selectProject = interactive ? mountPlayground(playground) : null;
-      const [p1, p2] = d ? render(d) : [draftHTML];
-      cvBody.innerHTML = p1;
-      cvBody2.innerHTML = p2 || "";
-      page2.hidden = !p2;
-      cvPg.textContent = p2 ? "1 / 2" : "1 / 1";
-      cvNote.hidden = !!d;
-      pinned = null;
-      cvBody.classList.remove("filtering");
-      sheet.classList.remove("settled", "closing");
-      sheet.classList.add("unrolling");
-      sheet.showModal();
-      sheet.scrollTop = 0;
-      positionRail();
-      // the card dissolves into the paper as it lifts, rather than vanishing in one frame
-      cardFade = card.animate([{ opacity: 1 }, { opacity: 0, offset: .2 }, { opacity: 0 }], { duration: 1100, fill: "forwards" });
-      paper.animate([
-        { ...fromCard(), backgroundColor: "#1a2a42", opacity: 0, boxShadow: "0 1px 1px rgba(0,0,0,.3), 0 12px 28px -10px rgba(0,0,0,.6)" },
-        { ...fromCard(36, 1.08), opacity: 1, boxShadow: "0 2px 3px rgba(0,0,0,.25), 0 36px 60px -18px rgba(0,0,0,.8)", offset: .25 }, // up off the pile
-        { transform: "none", clipPath: `inset(0px 0px ${Math.max(0, paper.offsetHeight - innerHeight + 64)}px 0px round 2px)`, offset: .7 }, // fills the window
-        unclipped // and keeps unrolling past the bottom edge
-      ], { duration: 1100, easing: "cubic-bezier(.3,.7,.2,1)" }).finished.then(() => { sheet.classList.remove("unrolling"); sheet.classList.add("settled"); busy = false; positionRail(); });
-    }
-    function close() {
-      if (busy || !sheet.open) return;
-      busy = true;
-      if (preview.matches(":popover-open")) preview.hidePopover();
-      sheet.classList.remove("settled");
-      sheet.classList.add("closing");
-      // paper folds back down onto the card and crossfades into it over the second half, so it lands as the card itself
-      const timing = { duration: 800, easing: "cubic-bezier(.5,0,.2,1)" };
-      cardFade.cancel();
-      cardFade = card.animate([{ opacity: 0 }, { opacity: 0, offset: .5 }, { opacity: 1 }], { ...timing, fill: "forwards" });
-      paper.animate([{ ...unclipped, opacity: 1 }, { offset: .5, backgroundColor: "#ffffff", opacity: 1 }, { ...fromCard(), backgroundColor: "#1a2a42", opacity: 0 }], timing).finished.then(() => {
-        sheet.close();
-        cardFade.cancel();
-        if (!window.marmullakuInvitationURL) history.replaceState(null, "", location.pathname + location.search);
-        card.querySelector(".open").focus({ preventScroll: true });
-        busy = false;
+    function openCard(card) {
+      window.marmullakuServicesReady.then(()=>window.requestPrivateCV(card)).catch(error=>{
+        document.getElementById('access-detail').textContent=error.message;
+        document.getElementById('access-continue').hidden=true;
+        const dialog=document.getElementById('access-dialog');
+        if(!dialog.open)dialog.showModal();
       });
     }
-    window.openPrivateCV = open;
-    track.addEventListener("click", e => {
-      const c = e.target.closest(".card");
-      if (c) open(c);
+    track.addEventListener('click',event=>{
+      const card=event.target.closest('.card');if(card)openCard(card);
     });
-    document.getElementById("close").addEventListener("click", close);
-    // Save as PDF: the browser's print-to-PDF, with the title as the suggested file name
-    document.getElementById("save").addEventListener("click", () => {
-      const title = document.title;
-      document.title = `${cvName.textContent} – CV`;
-      print();
-      document.title = title;
+    addEventListener('load',()=>{
+      const card=[...track.children].find(card=>card.querySelector('.role')?.dataset.i18n===location.hash.slice(1));
+      if(card)openCard(card);
     });
-    // phones get the native share sheet; elsewhere the link is copied and the button confirms it
-    const shareBtn = document.getElementById("share");
-    shareBtn.addEventListener("click", async () => {
-      const url = window.marmullakuInvitationURL || location.href, t = T[document.documentElement.lang];
-      if (navigator.share && matchMedia("(pointer: coarse)").matches) return navigator.share({ title: `${cvName.textContent} – CV`, url }).catch(() => {});
-      try { await navigator.clipboard.writeText(url); } catch (e) { prompt(t.share, url); return; }
-      shareBtn.classList.add("done");
-      shareBtn.setAttribute("aria-label", t.copied);
-      setTimeout(() => { shareBtn.classList.remove("done"); shareBtn.setAttribute("aria-label", t.share); }, 1800);
-    });
-    // opened from a shared link: unroll that résumé once the page has laid out
-    addEventListener("load", () => {
-      const c = [...track.children].find(c => "#" + key(c) === location.hash);
-      if (c) open(c);
-    });
-    sheet.addEventListener("cancel", e => { e.preventDefault(); close(); }); // Esc
-    sheet.addEventListener("click", e => { if (e.target === sheet) close(); }); // click on the desk around the page
   </script>
-  <script type="module" src="main/profile-bridge.js?v=experience-projects-2"></script>
+  <script type="module" src="main/profile-bridge.js?v=cleanup"></script>
 </body>
 </html>

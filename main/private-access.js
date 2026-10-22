@@ -47,10 +47,9 @@
     const current = generation;
     button.disabled = true; button.textContent = t().opening; error.textContent = '';
     try {
-      // Check expiry and revocation again when entering, not just when showing the welcome.
+      // The profile frame rechecks the invitation before loading private content.
       const data = {profile:{id:pendingCard.querySelector('.role').dataset.i18n}};
       if (current !== generation) return;
-      if (pendingCard.querySelector('.role').dataset.i18n !== data.profile.id) throw new Error(t().mismatch);
       const card = pendingCard;
       dialog.close();
       window.openPrivateCV(card, data.profile);

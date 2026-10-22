@@ -7,20 +7,26 @@ if (window===parent) {
   const response=await fetch('../profile/editor.html',{cache:'no-store'});
   if(!response.ok)throw new Error('Could not load the CV. Please try again.');
   const template=new DOMParser().parseFromString(await response.text(),'text/html');
-  for(const link of template.head.querySelectorAll('link'))document.head.append(document.importNode(link,true));
+  const loadStyle=link=>new Promise((resolve,reject)=>{
+    const required=new URL(link.href,location.href).origin===location.origin;
+    const finish=error=>{clearTimeout(timer);if(error&&required)reject(new Error('Could not load CV styles. Reload and try again.'));else resolve();};
+    const timer=setTimeout(()=>finish(true),required?10000:3000);
+    link.onload=()=>finish(false);link.onerror=()=>finish(true);document.head.append(link);
+  });
+  const styles=[...template.head.querySelectorAll('link[rel~="stylesheet"]')].map(link=>loadStyle(document.importNode(link,true)));
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
-  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=experience-projects-2';document.head.append(style);
+  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=cleanup';styles.push(loadStyle(style));
+  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=cleanup';styles.push(loadStyle(paperStyle));
+  await Promise.all(styles);
   if(parent.MARMULLAKU_MOCKUP) {
-    await (await import('../mockup/preview-session.mjs?v=aligned-logos')).bootstrapPreview({ownerID:new URLSearchParams(location.search).get('id')||'osman'});
+    await (await import('../mockup/preview-session.mjs?v=cleanup')).bootstrapPreview({ownerID:new URLSearchParams(location.search).get('id')||'osman'});
   } else if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&parent.MARMULLAKU_LOCAL_PREVIEW) {
-    await (await import('./local-preview.mjs?v=aligned-logos')).bootstrapLocal(new URLSearchParams(location.search).get('id')||'osman');
+    await (await import('./local-preview.mjs?v=cleanup')).bootstrapLocal(new URLSearchParams(location.search).get('id')||'osman');
   } else {
-  for(const path of ['../main/backend-config.js','../main/access-api.js?v=accounts-2','../admin/session.js?v=accounts-2'])await new Promise((resolve,reject)=>{
+  for(const path of ['../main/backend-config.js','../main/access-api.js?v=accounts-2','../admin/session.js?v=cleanup'])await new Promise((resolve,reject)=>{
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
   }
-  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=experience-projects-2';
-  await new Promise((resolve,reject)=>{paperStyle.onload=resolve;paperStyle.onerror=()=>reject(new Error('Could not load CV styles.'));document.head.append(paperStyle);});
-  await import('../profile/editor.js?v=experience-projects-2');
+  await import('../profile/editor.js?v=cleanup');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

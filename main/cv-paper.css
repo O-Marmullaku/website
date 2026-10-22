@@ -131,6 +131,7 @@ html[data-live] #resume .document-link:focus-visible{outline:2px solid var(--cv-
 .document-hint-action svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 @media print{.cv-document-hint{display:none!important}}
 @media(max-width:680px),(hover:none){
+ html[data-live] #resume{scroll-padding-block:80px 140px}
  html[data-live] #resume .cv-row>.document-attachments{opacity:1}
  html[data-live] #resume .cv-document-card,html[data-live] #resume .cv-row-timeline.cv-document-card:not(:has(.cv-row-logo)),html[data-live] #resume .resume-column:first-child .cv-document-card{padding-right:52px}
  html[data-live] #resume .cv-row.cv-document-card{margin-right:32px}
@@ -254,7 +255,7 @@ html[data-live] #resume [data-section=experience] .cv-row:not(.cv-document-card)
 html[data-live] #resume [data-section=experience] .cv-row>.cv-row-content,html[data-live] #resume [data-section=experience] .cv-row>.cv-cell-date{position:relative;z-index:1}
 html[data-live] #resume [data-section=experience] .cv-row-logo{transition:transform .28s cubic-bezier(.16,1,.3,1),opacity .16s}
 html[data-live] #resume [data-section=experience] .cv-row:is(:hover,:focus-within) .cv-row-logo{transform:translateX(5px)}
-html[data-live] #resume .cv-project-trigger{position:relative;float:right;width:94px;height:64px;margin:4px 0 8px 14px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--cv-accent);cursor:pointer;overflow:visible}
+html[data-live] #resume .cv-project-trigger{position:relative;z-index:2;float:right;width:94px;height:64px;margin:4px 0 8px 14px;padding:0;border:0;border-radius:10px;background:transparent;color:var(--cv-accent);cursor:pointer;overflow:visible}
 html[data-live] #resume .cv-project-trigger .cv-row-logo{float:none;display:block;width:64px;height:64px;max-height:64px;margin:0 auto;object-fit:contain}
 html[data-live] #resume .cv-project-trigger>span{position:absolute;inset:auto 0 0;display:flex;justify-content:center;align-items:center;gap:5px;font:12px/1.3 'Fira Sans',Arial,sans-serif;opacity:0;transform:translateY(4px);transition:opacity .18s,transform .24s}
 html[data-live] #resume .projects-open .cv-project-trigger>img{visibility:hidden}

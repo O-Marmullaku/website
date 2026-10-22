@@ -25,6 +25,8 @@ export function setupDocumentHints(root) {
   }
   function show(button){
     cancelClose();
+    // Narrow screens open the document directly; a floating label covers nearby actions.
+    if(document.documentElement.clientWidth<=680)return hide();
     if(!button?.isConnected||root.querySelector('.document-open')||root.querySelector('[contenteditable="plaintext-only"]'))return hide();
     if(source===button&&hint.matches(':popover-open'))return;
     source=button;row=button.closest('.cv-document-card')||button;

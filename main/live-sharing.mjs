@@ -1,8 +1,8 @@
-import { companyCombobox } from './company-search.mjs';
+import { companyCombobox } from './company-search.mjs?v=cleanup';
 const $=id=>document.getElementById(id);
 const node=(tag,text,cls)=>{const el=document.createElement(tag);el.textContent=text||'';if(cls)el.className=cls;return el;};
 const stamp=value=>new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
-export async function createLiveSharing(adapter,openResume) {
+export async function createLiveSharing(adapter,settle) {
   if(!adapter.editable)return {isGuest:true,track:kind=>adapter.track(kind),refresh(){}};
   let links=[],events=[],refreshing=false;
   const status=message=>$('settings-status').textContent=message;
@@ -67,7 +67,6 @@ export async function createLiveSharing(adapter,openResume) {
     $(tab).addEventListener('click',()=>selectTab(tab,panel));
     $(tab).addEventListener('keydown',event=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(event.key)){event.preventDefault();const next=event.key==='Home'?tabs[0]:event.key==='End'?tabs.at(-1):tabs.find(([id])=>id!==tab);selectTab(...next);$(next[0]).focus();}});
   }
-  $('preview-company').hidden=true;
   $('create-link').addEventListener('click',report(async()=>{
     const name=company();if(!name){status('Enter a company name.');$('company-name').focus();return;}
     const existing=links.find(link=>!link.revoked&&(!link.expires_at||Date.parse(link.expires_at)>Date.now())&&link.company.toLowerCase()===name.toLowerCase());
@@ -76,7 +75,7 @@ export async function createLiveSharing(adapter,openResume) {
     try{await adapter.flush();const result=await adapter.request('create',{company:name});showURL(url(result.token));status('Link created. Copy it below.');await refresh();}finally{button.disabled=false;}
   }));
   const signout=node('button','Sign out','text-button');
-  signout.addEventListener('click',report(async()=>{await adapter.flush();await window.siblingSession.signOut();parent.postMessage({type:'marmullaku-signed-out'},location.origin);}));
+  signout.addEventListener('click',report(async()=>{if(!await settle())return;await window.siblingSession.signOut();parent.postMessage({type:'marmullaku-signed-out'},location.origin);}));
   const archive=node('a','Family archive','text-button');archive.href='../admin/legacy.html';archive.target='_top';
   $('settings-panel').append(signout,archive);
   await refresh();return {isGuest:false,refresh:()=>refresh().catch(error=>status(error.message)),track(){}};
