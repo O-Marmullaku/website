@@ -4,7 +4,11 @@ export function setupCVPagination(paper) {
   const stack=document.createElement('div');stack.className='cv-paper-stack';paper.before(stack);stack.append(paper);
   const columns=[...body.children],portrait=paper.querySelector('.cv-portrait'),header=paper.querySelector('.paper-header');
   const sections=columns.map(column=>[...column.querySelectorAll(':scope > .resume-section')]);
-  let pages=[paper],fragments=[],pending=0,busy=false;
+  let pages=[paper],fragments=[],pending=0,busy=false,readingAnchor=null,resizing=false;
+  function rememberAnchor(){
+    if(busy||resizing)return;
+    readingAnchor=[...stack.querySelectorAll('.cv-row')].map(element=>({element,box:element.getBoundingClientRect()})).filter(({box})=>box.bottom>80&&box.top<innerHeight).sort((a,b)=>Math.abs(a.box.top-80)-Math.abs(b.box.top-80))[0]||null;
+  }
   const make=(tag,cls,text)=>{const el=document.createElement(tag);el.className=cls;if(text)el.textContent=text;return el;};
   paper.classList.add('cv-page');
   function restore(){
@@ -71,6 +75,7 @@ export function setupCVPagination(paper) {
     const moving=stack.getAnimations().filter(animation=>animation.playState==='running');
     if(moving.length){Promise.allSettled(moving.map(animation=>animation.finished)).then(schedule);return;}
     const scrollTop=dialog.scrollTop;
+    const anchor=scrollTop>0&&readingAnchor?.element.isConnected?readingAnchor:null;
     busy=true;
     try{
       restore();
@@ -93,11 +98,12 @@ export function setupCVPagination(paper) {
         page.setAttribute('aria-label',`CV page ${i+1} of ${count}`);
         page.querySelector('.paper-foot span').textContent=`${i+1} / ${count}`;
       });
-      dialog.scrollTop=scrollTop;
-    }finally{busy=false;}
+      dialog.scrollTop=anchor?dialog.scrollTop+anchor.element.getBoundingClientRect().top-anchor.box.top:scrollTop;
+    }finally{busy=false;resizing=false;rememberAnchor();}
   }
   function schedule(){cancelAnimationFrame(pending);pending=requestAnimationFrame(layout);}
-  addEventListener('resize',schedule);
+  paper.closest('dialog').addEventListener('scroll',rememberAnchor);
+  addEventListener('resize',()=>{resizing=true;schedule();});
   addEventListener('beforeprint',()=>{stack.getAnimations().forEach(animation=>animation.finish());document.documentElement.classList.add('cv-printing');layout();});
   addEventListener('afterprint',()=>{document.documentElement.classList.remove('cv-printing');layout();});
   document.addEventListener('load',event=>{if(event.target.matches?.('.cv-portrait,.cv-row-logo'))schedule();},true);

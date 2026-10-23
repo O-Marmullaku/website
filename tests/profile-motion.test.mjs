@@ -6,6 +6,7 @@ function fixture(){
  const element=(name,rect)=>({name,isConnected:true,style:{},dataset:{},classList:{add(){},remove(){}},getBoundingClientRect:()=>rect,animate(frames,options){let resolve,reject;const animation={frames,options,finished:new Promise((yes,no)=>{resolve=yes;reject=no;}),finish(){resolve();},cancel(){this.cancelled=true;reject(new Error('cancelled'));}};animation.finished.catch(()=>{});records.push({name,animation});return animation;}});
  const paper=element('paper',{left:243,top:48,width:794,height:1123}),rail=element('rail',{}),settings=element('settings',{}),card=element('card',{left:100,top:300,width:240,height:420}),panel=element('panel',{});
  const frame={...element('frame',{}),clientHeight:900,contentDocument:{querySelector:sel=>sel==='.cv-paper-stack, .paper'?paper:sel==='#extras-rail'?rail:settings},contentWindow:{getComputedStyle:()=>({opacity:'1',transform:'none',clipPath:'none'})}};
+ frame.ownerDocument={defaultView:{getComputedStyle:()=>({opacity:'1'})}};
  return {panel,frame,records,origin:{closest:()=>card},motion:createProfileMotion(panel),finish(){records.forEach(({animation})=>animation.finish());}};
 }
 test('card projection preserves the clicked card’s center and top edge',()=>{
@@ -32,4 +33,11 @@ test('sidebar follows the paper entrance and fades out before the paper closes',
 test('settings use a shorter window transition and never fade a CV card',async()=>{
  const f=fixture();const entering=f.motion.enter(f.frame,undefined,'settings');f.finish();await entering;assert.equal(f.records.some(x=>x.name==='card'),false);assert.equal(f.records.find(x=>x.name==='settings').animation.options.duration,280);
  const exiting=f.motion.exit(f.frame);f.finish();await exiting;assert.equal(f.records.at(-1).animation.options.duration,200);f.motion.reset();
+});
+
+test('failed frames fade out without access to their inaccessible window',async()=>{
+ const f=fixture();f.frame.contentDocument=null;
+ f.frame.contentWindow=new Proxy({}, {get(){throw new Error('Blocked failed frame');}});
+ const exiting=f.motion.exit(f.frame);f.finish();await exiting;
+ assert.equal(f.records.at(-1).name,'frame');
 });

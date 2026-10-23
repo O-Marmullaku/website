@@ -1,4 +1,4 @@
-import {createProfileMotion} from '../main/profile-motion.mjs?v=aligned-logos';
+import {createProfileMotion} from '../main/profile-motion.mjs?v=frame-recovery-1';
 await window.marmullakuServicesReady;
 (() => {
   const session=window.siblingSession,identity=document.querySelector('.footer-identity');
@@ -17,7 +17,7 @@ await window.marmullakuServicesReady;
     closing=(async()=>{
       if(departing)departing.inert=true;
       try{
-        if(!settled&&await departing?.contentWindow?.flushProfile?.()===false)return false;
+        if(!settled&&departing?.contentDocument&&await departing.contentWindow.flushProfile?.()===false)return false;
         await motion.exit(departing);
         if(panel.open){expectedCloses++;panel.close();}
         motion.reset();departing?.remove();

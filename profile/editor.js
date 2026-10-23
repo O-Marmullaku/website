@@ -1,6 +1,6 @@
 import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=links-documents';
-import {setupCVPagination} from './cv-pagination.mjs?v=cleanup';
+import {setupCVPagination} from './cv-pagination.mjs?v=reading-position-1';
 import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-workspace-2';
 import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
 import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
@@ -1070,7 +1070,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     pendingUploads.add(uploading);
     uploading.finally(()=>pendingUploads.delete(uploading));
   });
-  sharing = await (await import('../main/live-sharing.mjs?v=cleanup')).createLiveSharing(adapter,window.flushProfile);
+  sharing = await (await import('../main/live-sharing.mjs?v=sharing-recovery-1')).createLiveSharing(adapter,window.flushProfile);
   document.addEventListener("click", (event) => {
     const link = event.target.closest("#extra-blocks a");
     if (link)

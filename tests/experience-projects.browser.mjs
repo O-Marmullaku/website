@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
-const {firefox}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const browser=await firefox.launch({headless:true,...(process.env.FIREFOX_EXECUTABLE?{executablePath:process.env.FIREFOX_EXECUTABLE}:{})});
+const playwright=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const executablePath=process.env.CHROMIUM_EXECUTABLE||process.env.FIREFOX_EXECUTABLE;
+const browser=await playwright[process.env.CHROMIUM_EXECUTABLE?'chromium':'firefox'].launch({headless:true,...(executablePath?{executablePath}:{})});
 const base=process.env.TEST_BASE_URL||'http://localhost:8000';
 try{
  const page=await browser.newPage({viewport:{width:1600,height:1000}});

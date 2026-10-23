@@ -1,7 +1,8 @@
 // Optional browser regression: serve this repository, then run with Playwright Firefox installed.
 import assert from 'node:assert/strict';
-const {firefox}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const browser=await firefox.launch({headless:true,...(process.env.FIREFOX_EXECUTABLE?{executablePath:process.env.FIREFOX_EXECUTABLE}:{})});
+const playwright=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
+const executablePath=process.env.CHROMIUM_EXECUTABLE||process.env.FIREFOX_EXECUTABLE;
+const browser=await playwright[process.env.CHROMIUM_EXECUTABLE?'chromium':'firefox'].launch({headless:true,...(executablePath?{executablePath}:{})});
 const base=process.env.TEST_BASE_URL||'http://localhost:8000';
 try{
  const page=await browser.newPage({viewport:{width:1920,height:1000}});
@@ -96,7 +97,18 @@ try{
   await page.evaluate(style=>document.documentElement.dataset.cvEntries=style,style);assert.deepEqual(await positions(),beforeTimeline,'timeline is decorative and preserves geometry');
   if(style==='timeline')assert.equal(await page.locator('[data-section=experience] .cv-row-content').first().evaluate(e=>getComputedStyle(e,'::before').width),'7px');
  }
- await page.setViewportSize({width:390,height:844});await page.waitForTimeout(150);assert.deepEqual((await inspect()).ids,result.expected);assert.equal((await inspect()).overflows,false);
+ for(const width of [320,390,680]){
+  await page.setViewportSize({width,height:844});await page.waitForTimeout(150);assert.deepEqual((await inspect()).ids,result.expected);assert.equal((await inspect()).overflows,false);
+  assert(await card.evaluate(row=>{const date=row.querySelector('.cv-cell-date').getBoundingClientRect(),content=row.querySelector('.cv-row-content').getBoundingClientRect();return Math.abs(date.left-content.left)<1&&content.top>=date.bottom&&content.width>120;}),'phone dates sit above full-width entry text instead of squeezing titles into a narrow column');
+ }
+ await page.getByText('Role 9',{exact:true}).scrollIntoViewIfNeeded();
+ await page.evaluate(()=>new Promise(requestAnimationFrame));
+ for(const [width,height] of [[1280,600],[390,844]]){
+  const anchor=await page.locator('.cv-row').evaluateAll(rows=>rows.map(row=>({id:row.dataset.rowId,box:row.getBoundingClientRect().toJSON()})).filter(({box})=>box.bottom>80&&box.top<innerHeight).sort((a,b)=>Math.abs(a.box.top-80)-Math.abs(b.box.top-80))[0]);
+  await page.setViewportSize({width,height});await page.waitForTimeout(150);
+  const anchorTop=await page.locator(`[data-row-id="${anchor.id}"]`).evaluate(row=>row.getBoundingClientRect().top);
+  assert(Math.abs(anchorTop-anchor.box.top)<2,'responsive reflow retains the visible entry instead of jumping to another page: '+JSON.stringify({width,before:anchor.box.top,after:anchorTop}));
+ }
  await page.emulateMedia({media:'print'});
  assert.equal(await card.evaluate(e=>getComputedStyle(e,'::after').display),'none','hover decoration stays out of printed CVs');
  assert.equal(await card.locator('.cv-cell-title .cv-row-text').evaluate(e=>getComputedStyle(e).color),await page.locator('.paper').first().evaluate(e=>getComputedStyle(e).color),'print uses normal document ink even when a card is focused');

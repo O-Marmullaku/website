@@ -5,7 +5,7 @@
 .profile-loading{position:absolute;z-index:2;left:50%;top:45%;transform:translate(-50%,-50%);max-width:80%;background:#142239;padding:20px 24px;border-radius:8px;font:16px 'Fira Sans',sans-serif}
 .profile-dismiss{position:absolute;z-index:3;right:24px;top:20px;padding:8px 16px;color:#eef3fa;background:#142239;border:1px solid #45617f;border-radius:6px;cursor:pointer}
 .footer-account-name{color:inherit;text-decoration:underline;text-decoration-color:#acbbce77;text-underline-offset:3px}
-.footer-settings{display:inline-flex;align-items:center;justify-content:center;padding:4px;border:0;background:transparent;color:#acbbce;cursor:pointer;border-radius:4px}
+.footer-settings{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:4px;border:0;background:transparent;color:#acbbce;cursor:pointer;border-radius:4px}
 .footer-settings:hover{color:#86c1ff;background:#20314b}
 .footer-settings svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
 

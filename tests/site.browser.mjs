@@ -52,6 +52,15 @@ try{
    await page.getByRole('button',{name:language,exact:true}).click();
    assert.equal(await page.locator('.cta [data-i18n="view"]').first().textContent(),label);
   }
+  if(path==='/'&&width===390){
+   const failedFrame='**/profile/?view=cv*';await page.route(failedFrame,route=>route.abort());
+   await page.getByRole('button',{name:'Osman Marmullaku',exact:true}).click();
+   await page.getByText('Could not open this page. Close and try again.',{exact:true}).waitFor({timeout:25000});
+   await page.locator('.profile-window').getByRole('button',{name:'Close',exact:true}).click();
+   await page.locator('.profile-window iframe').waitFor({state:'detached'});
+   assert.equal(await page.locator('.profile-window[open]').count(),0,'a failed inaccessible frame can be dismissed before retrying');
+   await page.unroute(failedFrame);
+  }
   await page.getByRole('button',{name:'Osman Marmullaku',exact:true}).click();
   await page.waitForTimeout(150);releaseStyle();
   await page.locator('.profile-window[data-motion="open"]').waitFor({state:'visible'});

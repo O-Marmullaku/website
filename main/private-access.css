@@ -21,7 +21,7 @@
   body>footer .footer-sign-in{min-height:40px;padding:8px 0 8px 12px;white-space:nowrap}
   body>footer [data-i18n=rights]{font-size:12px;line-height:1.5;margin:0;color:#acbbce}
   body>footer .footer-identity:has(.footer-account-name),body>footer .footer-identity.signed-account{justify-content:flex-start;gap:5px;flex-wrap:wrap}
-  body>footer .footer-settings{min-width:36px;min-height:40px}
+  body>footer .footer-settings{min-width:44px;min-height:44px}
 }
 .sign-in-dialog { width: min(420px, calc(100% - 32px)); }
 .sign-in-dialog h2 { margin-top: 0; margin-bottom: 28px; }

@@ -27,7 +27,7 @@ export function createProfileMotion(panel) {
     async exit(frame) {
       generation++;
       const element=visual(frame),style=element&&frame.contentWindow.getComputedStyle(element),current=style&&{opacity:style.opacity,transform:style.transform,clipPath:style.clipPath};
-      const opacity=frame?frame.contentWindow.getComputedStyle(frame).opacity:1;
+      const opacity=frame?frame.ownerDocument.defaultView.getComputedStyle(frame).opacity:1;
       const rail=view==='cv'&&frame?.contentDocument?.querySelector('#extras-rail');
       const railStyle=rail&&frame.contentWindow.getComputedStyle(rail);
       const railFrom=railStyle&&{opacity:railStyle.opacity,transform:railStyle.transform};

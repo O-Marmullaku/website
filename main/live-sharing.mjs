@@ -21,7 +21,9 @@ export async function createLiveSharing(adapter,settle) {
     catch{showURL(value);status('Select and copy your link.');}
   }
   function paintLinks() {
-    const host=$('company-links');const expanded=new Set([...host.querySelectorAll('details[open]')].map(el=>el.parentElement.dataset.linkId));host.replaceChildren();
+    const host=$('company-links'),active=document.activeElement,item=active?.closest('.shared-link');
+    const focusID=host.contains(item)?item.dataset.linkId:null,focusIndex=item?[...item.querySelectorAll('button,summary')].indexOf(active):-1;
+    const expanded=new Set([...host.querySelectorAll('details[open]')].map(el=>el.parentElement.dataset.linkId));host.replaceChildren();
     if(!links.length){host.append(node('p','No links yet.','links-empty'));return;}
     for(const link of links) {
       const expired=link.expires_at&&Date.parse(link.expires_at)<=Date.now(),unavailable=link.revoked||expired;
@@ -42,6 +44,7 @@ export async function createLiveSharing(adapter,settle) {
       const list=node('ol');for(const event of history){const row=node('li');const time=node('time',stamp(event.created_at));time.dateTime=event.created_at;row.append(node('span',event.label),time);list.append(row);}
       activity.append(list);if(!history.length)activity.append(node('p','No activity yet.'));item.append(activity);host.append(item);
     }
+    if(focusID&&focusIndex>=0)[...host.children].find(item=>item.dataset.linkId===focusID)?.querySelectorAll('button,summary')[focusIndex]?.focus({preventScroll:true});
   }
   async function refresh() {
     if(refreshing)return;refreshing=true;
@@ -78,5 +81,6 @@ export async function createLiveSharing(adapter,settle) {
   signout.addEventListener('click',report(async()=>{if(!await settle())return;await window.siblingSession.signOut();parent.postMessage({type:'marmullaku-signed-out'},location.origin);}));
   const archive=node('a','Family archive','text-button');archive.href='../admin/legacy.html';archive.target='_top';
   $('settings-panel').append(signout,archive);
-  await refresh();return {isGuest:false,refresh:()=>refresh().catch(error=>status(error.message)),track(){}};
+  refresh().catch(error=>status(error.message));
+  return {isGuest:false,refresh:()=>refresh().catch(error=>status(error.message)),track(){}};
 }

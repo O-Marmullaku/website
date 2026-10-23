@@ -69,7 +69,8 @@ html[data-live] #resume .resume-column:first-child .cv-row-options{right:-16px}
  html[data-live] #resume .paper-header h2{font-size:30px}
  html[data-live] #resume .paper-header p{font-size:var(--cv-role-size);letter-spacing:var(--cv-role-tracking)}
  html[data-live] #resume .cv-portrait{width:140px;margin:22px auto;aspect-ratio:.78}
- html[data-live] #resume .cv-row-timeline,html[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html[data-live] #resume [data-section=experience] .cv-row-timeline,html[data-live] #resume [data-section=experience] .cv-row-timeline:has(.cv-row-logo){grid-template-columns:68px minmax(0,1fr);gap:0 10px}
+ html[data-live] #resume .cv-row-timeline,html[data-live] #resume .cv-row-timeline:has(.cv-row-logo),html[data-live] #resume [data-section=experience] .cv-row-timeline,html[data-live] #resume [data-section=experience] .cv-row-timeline:has(.cv-row-logo){grid-template-columns:minmax(0,1fr);gap:6px}
+ html[data-live]:not(.cv-printing) #resume .cv-row-timeline>.cv-cell-date,html[data-live]:not(.cv-printing) #resume .cv-row-timeline>.cv-row-content{grid-column:1;grid-row:auto}
  html[data-live] #resume .cv-row-logo{float:none;display:block;width:86px;max-height:54px;margin:0 0 10px}
  html[data-live] #resume .cv-row-text,html[data-live] #resume .section-copy,html[data-live] #resume .cv-language-description{font-size:14px}
  html[data-live] #resume .cv-cell-date .cv-row-text{font-size:12px}

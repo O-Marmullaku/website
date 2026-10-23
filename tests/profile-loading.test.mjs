@@ -71,6 +71,15 @@ test('a queued close event cannot remove a newly requested profile',async()=>{
   f.send(second,'marmullaku-ready');assert.equal(f.panel.open,true);
 });
 
+test('an inaccessible failed frame can be closed without reading its window',async()=>{
+  const f=fixture();await f.window.openPrivateCV(null,{id:'osman'});
+  const frame=f.elements.at(-1);f.send(frame,'marmullaku-ready');
+  frame.contentDocument=null;
+  frame.contentWindow=new Proxy({}, {get(){throw new Error('Blocked failed frame');}});
+  f.panel.fire('cancel');await tick();
+  assert.equal(frame.removed,true);assert.equal(f.panel.open,false);
+});
+
 test('an unexpected native close still protects unsaved edits',async()=>{
   const f=fixture();await f.window.openPrivateCV(null,{id:'osman'});
   const frame=f.elements.at(-1);f.send(frame,'marmullaku-ready');frame.contentWindow.flushProfile=async()=>false;
