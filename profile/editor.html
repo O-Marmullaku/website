@@ -10,7 +10,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="editor.css?v=aligned-logos" />
-    <link rel="stylesheet" href="../main/pdf-reader.css?v=pdf-workspace-2" />
+    <link rel="stylesheet" href="../main/pdf-reader.css?v=pdf-workspace-3" />
   </head>
   <body>
     <svg class="symbols" aria-hidden="true">
@@ -111,7 +111,7 @@
           <header>
             <h2 id="document-title"></h2>
             <div class="document-actions">
-              <a id="document-save" class="document-icon" download hidden aria-label="Download PDF" title="Download PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg></a>
+              <a id="document-save" class="document-icon" download hidden aria-label="Download PDF" title="Download PDF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Download</span></a>
               <button id="document-maximize" aria-label="Maximize PDF" title="Maximize PDF" aria-pressed="false">
                 <svg class="maximize-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3H3v5M16 3h5v5M21 16v5h-5M8 21H3v-5"/></svg>
                 <svg class="restore-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 9V3h12v12h-6M3 9h12v12H3z"/></svg>
@@ -131,15 +131,17 @@
                   <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg>
                 </button>
               </div>
-              <div class="document-zoom-controls" role="group" aria-label="Zoom">
-                <button id="document-zoom-out" aria-label="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
-                <output id="document-zoom" aria-label="Zoom level"></output>
-                <button id="document-zoom-in" aria-label="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
+              <div class="document-view">
+                <div class="document-zoom-controls" role="group" aria-label="Zoom">
+                  <button id="document-zoom-out" aria-label="Zoom out" title="Zoom out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14"/></svg></button>
+                  <output id="document-zoom" aria-label="Zoom level"></output>
+                  <button id="document-zoom-in" aria-label="Zoom in" title="Zoom in"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>
+                </div>
+                <button id="document-fit" aria-label="Fit width" title="Fit width" data-fit="fit">
+                  <svg class="fit-width-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v18M20 3v18M7 12h10M10 9l-3 3 3 3M14 9l3 3-3 3"/></svg>
+                  <svg class="fit-page-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1"/><path d="M9 7h6M9 17h6"/></svg>
+                </button>
               </div>
-              <button id="document-fit" aria-label="Fit width" title="Fit width" data-fit="fit">
-                <svg class="fit-width-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 3v18M20 3v18M7 12h10M10 9l-3 3 3 3M14 9l3 3-3 3"/></svg>
-                <svg class="fit-page-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="3" width="12" height="18" rx="1"/><path d="M9 7h6M9 17h6"/></svg>
-              </button>
             </div>
           </header>
           <p id="document-status" role="status"></p>
