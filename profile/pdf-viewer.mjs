@@ -41,7 +41,7 @@ export async function createPDFViewer(root) {
       root.querySelector('#document-zoom-in').disabled=scale>=3;
       root.querySelector('#document-zoom-out').disabled=scale<=.5;
       const sized = page.getViewport({ scale });
-      const density = Math.min(window.devicePixelRatio || 1, 2);
+      const density = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
       // Keep the current page visible until its replacement is fully painted.
       const pendingCanvas=document.createElement('canvas');
       pendingCanvas.width = Math.ceil(sized.width * density);

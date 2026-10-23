@@ -1,11 +1,11 @@
 import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=quiet-extras';
 import {setupCVPagination} from './cv-pagination.mjs?v=cleanup';
-import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-reader-3';
+import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-reader-4';
 import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
 import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
 import { resolveQuote } from "./picture-anchor.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-reader-3";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-reader-4";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
 
@@ -389,7 +389,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     $(id).addEventListener('cancel',event=>{
       event.preventDefault();
       if(id==='resume'&&!$('document-reader').hidden){
-        if($('document-reader').classList.contains('is-maximized'))setDocumentMaximized(false);
+        if($('document-reader').classList.contains('is-maximized')&&innerWidth>480)setDocumentMaximized(false);
         else closeDocument(true);
       }else closeDialog(id);
     });
@@ -1000,6 +1000,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     $("document-status").textContent = "Opening PDF…";
     $("document-download").hidden = true;
     $("document-reader").hidden = false;
+    setDocumentMaximized(true);
     document.querySelector(".resume-workspace").classList.add("document-open");
     documentEntry=$('document-reader').animate([{opacity:0,transform:'translateX(48px)'},{opacity:1,transform:'none'}],{duration:240,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'});
     documentEntry.finished.catch(()=>{});

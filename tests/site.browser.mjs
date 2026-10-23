@@ -16,9 +16,9 @@ const rows=fromProfile(state.profiles[0]).cvRows;
 rows.experience.push({id:crypto.randomUUID(),title:'Self-employed Software Developer',href:'https://crazyentertainment.ch/',detail:'Synthetic studio',date:'2026',body:'Synthetic projects',logo:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aPioAAAAASUVORK5CYII='});
 state.profiles[0].cv.editor={rows};
 function samplePDF(pageCount=1){
- const stream='BT /F1 12 Tf 20 140 Td (Synthetic supporting document) Tj ET';
+ const stream='BT /F1 12 Tf 50 770 Td (Synthetic supporting document) Tj ET';
  const pages=Array.from({length:pageCount},(_,index)=>index+3),content=pageCount+3,font=pageCount+4;
- const objects=['<< /Type /Catalog /Pages 2 0 R >>',`<< /Type /Pages /Kids [${pages.map(id=>`${id} 0 R`).join(' ')}] /Count ${pageCount} >>`,...pages.map(()=>`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 260 200] /Resources << /Font << /F1 ${font} 0 R >> >> /Contents ${content} 0 R >>`),`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
+ const objects=['<< /Type /Catalog /Pages 2 0 R >>',`<< /Type /Pages /Kids [${pages.map(id=>`${id} 0 R`).join(' ')}] /Count ${pageCount} >>`,...pages.map(()=>`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${font} 0 R >> >> /Contents ${content} 0 R >>`),`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
  let pdf='%PDF-1.4\n';const offsets=[0];
  objects.forEach((object,index)=>{offsets.push(Buffer.byteLength(pdf));pdf+=`${index+1} 0 obj\n${object}\nendobj\n`;});
  const xref=Buffer.byteLength(pdf);
@@ -124,8 +124,13 @@ try{
   const pdfFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
   assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
   await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
-  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=innerHeight&&(innerWidth<=480?box.width===innerWidth:box.left>innerWidth/2);}),'the reader stays on the right and fills phone viewports');
+  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.left===0&&box.top===0&&box.width===innerWidth&&box.height===innerHeight;}),'PDFs open maximized by default on desktop and phones');
+  assert.equal(await reader.getAttribute('aria-modal'),'true');
+  assert(await reader.evaluate(el=>[...el.parentElement.children].filter(sibling=>sibling!==el).every(sibling=>sibling.inert)),'the covered CV cannot receive keyboard focus');
   assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),null,'PDF pages use real zoom, not the image magnifier');
+  assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'small print renders at least two bitmap pixels per displayed pixel');
+  await canvas.click();
+  assert.equal(await frame.locator('.image-magnifier.is-visible').count(),0,'clicking the PDF cannot open the blurry image lens');
   assert.equal(await reader.locator('select').count(),0,'zoom has direct controls instead of a percentage dropdown');
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'the page count and navigation remain discoverable for every PDF');
   assert.equal(await reader.locator('#document-page').textContent(),'1 / 1');
@@ -136,11 +141,14 @@ try{
   await frame.getByRole('button',{name:'Zoom in',exact:true}).click();
   await pdfFrame.waitForFunction(pixels=>document.querySelector('#document-reader canvas').width>pixels,pixels);
   assert(Number.parseInt(await reader.locator('#document-zoom').textContent())>percentage,'zoom reports the rendered scale');
+  assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'zoom renders fresh detail at the larger size');
   for(const label of ['Fit page','Fit width','Fit page']){
    await reader.getByRole('button',{name:label,exact:true}).click();
    await pdfFrame.waitForFunction(label=>document.querySelector('#document-fit').getAttribute('aria-label')!==label,label);
   }
   if(width>480){
+   await reader.getByRole('button',{name:'Restore PDF size',exact:true}).click();
+   await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader').getBoundingClientRect().left>innerWidth/2);
    const sideWidth=await reader.evaluate(el=>el.getBoundingClientRect().width);
    await reader.getByRole('button',{name:'Maximize PDF',exact:true}).click();
    await pdfFrame.waitForFunction(()=>{const reader=document.querySelector('#document-reader'),box=reader.getBoundingClientRect();return box.left===0&&box.top===0&&box.width===innerWidth&&box.height===innerHeight;});
@@ -167,6 +175,7 @@ try{
   await frame.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
   if(width>680){
    await pdfTrigger.click();await canvas.waitFor({state:'visible'});
+   await reader.getByRole('button',{name:'Restore PDF size',exact:true}).click();
   }
   await frame.locator('.paper').getByRole('button',{name:'Open second.pdf',exact:true}).click();
   await pdfFrame.waitForFunction(()=>document.querySelector('#document-page').textContent==='1 / 2'&&!document.querySelector('#document-reader canvas').hidden);
