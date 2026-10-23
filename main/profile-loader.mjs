@@ -28,5 +28,5 @@ if (window===parent) {
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
   }
-  await import('../profile/editor.js?v=cv-stationary-1');
+  await import('../profile/editor.js?v=reader-sheet-1');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

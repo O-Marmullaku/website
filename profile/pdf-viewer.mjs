@@ -11,6 +11,9 @@ export async function createPDFViewer(root) {
   ).href;
   const canvas = root.querySelector("canvas");
   const viewport = root.querySelector(".document-pages");
+  const sheet = viewport.parentElement;
+  // The sheet hugs the page, so fitting measures the room the reader leaves for the page area, not the page area itself.
+  const room = () => ({width:viewport.clientWidth,height:root.clientHeight-sheet.offsetHeight+viewport.clientHeight});
   const previous = root.querySelector("#document-previous");
   const next = root.querySelector("#document-next");
   const label = root.querySelector("#document-page");
@@ -96,7 +99,8 @@ export async function createPDFViewer(root) {
       const page = await pdf.getPage(pageNumber);
       if (current !== revision) return;
       const natural = page.getViewport({ scale: 1 });
-      const scale = pdfScale(zoomMode,viewport.clientWidth,viewport.clientHeight,natural);
+      const fitted = room();
+      const scale = pdfScale(zoomMode,fitted.width,fitted.height,natural);
       root.querySelector('#document-zoom-in').disabled=scale>=3;
       root.querySelector('#document-zoom-out').disabled=scale<=.5;
       const sized = page.getViewport({ scale });
@@ -164,13 +168,15 @@ export async function createPDFViewer(root) {
     render();
   });
   let width = 0,height=0;
-  new ResizeObserver(([entry]) => {
-    if (Math.abs(entry.contentRect.width - width) > 1 || Math.abs(entry.contentRect.height-height)>1) {
-      width = entry.contentRect.width;
-      height=entry.contentRect.height;
+  const resized = new ResizeObserver(() => {
+    const fitted = room();
+    if (Math.abs(fitted.width - width) > 1 || Math.abs(fitted.height-height)>1) {
+      ({width,height} = fitted);
       if (width && ['fit','fit-page'].includes(zoomMode)) render();
     }
-  }).observe(viewport);
+  });
+  // The reader, the sheet and the page area each resize alone: window, status line, scrollbar.
+  for (const element of [root,sheet,viewport]) resized.observe(element);
   function close() {
     dismissLens();lensPage=null;
     revision++;
