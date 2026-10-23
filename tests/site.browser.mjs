@@ -60,6 +60,7 @@ try{
   assert.equal(await frame.locator('#resume-name').textContent(),'Osman Marmullaku');
   assert.equal(await frame.locator('.cv-extras-tool').textContent(),'Links & documents');
   assert(await frame.locator('.resume-toolbar').evaluate(el=>{const box=el.getBoundingClientRect();return getComputedStyle(el).position==='fixed'&&box.top>=0&&box.right<=innerWidth;}),'CV actions float in the screen corner, independently of the paper');
+  assert(await frame.locator('.resume-toolbar').evaluate(el=>{const light='rgb(238, 242, 246)',round=[...el.querySelectorAll('.cv-download,[data-close=resume]')].every(button=>{const box=button.getBoundingClientRect(),style=getComputedStyle(button);return Math.round(box.width)===44&&Math.round(box.height)===44&&style.borderRadius==='50%'&&style.backgroundColor===light;});return round&&getComputedStyle(el.querySelector('.cv-extras-tool')).backgroundColor===light&&!el.querySelector('.cv-download>span').getClientRects().length&&getComputedStyle(el).backgroundColor==='rgba(0, 0, 0, 0)';}),'CV actions are compact light controls: one filled text button and round icon buttons, without a dark tray');
   assert.equal(await frame.locator('.cv-cell-title .cv-row-text').filter({hasText:unsafeTitle}).count(),1);
   assert.equal(await frame.locator('img[src="x"]').count(),0,'profile text must never become executable markup');
   await frame.getByRole('button',{name:'View Crazy Entertainment projects',exact:true}).click();
@@ -134,6 +135,7 @@ try{
   assert.notEqual(await reader.getAttribute('aria-modal'),'true');
   assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),'0','the click magnifier is keyboard accessible');
   assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'small print renders at least two bitmap pixels per displayed pixel');
+  assert(await canvas.evaluate(el=>{const spread=Number(/0px 0px 0px (\d+(?:\.\d+)?)px/.exec(getComputedStyle(el).boxShadow)?.[1]),pages=getComputedStyle(el.parentElement);return spread>=8&&spread<=parseFloat(pages.paddingTop)&&spread<=parseFloat(pages.paddingLeft)&&pages.backgroundColor==='rgba(0, 0, 0, 0)';}),'a modest dark backing hugs the page itself, inside the scroll padding, instead of filling the column');
   await canvas.hover();
   await page.waitForTimeout(100);
   assert.equal(await reader.locator('.pdf-hover-lens:popover-open').count(),0,'hovering alone never enables magnification');
@@ -158,6 +160,8 @@ try{
   assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).isEnabled(),false,'a single-page PDF visibly disables Next');
   assert.equal(await reader.locator('[target="_blank"]').count(),0,'the title bar expands the reader instead of opening a tab');
   assert(await reader.evaluate(el=>{const controls=el.querySelector('.document-controls').getBoundingClientRect(),pages=el.querySelector('.document-pages').getBoundingClientRect();return controls.bottom<=pages.top&&Math.abs(pages.bottom-el.getBoundingClientRect().bottom)<2;}),'controls stay above the document and leave no bottom toolbar');
+  assert(await reader.evaluate(el=>{const header=el.querySelector('header').getBoundingClientRect(),controls=[...el.querySelectorAll('header :is(button,a[href])')].filter(control=>control.getClientRects().length).map(control=>control.getBoundingClientRect());return el.querySelector('h2').getBoundingClientRect().width>=120&&controls.every(box=>box.left>=header.left&&box.right<=header.right&&box.top>=header.top&&box.bottom<=header.bottom&&box.width>=(innerWidth<=680?44:32));}),'the title stays legible and every reader control fits inside the bar at full size, without sideways scrolling');
+  assert(await reader.evaluate(el=>{const centers=[...el.querySelectorAll('header :is(h2,.document-pagination,.document-view,.document-actions)')].map(part=>{const box=part.getBoundingClientRect();return box.top+box.height/2;}).sort((a,b)=>a-b);return 1+centers.slice(1).filter((center,index)=>center-centers[index]>8).length===(innerWidth>680?1:2);}),'desktop keeps one toolbar row; phones expand it to a title line and a controls line');
   const pixels=await canvas.evaluate(el=>el.width),percentage=Number.parseInt(await reader.locator('#document-zoom').textContent());
   await frame.getByRole('button',{name:'Zoom in',exact:true}).click();
   await pdfFrame.waitForFunction(pixels=>document.querySelector('#document-reader .document-pages canvas').width>pixels,pixels);

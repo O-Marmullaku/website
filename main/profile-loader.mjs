@@ -16,7 +16,7 @@ if (window===parent) {
   const styles=[...template.head.querySelectorAll('link[rel~="stylesheet"]')].map(link=>loadStyle(document.importNode(link,true)));
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
-  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=cv-stationary-1';styles.push(loadStyle(style));
+  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=reader-toolbar-1';styles.push(loadStyle(style));
   const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=white-paper-1';styles.push(loadStyle(paperStyle));
   await Promise.all(styles);
   if(parent.MARMULLAKU_MOCKUP) {

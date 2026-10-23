@@ -1,56 +1,53 @@
 /* The side reader keeps the CV available while its document is open. */
 :root{--pdf-sidebar-width:clamp(360px,42vw,640px)}
-/* Only the document casts a shadow; the surrounding desktop workspace stays transparent. */
-#document-reader{position:fixed;inset:0 0 0 auto;z-index:7;display:flex;flex-direction:column;width:var(--pdf-sidebar-width);height:100dvh;max-width:none;max-height:none;margin:0;padding:0;background:transparent;color:#e9f0f8;font:400 14px/1.4 'Fira Sans',system-ui,sans-serif;border:0;border-radius:0;overflow:hidden;box-shadow:none;animation:none}
+/* The workspace around the document stays transparent; only the toolbar and the page's backing are drawn. */
+#document-reader{position:fixed;inset:0 0 0 auto;z-index:7;display:flex;flex-direction:column;width:var(--pdf-sidebar-width);height:100dvh;max-width:none;max-height:none;margin:0;padding:0;background:transparent;color:#e9f0f8;font:400 14px/1.4 'Fira Sans',system-ui,sans-serif;border:0;border-radius:0;overflow:hidden;box-shadow:none;animation:none;container:reader/inline-size}
 #document-reader[hidden]{display:none}
 #document-reader .document-icon[hidden]{display:none}
 #document-reader .pdf-hover-lens{position:fixed;inset:auto;margin:0;padding:0;width:min(360px,calc(100vw - 16px));height:min(260px,calc(100dvh - 16px));max-width:none;max-height:none;border:1px solid #d6dce4;border-radius:6px;background:white;box-shadow:0 8px 24px -8px #0006;pointer-events:none}
 #document-reader .pdf-hover-lens:not(:popover-open){display:none}
 #document-reader .document-pages>canvas{cursor:zoom-in}
 #document-reader .document-pages>canvas:focus-visible{outline:2px solid #86c1ff;outline-offset:3px}
-#document-reader>header{display:flex;align-items:center;flex:none;gap:8px;margin:12px 16px 0;padding:4px;border:0;border-radius:8px;background:#0f1a29ee}
-#document-reader h2{flex:1;margin:0 4px;min-width:40px;font-size:13px;font-weight:500;line-height:1.4;color:#f1f5fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#document-reader .document-actions{display:flex;align-items:center;flex:none;gap:0}
-#document-reader :is(button,.document-icon){display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:32px;min-height:36px;padding:6px;border:0;border-radius:6px;background:transparent;color:#c7d8ec;font:inherit;font-size:13px;text-decoration:none;transition:background .16s,color .16s,border-color .16s,transform .16s}
-#document-reader #document-next>span,#document-reader #document-save>span{display:none}
-#document-reader #document-save{padding:6px;border:0;color:#e6eef8}
-#document-reader #close-document{position:relative;margin-left:4px}
-#document-reader #close-document::before{content:'';position:absolute;left:-3px;top:10px;bottom:10px;width:1px;background:#2b3f57}
-#document-reader :is(button,.document-icon):hover:not(:disabled){background:#1f3048;color:#fff}
+/* One bar: title, then a page stepper and a view group, each in its own well, then window actions. */
+#document-reader>header{display:flex;flex-wrap:wrap;align-items:center;flex:none;gap:4px 8px;margin:10px 6px 8px;padding:4px;border:0;border-radius:12px;background:#0f1a29}
+#document-reader h2{flex:1 1 0;min-width:0;margin:0 0 0 8px;font-size:14px;font-weight:500;line-height:1.3;color:#f1f5fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#document-reader .document-controls{position:static;display:flex;align-items:center;flex:none;gap:8px;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+#document-reader .document-controls[hidden]{display:none}
+#document-reader :is(.document-pagination,.document-view){display:flex;align-items:center;flex:none;padding:2px;border-radius:8px;background:#1a2a3f}
+#document-reader :is(.document-zoom-controls,.document-actions){display:flex;align-items:center;flex:none}
+#document-reader :is(button,.document-icon){position:relative;display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:32px;min-height:32px;padding:6px;border:0;border-radius:6px;background:transparent;color:#c7d8ec;font:inherit;font-size:13px;text-decoration:none;transition:background .16s,color .16s,transform .16s}
+#document-reader :is(button,.document-icon):hover:not(:disabled){background:#2a3f5a;color:#fff}
 #document-reader :is(button,.document-icon):active:not(:disabled){transform:scale(.96)}
-#document-reader button:disabled{opacity:.45;cursor:default}
+#document-reader button:disabled{opacity:.4;cursor:default}
 #document-reader :is(button,a):focus-visible{outline:2px solid #86c1ff;outline-offset:2px}
 #document-reader :is(button,.document-icon) svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-/* Page navigation reads from the left, view controls sit to the right, as in desktop PDF readers. */
-#document-reader .document-controls{position:static;display:flex;align-items:center;flex:0 1 auto;min-width:0;gap:12px;margin:0;padding:0;border:0;background:transparent;box-shadow:none;overflow-x:auto;scrollbar-width:thin;scrollbar-color:#536d88 transparent}
-#document-reader .document-controls[hidden]{display:none}
-#document-reader :is(.document-pagination,.document-zoom-controls,.document-view){display:flex;align-items:center;flex:none;gap:0}
-#document-reader :is(#document-page,#document-zoom){min-width:36px;text-align:center;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums;color:#dce7f4}
-#document-reader #document-fit{margin-left:4px}
+#document-reader :is(#document-page,#document-zoom){min-width:44px;padding:0 4px;text-align:center;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums;color:#e3ecf6}
+/* Thin rules set fitting apart from stepped zoom, and closing apart from the other window actions. */
+#document-reader :is(#document-fit,#close-document){margin-left:5px}
+#document-reader :is(#document-fit,#close-document)::before{content:'';position:absolute;left:-4px;top:25%;bottom:25%;width:1px;background:#2f4560}
 #document-reader .restore-icon,#document-reader .fit-page-icon{display:none}
 #document-reader.is-maximized .restore-icon,#document-reader #document-fit[data-fit=fit-page] .fit-page-icon{display:block}
 #document-reader.is-maximized .maximize-icon,#document-reader #document-fit[data-fit=fit-page] .fit-width-icon{display:none}
-#document-reader .document-download{padding:0 20px 12px;color:#c7d8ec;font-size:14px;text-decoration:underline;text-underline-offset:3px}
-#document-reader .document-pages{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;height:auto;padding:8px 16px 16px;background:transparent;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3c5069 transparent}
+#document-reader .document-download{padding:0 16px 12px;color:#c7d8ec;font-size:14px;text-decoration:underline;text-underline-offset:3px}
+/* Padding stays within the fitted-page margin the viewer subtracts, so fitting never overflows. */
+#document-reader .document-pages{position:relative;display:flex;flex-direction:column;flex:1;min-height:0;height:auto;padding:12px 16px 16px;background:transparent;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3c5069 transparent}
 #document-reader .document-pages::-webkit-scrollbar{width:7px;height:7px}
 #document-reader .document-pages::-webkit-scrollbar-thumb{background:#3c5069;border:2px solid #0f1a29;border-radius:8px}
 #document-reader .document-pages::-webkit-scrollbar-track{background:transparent}
-/* Keep the document just below its controls instead of framing it with empty bars. */
-#document-reader canvas{color-scheme:light;display:block;flex:none;margin:0 auto;border-radius:2px;box-shadow:0 2px 4px #0004,0 18px 40px -16px #000c}
-#document-reader #document-status{margin:0;padding:12px 20px;color:#c7d8ec;font-size:14px;line-height:1.5}
+/* The backing card is a spread shadow: it follows the page at every zoom without moving pointer coordinates. */
+#document-reader canvas{color-scheme:light;display:block;flex:none;margin:0 auto;border-radius:2px;box-shadow:0 0 0 10px #0f1a29,0 18px 40px 10px #0009}
+#document-reader #document-status{margin:0;padding:12px 16px;color:#c7d8ec;font-size:14px;line-height:1.5}
 #document-reader #document-status:empty{display:none}
 #document-reader.is-maximized{inset:0;width:100%;height:100dvh;border-radius:0;background:#0b1522}
-/* Protect the controls where the sidebar overlaps the CV, leaving the space around the page clear. */
-@media(max-width:1280px){#document-reader h2{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip-path:inset(50%)}#document-reader .document-controls{flex:1}}
+/* Mid-width sidebars give the title the zoom readout's room; the buttons still state the change. */
+@container reader (510px <= width < 600px){#document-reader #document-zoom{display:none}}
+/* Narrow readers split the same bar into two lines: title with window actions, then page and view controls. */
+@container reader (width < 510px){
+ #document-reader .document-controls{order:1;flex:1 0 100%;justify-content:space-between}
+}
 @media(max-width:680px){
  #document-reader{width:100%;border-radius:0;background:#0b1522;padding-bottom:env(safe-area-inset-bottom)}
-  #document-reader :is(button,.document-icon){min-width:44px;min-height:44px}
- #document-reader #document-maximize,#document-reader #document-zoom{display:none}
- #document-reader>header{margin-inline:12px;padding:2px;gap:4px}
- #document-reader .document-controls{gap:4px}
- #document-reader #document-page{min-width:28px}
- #document-reader #document-fit,#document-reader #close-document{margin-left:0}
- #document-reader #close-document::before{display:none}
- #document-reader .document-pages{padding-inline:12px}
+ #document-reader :is(button,.document-icon){min-width:44px;min-height:44px}
+ #document-reader #document-maximize{display:none}
 }
 @media print{#document-reader{display:none!important}}

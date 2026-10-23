@@ -46,25 +46,19 @@ html[data-live] #settings-panel>a.text-button{margin-left:20px}
 }
 
 /* The same document surface serves reading and in-place editing. */
-html[data-live] #resume .resume-toolbar{position:fixed;inset:16px 16px auto auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;width:auto;max-width:calc(100% - 32px);min-height:0;margin:0;padding:6px;gap:8px;border:0;border-radius:8px;background:#0b1522ed;z-index:5;transition:opacity .18s,visibility .18s}
+html[data-live] #resume .resume-toolbar{position:fixed;inset:16px 16px auto auto;display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;width:auto;max-width:calc(100% - 32px);min-height:0;margin:0;padding:0;gap:8px;border:0;background:transparent;z-index:5;transition:opacity .18s,visibility .18s}
 html[data-live] #resume .resume-toolbar>#resume-status{position:static;margin-right:auto;max-width:220px;font-size:12px;color:#b8c9dd;text-align:left}
-/* Labeled CV actions: one filled primary, one outlined secondary, and a quiet close set apart by a rule. */
-html[data-live] #resume :is(.cv-extras-tool,.cv-download){position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:auto;min-height:40px;padding:0 14px;border:1px solid #3a5372;border-radius:8px;background:transparent;color:#e6eef8;font:500 14px/1.2 'Fira Sans',system-ui,sans-serif;text-decoration:none;cursor:pointer;box-shadow:none;transition:background .18s,border-color .18s,color .18s,transform .18s cubic-bezier(.2,.8,.2,1)}
-html[data-live] #resume .cv-download{border-color:transparent;background:#eef2f6;color:#10243d;box-shadow:0 6px 18px -10px #000c}
-html[data-live] #resume .cv-extras-tool:hover{background:#1a2c43;border-color:#5a7aa0;text-decoration:none}
-html[data-live] #resume .cv-download:hover{background:#fff;text-decoration:none}
-html[data-live] #resume .cv-download svg{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-html[data-live] #resume [data-close=resume]{position:relative;display:grid;place-items:center;width:40px;height:40px;margin-left:9px;padding:0;border:0;border-radius:8px;background:transparent;color:#c7d8ec;transition:background .18s,color .18s,transform .18s cubic-bezier(.2,.8,.2,1)}
-html[data-live] #resume [data-close=resume]::before{content:'';position:absolute;left:-9px;top:8px;bottom:8px;width:1px;background:#2e4460}
-html[data-live] #resume [data-close=resume]:hover{background:#1a2c43;color:#fff}
+/* Compact light actions: one filled text button, then round icon buttons named by their tooltips. */
+html[data-live] #resume :is(.cv-extras-tool,.cv-download,[data-close=resume]){position:relative;display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border:0;border-radius:8px;background:#eef2f6;color:#162537;font:500 14px/1.2 'Fira Sans',system-ui,sans-serif;text-decoration:none;cursor:pointer;box-shadow:0 6px 18px -10px #000c;transition:background .18s,transform .18s cubic-bezier(.2,.8,.2,1)}
+html[data-live] #resume :is(.cv-download,[data-close=resume]){width:44px;height:44px;padding:0;border-radius:50%}
+html[data-live] #resume :is(.cv-extras-tool,.cv-download,[data-close=resume]):hover{background:#fff;color:#162537;text-decoration:none}
+html[data-live] #resume .cv-download>span{display:none}
+html[data-live] #resume :is(.cv-download,[data-close=resume]) svg{width:20px;height:20px}
 html[data-live] #resume .resume-toolbar :is(.cv-extras-tool,.cv-download,[data-close=resume]):active{transform:scale(.97)}
 html[data-live] #resume .resume-toolbar button:focus-visible{outline:2px solid #86c1ff;outline-offset:3px}
-html[data-live] #resume [data-close=resume]::after,html[data-live] #resume .cv-download::after{content:attr(aria-label);position:absolute;top:calc(100% + 8px);right:0;padding:5px 10px;border-radius:6px;background:#1c3049;color:#eef3fa;font-size:12px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s}
-html[data-live] #resume .cv-download::after{display:none}
-html[data-live] #resume .resume-toolbar button:hover::after{opacity:1}
-/* Narrow CV columns keep every action on one row by dropping only the visible label. */
-@media(max-width:680px){html[data-live] #resume .cv-download>span{display:none}html[data-live] #resume .cv-download{width:44px;padding:0}html[data-live] #resume .cv-download::after{display:block}html[data-live] #resume :is(.cv-extras-tool,.cv-download){min-height:44px}html[data-live] #resume [data-close=resume]{width:44px;height:44px}}
-@media(min-width:681px) and (max-width:800px){html[data-live] #resume:has(.document-open) .cv-download>span{display:none}html[data-live] #resume:has(.document-open) .cv-download{width:40px;padding:0}html[data-live] #resume:has(.document-open) .cv-download::after{display:block}}
+html[data-live] #resume :is(.cv-download,[data-close=resume])::after{content:attr(aria-label);position:absolute;top:calc(100% + 8px);right:0;padding:5px 10px;border-radius:6px;background:#1c3049;color:#eef3fa;font:400 12px/1.4 'Fira Sans',system-ui,sans-serif;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s}
+html[data-live] #resume .resume-toolbar button:is(:hover,:focus-visible)::after{opacity:1}
+@media(max-width:680px){html[data-live] #resume .cv-extras-tool{min-height:44px}}
 html[data-live] #resume .resume-workspace{margin-top:32px}
 html[data-live] #resume .paper{min-height:1128px}
 html[data-live] #resume #extras-rail{position:static;padding-top:0}
