@@ -166,8 +166,8 @@ try{
    assert(await reader.evaluate(el=>[...el.parentElement.children].filter(sibling=>sibling!==el).every(sibling=>sibling.inert)),'the covered CV cannot receive keyboard focus');
    await reader.locator('#document-fit').press('Tab');
    assert(await reader.evaluate(el=>el.contains(document.activeElement)),'Tab remains inside the maximized reader');
-   await reader.locator('#document-save').press('Shift+Tab');
-   assert(await reader.locator('#document-fit').evaluate(el=>el===document.activeElement),'Shift+Tab wraps back to the last PDF control');
+   await reader.locator('#document-zoom-out').press('Shift+Tab');
+   assert(await reader.locator('#close-document').evaluate(el=>el===document.activeElement),'Shift+Tab wraps back to the last PDF control');
    await reader.getByRole('button',{name:'Restore PDF size',exact:true}).click();
    await pdfFrame.waitForFunction(width=>Math.abs(document.querySelector('#document-reader').getBoundingClientRect().width-width)<1,sideWidth);
    await reader.getByRole('button',{name:'Maximize PDF',exact:true}).click();
@@ -189,7 +189,7 @@ try{
   await frame.locator('.paper').getByRole('button',{name:'Open second.pdf',exact:true}).click();
   await pdfFrame.waitForFunction(()=>document.querySelector('#document-page').textContent==='1 / 2'&&!document.querySelector('#document-reader .document-pages canvas').hidden);
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'documents with multiple pages retain navigation');
-  assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).innerText(),'Next');
+  assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).locator('svg').isVisible(),true,'the next-page chevron stays visible in the compact bar');
   assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).isEnabled(),true);
   await reader.getByRole('button',{name:'Next PDF page',exact:true}).click();
   await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader .document-pages canvas').getAttribute('aria-label')==='Page 2 of 2');
