@@ -132,7 +132,8 @@ try{
   assert.equal(await frame.locator('.image-magnifier.is-visible').count(),0,'clicking the PDF cannot open the blurry image lens');
   await canvas.hover({position:{x:60,y:50}});
   const lens=reader.locator('.pdf-hover-lens:popover-open');await lens.waitFor({state:'visible'});
-  assert(await lens.evaluate(el=>el.width>=480&&el.height>=480),'hover detail is rendered directly at high resolution');
+  assert(await lens.evaluate(el=>el.width>=el.clientWidth*2&&el.height>=el.clientHeight*2),'hover detail is rendered directly at high resolution');
+  assert(await lens.evaluate(el=>el.clientWidth>el.clientHeight&&el.getBoundingClientRect().left>=0&&el.getBoundingClientRect().right<=innerWidth),'the wider reading lens stays inside the viewport');
   await reader.getByRole('button',{name:'Zoom in',exact:true}).hover();await lens.waitFor({state:'hidden'});
   assert.equal(await reader.locator('select').count(),0,'zoom has direct controls instead of a percentage dropdown');
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'the page count and navigation remain discoverable for every PDF');

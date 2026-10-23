@@ -1,11 +1,11 @@
 import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=labeled-extras';
 import {setupCVPagination} from './cv-pagination.mjs?v=cleanup';
-import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-reader-8';
+import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-reader-9';
 import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
 import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
 import { resolveQuote } from "./picture-anchor.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-reader-8";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-reader-9";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
 

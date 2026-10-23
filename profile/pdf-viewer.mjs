@@ -26,9 +26,9 @@ export async function createPDFViewer(root) {
   }
   async function paintLens(){
     if(!hover||!lensPage||lensTask)return;
-    const point=hover,current=lensRevision,size=240,density=Math.min(Math.max(devicePixelRatio||1,2),3);
-    const pending=document.createElement('canvas');pending.width=pending.height=size*density;
-    const task=lensPage.render({canvas:pending,viewport:lensPage.getViewport({scale:renderedScale*2.5}),transform:[density,0,0,density,density*(size/2-point.x*2.5),density*(size/2-point.y*2.5)]});
+    const point=hover,current=lensRevision,width=Math.min(360,innerWidth-16),height=Math.min(260,innerHeight-16),magnification=1.6,density=Math.min(Math.max(devicePixelRatio||1,2),3);
+    const pending=document.createElement('canvas');pending.width=width*density;pending.height=height*density;
+    const task=lensPage.render({canvas:pending,viewport:lensPage.getViewport({scale:renderedScale*magnification}),transform:[density,0,0,density,density*(width/2-point.x*magnification),density*(height/2-point.y*magnification)]});
     lensTask=task;
     try{
       await task.promise;
@@ -41,8 +41,9 @@ export async function createPDFViewer(root) {
   canvas.addEventListener('pointermove',event=>{
     if(event.pointerType==='touch'||!lensPage)return;
     const box=canvas.getBoundingClientRect();hover={x:event.clientX-box.left,y:event.clientY-box.top};
-    lens.style.left=`${Math.max(8,Math.min(innerWidth-248,event.clientX+18+240>innerWidth?event.clientX-258:event.clientX+18))}px`;
-    lens.style.top=`${Math.max(8,Math.min(innerHeight-248,event.clientY-120))}px`;
+    const width=Math.min(360,innerWidth-16),height=Math.min(260,innerHeight-16);
+    lens.style.left=`${Math.max(8,Math.min(innerWidth-width-8,event.clientX+18+width>innerWidth?event.clientX-width-18:event.clientX+18))}px`;
+    lens.style.top=`${Math.max(8,Math.min(innerHeight-height-8,event.clientY-height/2))}px`;
     paintLens();
   });
   canvas.addEventListener('pointerleave',dismissLens);
