@@ -5,7 +5,7 @@
 :root[data-cv-theme=charcoal]{--cv-ink:#252b32;--cv-accent:#424851;--cv-muted:#515b66;--cv-tint:#f0f1f2;--cv-rule:#cdd1d5}
 :root[data-cv-theme=forest]{--cv-ink:#183b30;--cv-accent:#285445;--cv-muted:#466254;--cv-tint:#eef4ef;--cv-rule:#c6d6cb}
 :root[data-cv-theme=burgundy]{--cv-ink:#4c2432;--cv-accent:#73394a;--cv-muted:#76505f;--cv-tint:#f5eff1;--cv-rule:#dccbd1}
-html[data-live] #resume .paper{font-family:'Fira Sans Condensed','Arial Narrow',Arial,sans-serif;color:var(--cv-ink);background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
+html[data-live] #resume .paper{color-scheme:only light;font-family:'Fira Sans Condensed','Arial Narrow',Arial,sans-serif;color:var(--cv-ink);background:#fff;print-color-adjust:exact;-webkit-print-color-adjust:exact}
 html[data-live] #resume .cv-page .resume-sections{grid-template-columns:29.3% minmax(0,1fr)}
 html[data-live] #resume .resume-column:first-child{background:var(--cv-tint);border:0;padding:0 23px}
 html[data-live] #resume .resume-column:last-child{padding:34px 23px 8px}

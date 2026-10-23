@@ -17,7 +17,7 @@ if (window===parent) {
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
   const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=pdf-workspace-3';styles.push(loadStyle(style));
-  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=cleanup';styles.push(loadStyle(paperStyle));
+  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=white-paper-1';styles.push(loadStyle(paperStyle));
   await Promise.all(styles);
   if(parent.MARMULLAKU_MOCKUP) {
     await (await import('../mockup/preview-session.mjs?v=cleanup')).bootstrapPreview({ownerID:new URLSearchParams(location.search).get('id')||'osman'});
