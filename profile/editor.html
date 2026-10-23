@@ -10,7 +10,7 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="editor.css?v=aligned-logos" />
-    <link rel="stylesheet" href="../main/pdf-reader.css?v=a4-pages" />
+    <link rel="stylesheet" href="../main/pdf-reader.css?v=pdf-overlay-2" />
   </head>
   <body>
     <svg class="symbols" aria-hidden="true">
@@ -102,10 +102,10 @@
             <p class="pdf-help">PDF · up to 10 MB</p>
           </section>
         </aside>
-        <aside
+        <dialog
           id="document-reader"
           class="document-reader"
-          aria-label="Supporting document"
+          aria-labelledby="document-title"
           hidden
         >
           <header>
@@ -156,7 +156,7 @@
             <canvas hidden role="img" aria-label="PDF page"></canvas>
             <p id="document-text" class="document-accessible-text"></p>
           </div>
-        </aside>
+        </dialog>
       </div>
       <input id="pdf-file" type="file" accept="application/pdf,.pdf" hidden />
       <input

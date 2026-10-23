@@ -1,11 +1,11 @@
 import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=quiet-extras';
 import {setupCVPagination} from './cv-pagination.mjs?v=cleanup';
-import {setupImageMagnifier} from './image-magnifier.mjs?v=a4-pages';
+import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-overlay-2';
 import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
 import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
 import { resolveQuote } from "./picture-anchor.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=a4-pages";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-overlay-2";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
 
@@ -368,7 +368,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
   const pendingUploads=new Set();
   window.flushProfile=async()=>{
     finish(true);cancelAttachment();
-    const dialogs=[$('resume'),$('settings-panel')];
+    const dialogs=[$('resume'),$('settings-panel'),$('document-reader')];
     dialogs.forEach(dialog=>{dialog.inert=true;});
     try {await Promise.all(pendingUploads);return await adapter.settle();}
     catch(error){$('resume-status').textContent=$('settings-status').textContent=error.message;throw error;}
@@ -386,7 +386,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
   document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>closeDialog(button.dataset.close)));
   for(const id of ['resume','settings-panel']) {
     $(id).addEventListener('click',event=>{if(event.target===$(id))closeDialog(id);});
-    $(id).addEventListener('cancel',event=>{event.preventDefault();if(id==='resume'&&!$('document-reader').hidden)closeDocument(true);else closeDialog(id);});
+    $(id).addEventListener('cancel',event=>{event.preventDefault();if(id==='resume'&&$('document-reader').open)closeDocument(true);else closeDialog(id);});
     $(id).addEventListener('close',()=>{
       if($(id).open||(id==='settings-panel'&&$('resume').open))return;
       // Repeated Escape can force a native close; keep the draft visible until settled.
@@ -922,9 +922,10 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       $("pdf-list").append(item);
     }
   }
-  let documentExit,documentEntry;
+  let documentExit,documentEntry,documentScrollTop=0;
   function closeDocument(restoreFocus = false) {
     const reader = $("document-reader"),style=getComputedStyle(reader);
+    const wasOpen=reader.open||!reader.hidden;
     const current={opacity:style.opacity,transform:style.transform};
     documentEntry?.cancel();documentEntry=null;
     documentExit?.cancel();
@@ -932,8 +933,24 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     const generation = ++documentGeneration;
     const cleanup = () => {
       if (generation !== documentGeneration) return;
-      reader.hidden = true;
+      const trigger=documentTrigger;
+      const restore=()=>{
+        if(generation!==documentGeneration)return;
+        if(restoreFocus&&trigger?.closest('#extras-rail'))extrasRail?.open();
+        if(restoreFocus&&trigger?.isConnected){
+          // Firefox needs the parent dialog focused again after a nested modal closes.
+          $('resume').focus({preventScroll:true});
+          trigger.focus({preventScroll:true});
+        }
+        if(wasOpen)$('resume').scrollTop=documentScrollTop;
+        alignPicture();
+      };
+      const afterClose=()=>requestAnimationFrame(restore);
       reader.inert = false;
+      // Native close must release modal focus before returning to the CV link.
+      if(reader.open){reader.addEventListener('close',afterClose,{once:true});reader.close();}
+      else afterClose();
+      reader.hidden = true;
       documentExit?.cancel();
       documentExit = null;
       document.querySelector(".resume-workspace").classList.remove("document-open");
@@ -941,16 +958,12 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       $("document-new-tab").removeAttribute("href");
       if (documentURL) URL.revokeObjectURL(documentURL);
       documentURL = null;
-      if (restoreFocus && documentTrigger?.closest('#extras-rail')) extrasRail?.open();
-      if (restoreFocus && documentTrigger?.isConnected) documentTrigger.focus({ preventScroll: true });
       documentTrigger = null;
-      requestAnimationFrame(alignPicture);
     };
-    if (restoreFocus && !reader.hidden) {
-      reader.inert = true;
+    if (restoreFocus && reader.open) {
       documentExit = reader.animate([
         {opacity:current.opacity,transform:current.transform},
-        {opacity:0,transform:'translateX(18px)'}
+        {opacity:0,transform:'translateY(8px) scale(.985)'}
       ],{duration:180,easing:'cubic-bezier(.4,0,1,1)',fill:'forwards'});
       documentExit.finished.catch(()=>{}).then(cleanup);
     } else cleanup();
@@ -963,13 +976,15 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     if($('extras-rail').matches(':popover-open'))$('extras-rail').hidePopover();
     closeDocument();
     documentTrigger = trigger;
+    documentScrollTop=$('resume').scrollTop;
     const generation = ++documentGeneration;
     $("document-title").textContent = doc.name;
     $("document-status").textContent = "Opening PDF…";
     $("document-new-tab").hidden = true;
     $("document-reader").hidden = false;
+    $("document-reader").showModal();
     document.querySelector(".resume-workspace").classList.add("document-open");
-    documentEntry=$('document-reader').animate([{opacity:0,transform:'translateX(64px)'},{opacity:1,transform:'none'}],{duration:360,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'});
+    documentEntry=$('document-reader').animate([{opacity:0,transform:'translateY(12px) scale(.985)'},{opacity:1,transform:'none'}],{duration:240,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'});
     documentEntry.finished.catch(()=>{});
     $("close-document").focus({ preventScroll: true });
     try {
@@ -994,6 +1009,13 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     }
   }
   $("close-document").addEventListener("click", () => closeDocument(true));
+  $('document-reader').addEventListener('cancel',event=>{event.preventDefault();event.stopPropagation();closeDocument(true);});
+  $('document-reader').addEventListener('close',()=>{if(!$('document-reader').open&&!$('document-reader').hidden)closeDocument(true);});
+  $('document-reader').addEventListener('click',event=>{
+    const reader=$('document-reader');if(event.target!==reader)return;
+    const box=reader.getBoundingClientRect();
+    if(event.clientX<box.left||event.clientX>box.right||event.clientY<box.top||event.clientY>box.bottom)closeDocument(true);
+  });
   $("resume").addEventListener("close", () => {
     cancelAttachment();
     closeDocument();

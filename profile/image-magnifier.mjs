@@ -13,7 +13,7 @@ export function magnifierGeometry(box, natural, fit = 'fill', position = '50% 50
 
 export function setupImageMagnifier(root = document) {
   const doc = root.ownerDocument || root, win = doc.defaultView;
-  const selector = '.extra-picture img, img.cv-portrait, img.cv-row-logo, #document-reader canvas';
+  const selector = '.extra-picture img, img.cv-portrait, img.cv-row-logo';
   const style = doc.createElement('style');
   style.textContent = `.image-magnifier{position:fixed;inset:auto;margin:0;padding:0;z-index:100;pointer-events:none;width:220px;height:220px;max-width:70vw;max-height:70vw;border:2px solid #f6f9ff;border-radius:8px;background-color:white;background-repeat:no-repeat;box-shadow:0 12px 40px #0008;opacity:0;transition:opacity .16s,scale .16s;scale:.96}.image-magnifier.is-visible{opacity:1;scale:1}.image-magnifiable{cursor:zoom-in}.image-magnifiable[aria-pressed=true]{cursor:zoom-out}`;
   doc.head.append(style);
@@ -30,7 +30,7 @@ export function setupImageMagnifier(root = document) {
     const box = source.getBoundingClientRect();
     if (!box.width || !box.height) return dismiss();
     const computed = win.getComputedStyle(source);
-    const graphic = magnifierGeometry(box, {width:source.naturalWidth || source.width,height:source.naturalHeight || source.height}, source.tagName === 'IMG' ? computed.objectFit : 'fill', computed.objectPosition);
+    const graphic = magnifierGeometry(box, {width:source.naturalWidth || source.width,height:source.naturalHeight || source.height}, computed.objectFit, computed.objectPosition);
     const size = Math.min(220, win.innerWidth * .7), half = size / 2;
     lens.style.width = lens.style.height = `${size}px`;
     lens.style.left = `${Math.max(8,Math.min(win.innerWidth-size-8,x-half))}px`;
@@ -41,7 +41,7 @@ export function setupImageMagnifier(root = document) {
   function activate(target, x, y) {
     if (target === source) return dismiss();
     dismiss();clearTimeout(closing);
-    try {imageURL = target.tagName === 'CANVAS' ? target.toDataURL('image/png') : target.currentSrc || target.src;} catch {return;}
+    imageURL = target.currentSrc || target.src;
     if (!imageURL) return;
     source = target;source.setAttribute('aria-pressed', 'true');
     lens.style.backgroundImage = `url(${JSON.stringify(imageURL)})`;

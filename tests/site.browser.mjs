@@ -112,11 +112,39 @@ try{
   await page.getByRole('button',{name:'Osman Marmullaku',exact:true}).click();await page.locator('.profile-window[data-motion="open"]').waitFor({state:'visible'});
   frame=page.frameLocator('.profile-window iframe');
   if(width===390){await frame.locator('.cv-document-card').first().hover();assert.equal(await frame.locator('.cv-document-hint').isVisible(),false,'phone-width hints do not cover neighboring attachments');}
-  await frame.getByRole('button',{name:'Open first.pdf',exact:true}).click();
+  const pdfTrigger=frame.locator('.paper').getByRole('button',{name:'Open first.pdf',exact:true});
+  await pdfTrigger.scrollIntoViewIfNeeded();
+  const resumeScroll=await frame.locator('#resume').evaluate(el=>el.scrollTop);
+  await pdfTrigger.click();
   await frame.locator('#document-reader canvas').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.querySelector('iframe').contentDocument.querySelector('#document-text').textContent.includes('Synthetic supporting document'));
-  await frame.getByRole('button',{name:'Close supporting document',exact:true}).click();
-  await frame.locator('#document-reader').waitFor({state:'hidden'});
+  const reader=frame.locator('#document-reader'),canvas=reader.locator('canvas');
+  const pdfFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
+  assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
+  await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
+  assert(await reader.evaluate(el=>el.matches(':modal')),'the PDF opens as a native modal above the CV');
+  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return Math.abs(box.left+box.width/2-innerWidth/2)<2&&box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=innerHeight;}),'the reader is centered and fits the viewport');
+  assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),null,'PDF pages use real zoom, not the image magnifier');
+  assert(await reader.evaluate(el=>getComputedStyle(el,'::backdrop').backgroundColor!=='rgba(0, 0, 0, 0)'),'the modal dims the CV behind it');
+  await frame.getByRole('combobox',{name:'PDF zoom',exact:true}).selectOption('1');
+  await pdfFrame.waitForFunction(()=>Math.abs(document.querySelector('#document-reader canvas').clientWidth-260)<1);
+  const pixels=await canvas.evaluate(el=>el.width);
+  await frame.getByRole('button',{name:'Zoom in',exact:true}).click();
+  await pdfFrame.waitForFunction(pixels=>document.querySelector('#document-reader canvas').width>pixels,pixels);
+  assert.equal(await frame.locator('#document-zoom').inputValue(),'1.25','zoom redraws the PDF into a larger bitmap');
+  await frame.getByRole('button',{name:'Close supporting document',exact:true}).press('Escape');
+  await reader.waitFor({state:'hidden'});
+  assert.equal(await frame.locator('#resume[open]').count(),1,'Escape closes the PDF without closing the CV');
+  await pdfFrame.waitForFunction(()=>document.activeElement?.getAttribute('aria-label')==='Open first.pdf');
+  assert(await pdfTrigger.evaluate(el=>el===document.activeElement),'closing restores focus to the document link: '+await pdfFrame.evaluate(()=>document.activeElement.outerHTML.slice(0,500)));
+  assert(Math.abs(await frame.locator('#resume').evaluate(el=>el.scrollTop)-resumeScroll)<2,'closing preserves the CV scroll position');
+  await pdfTrigger.click();await canvas.waitFor({state:'visible'});
+  await frame.getByRole('button',{name:'Close supporting document',exact:true}).click();await reader.waitFor({state:'hidden'});
+  if(width>680){
+   await pdfTrigger.click();await canvas.waitFor({state:'visible'});
+   await page.mouse.click(8,300);await reader.waitFor({state:'hidden'});
+   assert.equal(await frame.locator('#resume[open]').count(),1,'backdrop dismissal keeps the CV open');
+  }
   await frame.getByRole('button',{name:'Close CV',exact:true}).click();await page.locator('.profile-window iframe').waitFor({state:'detached'});
   for(const name of names.slice(1)){
    await page.getByRole('button',{name:name+' Marmullaku',exact:true}).click();await page.locator('.profile-window[data-motion="open"]').waitFor({state:'visible'});
@@ -127,7 +155,7 @@ try{
   assert.deepEqual(errors,[]);assert.deepEqual(external,[],'sample flows never contact the real backend');
   console.log(`PASS ${path} ${width}: stylesheet readiness, safe text, editing, role sync, upload race, PDF persistence and all profiles`);
   }catch(error){
-   console.error(JSON.stringify({path,width,errors,body:await page.locator('body').innerText(),frames:page.frames().map(frame=>frame.url())}));
+   console.error(JSON.stringify({path,width,errors,frames:await Promise.all(page.frames().map(async frame=>({url:frame.url(),body:await frame.locator('body').innerText({timeout:1000}).catch(()=>''),portrait:await frame.evaluate(()=>{const el=document.querySelector('.cv-portrait');return el?{complete:el.complete,width:el.naturalWidth}:null;}).catch(()=>null)})))}));
    await page.screenshot({path:'work/site-browser-failure.png'});throw error;
   }finally{await context.close();}
  }

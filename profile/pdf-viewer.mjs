@@ -1,7 +1,7 @@
 // Local rendering keeps uploaded documents off third-party services.
 export function pdfScale(mode,width,height,natural) {
   const fitWidth=(width-32)/natural.width;
-  return Math.max(.1,mode==='fit-page'?Math.min(fitWidth,(height-104)/natural.height):mode==='fit'?fitWidth:Number(mode));
+  return Math.max(.1,mode==='fit-page'?Math.min(fitWidth,(height-32)/natural.height):mode==='fit'?fitWidth:Number(mode));
 }
 export async function createPDFViewer(root) {
   const pdfjs = await import("../mockup/vendor/pdfjs/pdf.min.mjs");
@@ -20,9 +20,10 @@ export async function createPDFViewer(root) {
     pdf,
     rendering,
     pageNumber = 1,
-    revision = 0,renderedScale=1;
+    revision = 0,renderedScale=1,resetView=false;
   async function render(reset=false) {
     if (!pdf) return;
+    resetView ||= reset;
     const current = ++revision;
     const center={x:(viewport.scrollLeft+viewport.clientWidth/2-canvas.offsetLeft)/(canvas.clientWidth||1),y:(viewport.scrollTop+viewport.clientHeight/2-canvas.offsetTop)/(canvas.clientHeight||1)};
     rendering?.cancel();
@@ -35,6 +36,8 @@ export async function createPDFViewer(root) {
       if (current !== revision) return;
       const natural = page.getViewport({ scale: 1 });
       const scale = pdfScale(zoom.value,viewport.clientWidth,viewport.clientHeight,natural);
+      root.querySelector('#document-zoom-in').disabled=scale>=3;
+      root.querySelector('#document-zoom-out').disabled=scale<=.5;
       const sized = page.getViewport({ scale });
       const density = Math.min(window.devicePixelRatio || 1, 2);
       // Keep the current page visible until its replacement is fully painted.
@@ -51,12 +54,13 @@ export async function createPDFViewer(root) {
       canvas.width=pendingCanvas.width;canvas.height=pendingCanvas.height;
       canvas.style.width=`${sized.width}px`;canvas.style.height=`${sized.height}px`;
       canvas.getContext('2d').drawImage(pendingCanvas,0,0);
-      canvas.setAttribute('aria-label',`${canvas.classList.contains('image-magnifiable')?'Magnify ':''}Page ${pageNumber} of ${pdf.numPages}`);
+      canvas.setAttribute('aria-label',`Page ${pageNumber} of ${pdf.numPages}`);
       canvas.hidden = false;
       renderedScale=scale;
       status.textContent = "";
-      viewport.scrollLeft=reset?0:canvas.offsetLeft+center.x*sized.width-viewport.clientWidth/2;
-      viewport.scrollTop=reset?0:canvas.offsetTop+center.y*sized.height-viewport.clientHeight/2;
+      viewport.scrollLeft=resetView?0:canvas.offsetLeft+center.x*sized.width-viewport.clientWidth/2;
+      viewport.scrollTop=resetView?0:canvas.offsetTop+center.y*sized.height-viewport.clientHeight/2;
+      resetView=false;
       const text = await page.getTextContent();
       if (current === revision)
         root.querySelector("#document-text").textContent = text.items
@@ -101,6 +105,7 @@ export async function createPDFViewer(root) {
     loading?.destroy();
     loading = null;
     pdf = null;
+    resetView=true;
     canvas.hidden = true;
     root.querySelector("#document-text").textContent = "";
     root.querySelector(".document-controls").hidden = true;
@@ -126,7 +131,7 @@ export async function createPDFViewer(root) {
       if (current !== revision) return;
       pdf = loaded;
       pageNumber = 1;
-      zoom.value = "fit-page";
+      zoom.value = "fit";
       root.querySelector(".document-controls").hidden = false;
       await render(true);
     },

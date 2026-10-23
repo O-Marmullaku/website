@@ -26,14 +26,10 @@ html[data-live] #created-link{display:block;width:100%;padding:10px 12px;margin:
 .cv-cell a.cv-row-text{text-decoration:underline;text-underline-offset:3px}
 html[data-live] #settings-panel>a.text-button{margin-left:20px}
 @media print{html[data-live] #resume{height:auto;position:static;overflow:visible}html[data-live] .resume-toolbar{display:none}}
-html[data-live] #resume .document-reader{position:fixed;inset:80px max(24px,calc((100vw - 1600px)/2)) 24px auto;width:min(calc((100vw - 80px)/2),784px);display:flex;flex-direction:column;overflow:hidden}
-html[data-live] .document-reader>header,html[data-live] .document-controls{flex:none}
-html[data-live] .document-pages{flex:1;min-height:0;height:auto}
 .link-form-actions{display:flex;align-items:center;gap:12px}
 #settings-panel input::placeholder{color:#aebfd3;opacity:1}
 @media(max-width:1000px){
   html[data-live] #resume:has(.document-open)>.resume-toolbar{display:none}
-  html[data-live] #resume .document-reader{inset:0;width:100%;height:100dvh;border:0}
   html[data-live] .document-reader>header{padding:8px 12px;gap:8px}
   html[data-live] #close-document,html[data-live] #document-new-tab{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
   html[data-live] .document-controls{flex-wrap:wrap;gap:6px;padding:6px 10px}
@@ -129,10 +125,6 @@ html[data-live] #resume.preview-view .extras-empty{display:none}
 html[data-live] #resume .close-extras{display:none}
 html[data-live] #resume .cv-extras-tool{display:grid;place-items:center;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:#eef2f6;color:#162537;box-shadow:0 5px 16px -6px #0009}
 html[data-live] #resume .cv-extras-tool svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-html[data-live] #resume .document-reader{left:calc(50% + 429px);right:auto;width:min(794px,calc((100vw - 794px)/2 - 48px));z-index:7}
-@media(max-width:1919px){
-  html[data-live] #resume .document-reader{inset:0 0 0 auto;width:min(640px,100%);height:100dvh;box-shadow:-20px 0 50px -20px #000a}
-}
   html[data-live] #resume #extras-rail[popover]{position:fixed;inset:0 0 0 auto;margin:0;width:min(360px,100%);height:100dvh;max-height:100dvh;padding:76px 24px 24px;border:0;border-left:1px solid #344b67;background:#0b1522;color:#eef3fa;overflow:auto;box-shadow:-20px 0 50px -20px #000a;z-index:6;transform:translateX(100%);opacity:0;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .28s,display .28s allow-discrete,overlay .28s allow-discrete}
   html[data-live] #resume #extras-rail:popover-open{display:block;transform:none;opacity:1}
   @starting-style{html[data-live] #resume #extras-rail:popover-open{transform:translateX(100%);opacity:0}}
