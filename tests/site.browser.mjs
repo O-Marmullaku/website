@@ -124,9 +124,8 @@ try{
   const pdfFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
   assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
   await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
-  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.left===0&&box.top===0&&box.width===innerWidth&&box.height===innerHeight;}),'PDFs open maximized by default on desktop and phones');
-  assert.equal(await reader.getAttribute('aria-modal'),'true');
-  assert(await reader.evaluate(el=>[...el.parentElement.children].filter(sibling=>sibling!==el).every(sibling=>sibling.inert)),'the covered CV cannot receive keyboard focus');
+  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.top>=0&&box.right<=innerWidth&&box.bottom<=innerHeight&&(innerWidth<=480?box.width===innerWidth:box.left>innerWidth/2);}),'PDFs open in the right sidebar and fill narrow phone screens');
+  assert.notEqual(await reader.getAttribute('aria-modal'),'true');
   assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),null,'PDF pages use real zoom, not the image magnifier');
   assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'small print renders at least two bitmap pixels per displayed pixel');
   await canvas.click();
@@ -147,8 +146,6 @@ try{
    await pdfFrame.waitForFunction(label=>document.querySelector('#document-fit').getAttribute('aria-label')!==label,label);
   }
   if(width>480){
-   await reader.getByRole('button',{name:'Restore PDF size',exact:true}).click();
-   await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader').getBoundingClientRect().left>innerWidth/2);
    const sideWidth=await reader.evaluate(el=>el.getBoundingClientRect().width);
    await reader.getByRole('button',{name:'Maximize PDF',exact:true}).click();
    await pdfFrame.waitForFunction(()=>{const reader=document.querySelector('#document-reader'),box=reader.getBoundingClientRect();return box.left===0&&box.top===0&&box.width===innerWidth&&box.height===innerHeight;});
@@ -175,7 +172,6 @@ try{
   await frame.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
   if(width>680){
    await pdfTrigger.click();await canvas.waitFor({state:'visible'});
-   await reader.getByRole('button',{name:'Restore PDF size',exact:true}).click();
   }
   await frame.locator('.paper').getByRole('button',{name:'Open second.pdf',exact:true}).click();
   await pdfFrame.waitForFunction(()=>document.querySelector('#document-page').textContent==='1 / 2'&&!document.querySelector('#document-reader canvas').hidden);
