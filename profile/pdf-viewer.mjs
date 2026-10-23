@@ -20,7 +20,7 @@ export async function createPDFViewer(root) {
     pdf,
     rendering,
     pageNumber = 1,
-    revision = 0,renderedScale=1,resetView=false;
+    revision = 0,renderedScale=1,resetView=false,zoomMode='fit-page';
   async function render(reset=false) {
     if (!pdf) return;
     resetView ||= reset;
@@ -35,7 +35,7 @@ export async function createPDFViewer(root) {
       const page = await pdf.getPage(pageNumber);
       if (current !== revision) return;
       const natural = page.getViewport({ scale: 1 });
-      const scale = pdfScale(zoom.value,viewport.clientWidth,viewport.clientHeight,natural);
+      const scale = pdfScale(zoomMode,viewport.clientWidth,viewport.clientHeight,natural);
       root.querySelector('#document-zoom-in').disabled=scale>=3;
       root.querySelector('#document-zoom-out').disabled=scale<=.5;
       const sized = page.getViewport({ scale });
@@ -57,6 +57,8 @@ export async function createPDFViewer(root) {
       canvas.setAttribute('aria-label',`Page ${pageNumber} of ${pdf.numPages}`);
       canvas.hidden = false;
       renderedScale=scale;
+      zoom.textContent=`${Math.round(scale*100)}%`;
+      root.querySelectorAll('[data-pdf-fit]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.pdfFit===zoomMode)));
       status.textContent = "";
       viewport.scrollLeft=resetView?0:canvas.offsetLeft+center.x*sized.width-viewport.clientWidth/2;
       viewport.scrollTop=resetView?0:canvas.offsetTop+center.y*sized.height-viewport.clientHeight/2;
@@ -69,7 +71,7 @@ export async function createPDFViewer(root) {
     } catch (error) {
       if (current === revision && error.name !== "RenderingCancelledException")
         status.textContent =
-          "This page could not be displayed. Use Open PDF to read the original.";
+          "This page could not be displayed. Open the PDF in a new tab.";
     }
   }
   previous.addEventListener("click", () => {
@@ -84,10 +86,10 @@ export async function createPDFViewer(root) {
       render(true);
     }
   });
-  zoom.addEventListener("change", () => render());
+  root.querySelectorAll('[data-pdf-fit]').forEach(button=>button.addEventListener('click',()=>{zoomMode=button.dataset.pdfFit;render();}));
   for(const [id,direction] of [['document-zoom-in',1],['document-zoom-out',-1]])root.querySelector('#'+id)?.addEventListener('click',()=>{
     const levels=[.5,.75,1,1.25,1.5,2,3];
-    zoom.value=String(direction>0?levels.find(value=>value>renderedScale+.01)||3:[...levels].reverse().find(value=>value<renderedScale-.01)||.5);
+    zoomMode=String(direction>0?levels.find(value=>value>renderedScale+.01)||3:[...levels].reverse().find(value=>value<renderedScale-.01)||.5);
     render();
   });
   let width = 0,height=0;
@@ -95,7 +97,7 @@ export async function createPDFViewer(root) {
     if (Math.abs(entry.contentRect.width - width) > 1 || Math.abs(entry.contentRect.height-height)>1) {
       width = entry.contentRect.width;
       height=entry.contentRect.height;
-      if (width && ['fit','fit-page'].includes(zoom.value)) render();
+      if (width && ['fit','fit-page'].includes(zoomMode)) render();
     }
   }).observe(viewport);
   function close() {
@@ -131,7 +133,8 @@ export async function createPDFViewer(root) {
       if (current !== revision) return;
       pdf = loaded;
       pageNumber = 1;
-      zoom.value = "fit";
+      zoomMode = "fit-page";
+      root.querySelector('.document-pagination').hidden=pdf.numPages===1;
       root.querySelector(".document-controls").hidden = false;
       await render(true);
     },

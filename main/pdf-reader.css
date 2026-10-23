@@ -1,38 +1,36 @@
-/* One document surface for the live reader and both preview entry points. */
-#document-reader{position:fixed;inset:24px;display:flex;flex-direction:column;width:min(1180px,calc(100% - 48px));height:calc(100dvh - 48px);max-width:none;max-height:none;margin:auto;padding:0;background:#101b2a;color:#e9f0f8;border:0;border-radius:12px;overflow:hidden;box-shadow:0 24px 64px -24px #000b;animation:none}
-#document-reader:not([open]){display:none}
-#document-reader::backdrop{background:#020811b3}
-#document-reader>header{display:flex;align-items:center;flex:none;gap:8px;min-height:64px;padding:10px 16px 10px 20px;border:0;background:#101b2a;z-index:2}
-#document-reader>header>div{flex:1;min-width:0}
-#document-reader h2{margin:0;font-size:15px;font-weight:500;line-height:1.45;color:#dce7f4;overflow-wrap:anywhere}
-#document-reader .document-icon,#document-reader #close-document{display:grid;place-items:center;flex:none;width:40px;height:40px;padding:10px;border:0;border-radius:50%;background:#1b2b40;color:#c7d8ec;text-decoration:none;transition:background .16s,color .16s,transform .16s}
-#document-reader .document-icon svg,#document-reader button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-#document-reader .document-icon:hover,#document-reader #close-document:hover{background:#304660;color:white}
-#document-reader .document-icon:active,#document-reader #close-document:active{transform:scale(.94)}
-#document-reader :is(button,a,select):focus-visible{outline:2px solid #86c1ff;outline-offset:3px}
+/* The side reader keeps the CV available while its document is open. */
+#document-reader{position:fixed;inset:0 0 0 auto;z-index:7;display:flex;flex-direction:column;width:min(640px,100%);height:100dvh;max-width:none;max-height:none;margin:0;padding:0;background:#101b2a;color:#e9f0f8;border:0;border-radius:12px 0 0 12px;overflow:hidden;box-shadow:-20px 0 50px -20px #000a;animation:none}
+#document-reader[hidden]{display:none}
+#document-reader>header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;flex:none;gap:4px 12px;padding:8px 12px;border:0;border-bottom:1px solid #26374c;background:#101b2a}
+#document-reader h2{margin:0;min-width:0;font-size:14px;font-weight:500;line-height:1.4;color:#e9f0f8;overflow-wrap:anywhere}
+#document-reader .document-actions{display:flex;align-items:center;gap:4px}
+#document-reader :is(button,.document-icon){display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:40px;min-height:40px;padding:8px;border:0;border-radius:6px;background:transparent;color:#c7d8ec;font:400 13px/1.4 "Fira Sans",sans-serif;text-decoration:none;transition:background .16s,color .16s,transform .16s}
+#document-reader .document-icon{gap:6px}
+#document-reader :is(button,.document-icon):hover:not(:disabled){background:#25374e;color:#fff}
+#document-reader :is(button,.document-icon):active:not(:disabled){transform:scale(.96)}
+#document-reader button:disabled{opacity:.35;cursor:default}
+#document-reader :is(button,a):focus-visible{outline:2px solid #86c1ff;outline-offset:2px}
+#document-reader :is(button,.document-icon) svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#document-reader .document-controls{position:static;grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;width:100%;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+#document-reader :is(.document-pagination,.document-zoom-controls,.document-fit-controls){display:flex;align-items:center;gap:2px}
+#document-reader .document-fit-controls{margin-left:auto}
+#document-reader .document-fit-controls button{padding-inline:10px}
+#document-reader .document-fit-controls button[aria-pressed=true]{background:#25374e;color:#fff}
+#document-reader :is(#document-page,#document-zoom){min-width:48px;text-align:center;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums;color:#dce7f4}
+#document-reader #document-page{min-width:40px}
 #document-reader .document-pages{position:relative;flex:1;min-height:0;height:auto;padding:16px;background:#0b1522;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3c5069 transparent}
 #document-reader .document-pages::-webkit-scrollbar{width:7px;height:7px}
 #document-reader .document-pages::-webkit-scrollbar-thumb{background:#3c5069;border:2px solid #0b1522;border-radius:8px}
 #document-reader .document-pages::-webkit-scrollbar-track{background:transparent}
 #document-reader canvas{color-scheme:light;display:block;margin:0 auto;border-radius:2px;box-shadow:0 12px 32px -8px #0009}
-#document-reader .document-controls{position:relative;flex:none;display:flex;justify-content:center;align-items:center;flex-wrap:nowrap;gap:4px;width:auto;max-width:none;min-height:56px;margin:0;padding:6px 12px;background:#101b2a;color:#e9f0f8;border:0;border-bottom:1px solid #26374c;border-radius:0;box-shadow:none}
-#document-reader .document-controls button{display:grid;place-items:center;width:40px;height:40px;min-width:40px;padding:10px;color:#d6e8fc;background:transparent;border:0;border-radius:50%;transition:background .16s,color .16s}
-#document-reader .document-controls button:hover:not(:disabled){background:#304660;color:#fff}
-#document-reader .document-controls button:disabled{opacity:.35;cursor:default}
-#document-reader #document-page{min-width:60px;text-align:center;white-space:nowrap;font-size:13px;line-height:1;font-variant-numeric:tabular-nums;color:#dce7f4}
-#document-reader .document-controls select{width:auto;max-width:120px;min-height:36px;margin:0 2px 0 6px;padding:7px 8px;border:0;border-left:1px solid #3d506a;border-radius:0;background:transparent;color:#dce7f4;font:500 12px 'Fira Sans',sans-serif;cursor:pointer}
-#document-reader .document-controls option{background:#18283d;color:#e9f0f8}
-#document-reader #document-status{position:absolute;z-index:2;inset:148px 24px auto;margin:0;padding:0;color:#b9cae0;font-size:13px;line-height:1.6;text-align:center}
+#document-reader #document-status{margin:0;padding:12px 16px;color:#c7d8ec;background:#0b1522;font-size:14px;line-height:1.5}
 #document-reader #document-status:empty{display:none}
+@media(min-width:1920px){
+ #document-reader{inset:80px 24px 24px auto;width:min(794px,calc((100vw - 794px)/2 - 48px));height:calc(100dvh - 104px);border-radius:12px}
+}
 @media(max-width:680px){
- #document-reader{inset:0;width:100%;height:100dvh;border-radius:0}
- #document-reader>header{min-height:64px;padding:10px 12px 10px 16px}
- #document-reader .document-icon,#document-reader #close-document{width:44px;height:44px}
- #document-reader .document-controls{gap:2px;min-height:60px}
- #document-reader .document-controls button{width:44px;height:44px;min-width:44px}
- #document-reader .document-controls select{min-height:44px;font-size:16px}
+ #document-reader{width:100%;border-radius:0;padding-bottom:env(safe-area-inset-bottom)}
+ #document-reader :is(button,.document-icon){min-width:44px;min-height:44px}
+ #document-reader .document-pagination{justify-content:center;flex-basis:100%}
 }
 @media print{#document-reader{display:none!important}}
-@media(max-width:420px){
- #document-reader .document-controls{flex-wrap:wrap}
-}

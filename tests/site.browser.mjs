@@ -14,13 +14,14 @@ const {fromProfile}=await import('../main/profile-adapter.mjs');
 const rows=fromProfile(state.profiles[0]).cvRows;
 rows.experience.push({id:crypto.randomUUID(),title:'Self-employed Software Developer',href:'https://crazyentertainment.ch/',detail:'Synthetic studio',date:'2026',body:'Synthetic projects',logo:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aPioAAAAASUVORK5CYII='});
 state.profiles[0].cv.editor={rows};
-function samplePDF(){
+function samplePDF(pageCount=1){
  const stream='BT /F1 12 Tf 20 140 Td (Synthetic supporting document) Tj ET';
- const objects=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 260 200] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>',`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
+ const pages=Array.from({length:pageCount},(_,index)=>index+3),content=pageCount+3,font=pageCount+4;
+ const objects=['<< /Type /Catalog /Pages 2 0 R >>',`<< /Type /Pages /Kids [${pages.map(id=>`${id} 0 R`).join(' ')}] /Count ${pageCount} >>`,...pages.map(()=>`<< /Type /Page /Parent 2 0 R /MediaBox [0 0 260 200] /Resources << /Font << /F1 ${font} 0 R >> >> /Contents ${content} 0 R >>`),`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`,'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>'];
  let pdf='%PDF-1.4\n';const offsets=[0];
  objects.forEach((object,index)=>{offsets.push(Buffer.byteLength(pdf));pdf+=`${index+1} 0 obj\n${object}\nendobj\n`;});
  const xref=Buffer.byteLength(pdf);
- pdf+=`xref\n0 6\n0000000000 65535 f \n${offsets.slice(1).map(offset=>String(offset).padStart(10,'0')+' 00000 n ').join('\n')}\ntrailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
+ pdf+=`xref\n0 ${objects.length+1}\n0000000000 65535 f \n${offsets.slice(1).map(offset=>String(offset).padStart(10,'0')+' 00000 n ').join('\n')}\ntrailer\n<< /Size ${objects.length+1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;
  return Buffer.from(pdf);
 }
 try{
@@ -98,7 +99,7 @@ try{
    await rows.nth(index).hover();
    await rows.nth(index).locator('summary').click();
    const chooser=page.waitForEvent('filechooser');await rows.nth(index).getByRole('button',{name:'Attach PDF',exact:true}).click();
-   await (await chooser).setFiles({name,mimeType:'application/pdf',buffer:samplePDF()});
+   await (await chooser).setFiles({name,mimeType:'application/pdf',buffer:samplePDF(index+1)});
    if(index===0)await liveFrame.waitForFunction(()=>typeof window.releasePDF==='function');
   }
   await page.waitForFunction(key=>JSON.parse(localStorage.getItem(key)).profiles[0].cv.editor?.documents.some(doc=>doc.name==='second.pdf'),key);
@@ -122,29 +123,39 @@ try{
   const pdfFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
   assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
   await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
-  assert(await reader.evaluate(el=>el.matches(':modal')),'the PDF opens as a native modal above the CV');
-  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return Math.abs(box.left+box.width/2-innerWidth/2)<2&&box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=innerHeight;}),'the reader is centered and fits the viewport');
+  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=innerHeight&&(innerWidth<=680?box.width===innerWidth:box.left>innerWidth/2);}),'the reader stays on the right and fills phone viewports');
   assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),null,'PDF pages use real zoom, not the image magnifier');
-  assert(await reader.evaluate(el=>getComputedStyle(el,'::backdrop').backgroundColor!=='rgba(0, 0, 0, 0)'),'the modal dims the CV behind it');
-  await frame.getByRole('combobox',{name:'PDF zoom',exact:true}).selectOption('1');
-  await pdfFrame.waitForFunction(()=>Math.abs(document.querySelector('#document-reader canvas').clientWidth-260)<1);
-  const pixels=await canvas.evaluate(el=>el.width);
+  assert.equal(await reader.locator('select').count(),0,'zoom has direct controls instead of a percentage dropdown');
+  assert.equal(await reader.locator('.document-pagination').isVisible(),false,'single-page PDFs do not show redundant page navigation');
+  assert(await reader.evaluate(el=>{const controls=el.querySelector('.document-controls').getBoundingClientRect(),pages=el.querySelector('.document-pages').getBoundingClientRect();return controls.bottom<=pages.top&&Math.abs(pages.bottom-el.getBoundingClientRect().bottom)<2;}),'controls stay above the document and leave no bottom toolbar');
+  const pixels=await canvas.evaluate(el=>el.width),percentage=Number.parseInt(await reader.locator('#document-zoom').textContent());
   await frame.getByRole('button',{name:'Zoom in',exact:true}).click();
   await pdfFrame.waitForFunction(pixels=>document.querySelector('#document-reader canvas').width>pixels,pixels);
-  assert.equal(await frame.locator('#document-zoom').inputValue(),'1.25','zoom redraws the PDF into a larger bitmap');
-  await frame.getByRole('button',{name:'Close supporting document',exact:true}).press('Escape');
+  assert(Number.parseInt(await reader.locator('#document-zoom').textContent())>percentage,'zoom reports the rendered scale');
+  for(const label of ['Fit width','Fit page']){
+   await reader.getByRole('button',{name:label,exact:true}).click();
+   await pdfFrame.waitForFunction(label=>[...document.querySelectorAll('[data-pdf-fit]')].some(button=>button.textContent===label&&button.getAttribute('aria-pressed')==='true'),label);
+  }
+  await frame.getByRole('button',{name:'Close PDF',exact:true}).press('Escape');
   await reader.waitFor({state:'hidden'});
   assert.equal(await frame.locator('#resume[open]').count(),1,'Escape closes the PDF without closing the CV');
   await pdfFrame.waitForFunction(()=>document.activeElement?.getAttribute('aria-label')==='Open first.pdf');
   assert(await pdfTrigger.evaluate(el=>el===document.activeElement),'closing restores focus to the document link: '+await pdfFrame.evaluate(()=>document.activeElement.outerHTML.slice(0,500)));
   assert(Math.abs(await frame.locator('#resume').evaluate(el=>el.scrollTop)-resumeScroll)<2,'closing preserves the CV scroll position');
   await pdfTrigger.click();await canvas.waitFor({state:'visible'});
-  await frame.getByRole('button',{name:'Close supporting document',exact:true}).click();await reader.waitFor({state:'hidden'});
+  await frame.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
   if(width>680){
    await pdfTrigger.click();await canvas.waitFor({state:'visible'});
-   await page.mouse.click(8,300);await reader.waitFor({state:'hidden'});
-   assert.equal(await frame.locator('#resume[open]').count(),1,'backdrop dismissal keeps the CV open');
   }
+  await frame.locator('.paper').getByRole('button',{name:'Open second.pdf',exact:true}).click();
+  await pdfFrame.waitForFunction(()=>document.querySelector('#document-page').textContent==='1 / 2'&&!document.querySelector('#document-reader canvas').hidden);
+  assert.equal(await reader.locator('.document-pagination').isVisible(),true,'documents with multiple pages retain navigation');
+  await reader.getByRole('button',{name:'Next PDF page',exact:true}).click();
+  await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader canvas').getAttribute('aria-label')==='Page 2 of 2');
+  assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).isEnabled(),false);
+  await reader.getByRole('button',{name:'Previous PDF page',exact:true}).click();
+  await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader canvas').getAttribute('aria-label')==='Page 1 of 2');
+  await reader.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
   await frame.getByRole('button',{name:'Close CV',exact:true}).click();await page.locator('.profile-window iframe').waitFor({state:'detached'});
   for(const name of names.slice(1)){
    await page.getByRole('button',{name:name+' Marmullaku',exact:true}).click();await page.locator('.profile-window[data-motion="open"]').waitFor({state:'visible'});

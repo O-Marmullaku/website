@@ -30,12 +30,6 @@ html[data-live] #settings-panel>a.text-button{margin-left:20px}
 #settings-panel input::placeholder{color:#aebfd3;opacity:1}
 @media(max-width:1000px){
   html[data-live] #resume:has(.document-open)>.resume-toolbar{display:none}
-  html[data-live] .document-reader>header{padding:8px 12px;gap:8px}
-  html[data-live] #close-document,html[data-live] #document-new-tab{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center}
-  html[data-live] .document-controls{flex-wrap:wrap;gap:6px;padding:6px 10px}
-  html[data-live] .document-controls button{min-width:44px;min-height:44px;padding:4px}
-  html[data-live] .document-controls select{min-height:44px;font-size:16px;max-width:110px}
-  html[data-live] #document-page{white-space:nowrap}
 }
 @media(max-width:680px){
   #resume .cv-row{padding-right:52px}
