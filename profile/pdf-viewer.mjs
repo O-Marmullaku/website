@@ -18,6 +18,37 @@ export async function createPDFViewer(root) {
   const fit = root.querySelector("#document-fit");
   const status = root.querySelector("#document-status");
   const download = root.querySelector("#document-download");
+  const lens=document.createElement('canvas');lens.className='pdf-hover-lens';lens.setAttribute('popover','manual');lens.setAttribute('aria-hidden','true');root.append(lens);
+  let hover=null,lensPage=null,lensTask=null,lensRevision=0;
+  function dismissLens(){
+    hover=null;lensRevision++;lensTask?.cancel();
+    if(lens.matches(':popover-open'))lens.hidePopover();
+  }
+  async function paintLens(){
+    if(!hover||!lensPage||lensTask)return;
+    const point=hover,current=lensRevision,size=240,density=Math.min(Math.max(devicePixelRatio||1,2),3);
+    const pending=document.createElement('canvas');pending.width=pending.height=size*density;
+    const task=lensPage.render({canvas:pending,viewport:lensPage.getViewport({scale:renderedScale*2.5}),transform:[density,0,0,density,density*(size/2-point.x*2.5),density*(size/2-point.y*2.5)]});
+    lensTask=task;
+    try{
+      await task.promise;
+      if(current!==lensRevision||!hover)return;
+      lens.width=pending.width;lens.height=pending.height;lens.getContext('2d').drawImage(pending,0,0);
+      if(!lens.matches(':popover-open'))lens.showPopover();
+    }catch(error){if(error.name!=='RenderingCancelledException')dismissLens();}
+    finally{if(lensTask===task)lensTask=null;if(hover&&hover!==point)paintLens();}
+  }
+  canvas.addEventListener('pointermove',event=>{
+    if(event.pointerType==='touch'||!lensPage)return;
+    const box=canvas.getBoundingClientRect();hover={x:event.clientX-box.left,y:event.clientY-box.top};
+    lens.style.left=`${Math.max(8,Math.min(innerWidth-248,event.clientX+18+240>innerWidth?event.clientX-258:event.clientX+18))}px`;
+    lens.style.top=`${Math.max(8,Math.min(innerHeight-248,event.clientY-120))}px`;
+    paintLens();
+  });
+  canvas.addEventListener('pointerleave',dismissLens);
+  viewport.addEventListener('scroll',dismissLens);
+  window.addEventListener('resize',dismissLens);
+  root.addEventListener('keydown',event=>{if(event.key==='Escape')dismissLens();});
   let loading,
     pdf,
     rendering,
@@ -25,6 +56,7 @@ export async function createPDFViewer(root) {
     revision = 0,renderedScale=1,resetView=false,zoomMode='fit-page';
   async function render(reset=false) {
     if (!pdf) return;
+    dismissLens();lensPage=null;
     resetView ||= reset;
     const current = ++revision;
     const center={x:(viewport.scrollLeft+viewport.clientWidth/2-canvas.offsetLeft)/(canvas.clientWidth||1),y:(viewport.scrollTop+viewport.clientHeight/2-canvas.offsetTop)/(canvas.clientHeight||1)};
@@ -59,6 +91,7 @@ export async function createPDFViewer(root) {
       canvas.setAttribute('aria-label',`Page ${pageNumber} of ${pdf.numPages}`);
       canvas.hidden = false;
       renderedScale=scale;
+      lensPage=page;
       zoom.textContent=`${Math.round(scale*100)}%`;
       fit.dataset.fit=zoomMode==='fit-page'?'fit':'fit-page';
       fit.title=fit.dataset.fit==='fit'?'Fit width':'Fit page';
@@ -108,6 +141,7 @@ export async function createPDFViewer(root) {
     }
   }).observe(viewport);
   function close() {
+    dismissLens();lensPage=null;
     revision++;
     rendering?.cancel();
     rendering = null;

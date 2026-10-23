@@ -118,9 +118,9 @@ try{
   await pdfTrigger.scrollIntoViewIfNeeded();
   const resumeScroll=await frame.locator('#resume').evaluate(el=>el.scrollTop);
   await pdfTrigger.click();
-  await frame.locator('#document-reader canvas').waitFor({state:'visible'});
+  await frame.locator('#document-reader .document-pages canvas').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.querySelector('iframe').contentDocument.querySelector('#document-text').textContent.includes('Synthetic supporting document'));
-  const reader=frame.locator('#document-reader'),canvas=reader.locator('canvas');
+  const reader=frame.locator('#document-reader'),canvas=reader.locator('.document-pages canvas');
   const pdfFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
   assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
   await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
@@ -130,6 +130,10 @@ try{
   assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'small print renders at least two bitmap pixels per displayed pixel');
   await canvas.click();
   assert.equal(await frame.locator('.image-magnifier.is-visible').count(),0,'clicking the PDF cannot open the blurry image lens');
+  await canvas.hover({position:{x:60,y:50}});
+  const lens=reader.locator('.pdf-hover-lens:popover-open');await lens.waitFor({state:'visible'});
+  assert(await lens.evaluate(el=>el.width>=480&&el.height>=480),'hover detail is rendered directly at high resolution');
+  await reader.getByRole('button',{name:'Zoom in',exact:true}).hover();await lens.waitFor({state:'hidden'});
   assert.equal(await reader.locator('select').count(),0,'zoom has direct controls instead of a percentage dropdown');
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'the page count and navigation remain discoverable for every PDF');
   assert.equal(await reader.locator('#document-page').textContent(),'1 / 1');
@@ -138,7 +142,7 @@ try{
   assert(await reader.evaluate(el=>{const controls=el.querySelector('.document-controls').getBoundingClientRect(),pages=el.querySelector('.document-pages').getBoundingClientRect();return controls.bottom<=pages.top&&Math.abs(pages.bottom-el.getBoundingClientRect().bottom)<2;}),'controls stay above the document and leave no bottom toolbar');
   const pixels=await canvas.evaluate(el=>el.width),percentage=Number.parseInt(await reader.locator('#document-zoom').textContent());
   await frame.getByRole('button',{name:'Zoom in',exact:true}).click();
-  await pdfFrame.waitForFunction(pixels=>document.querySelector('#document-reader canvas').width>pixels,pixels);
+  await pdfFrame.waitForFunction(pixels=>document.querySelector('#document-reader .document-pages canvas').width>pixels,pixels);
   assert(Number.parseInt(await reader.locator('#document-zoom').textContent())>percentage,'zoom reports the rendered scale');
   assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'zoom renders fresh detail at the larger size');
   for(const label of ['Fit page','Fit width','Fit page']){
@@ -174,15 +178,15 @@ try{
    await pdfTrigger.click();await canvas.waitFor({state:'visible'});
   }
   await frame.locator('.paper').getByRole('button',{name:'Open second.pdf',exact:true}).click();
-  await pdfFrame.waitForFunction(()=>document.querySelector('#document-page').textContent==='1 / 2'&&!document.querySelector('#document-reader canvas').hidden);
+  await pdfFrame.waitForFunction(()=>document.querySelector('#document-page').textContent==='1 / 2'&&!document.querySelector('#document-reader .document-pages canvas').hidden);
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'documents with multiple pages retain navigation');
   assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).innerText(),'Next');
   assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).isEnabled(),true);
   await reader.getByRole('button',{name:'Next PDF page',exact:true}).click();
-  await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader canvas').getAttribute('aria-label')==='Page 2 of 2');
+  await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader .document-pages canvas').getAttribute('aria-label')==='Page 2 of 2');
   assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).isEnabled(),false);
   await reader.getByRole('button',{name:'Previous PDF page',exact:true}).click();
-  await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader canvas').getAttribute('aria-label')==='Page 1 of 2');
+  await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader .document-pages canvas').getAttribute('aria-label')==='Page 1 of 2');
   await reader.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
   await pdfFrame.evaluate(()=>{
    const request=window.siblingSession.request;
