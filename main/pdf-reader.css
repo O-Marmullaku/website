@@ -1,9 +1,8 @@
 /* The side reader keeps the CV available while its document is open. */
 #document-reader{position:fixed;inset:0 0 0 auto;z-index:7;display:flex;flex-direction:column;width:min(640px,100%);height:100dvh;max-width:none;max-height:none;margin:0;padding:0;background:#101b2a;color:#e9f0f8;font:400 14px/1.4 system-ui,sans-serif;border:0;border-radius:12px 0 0 12px;overflow:hidden;box-shadow:-20px 0 50px -20px #000a;animation:none}
 #document-reader[hidden]{display:none}
-#document-reader .pdf-hover-lens{position:fixed;inset:auto;margin:0;padding:0;width:min(360px,calc(100vw - 16px));height:min(260px,calc(100dvh - 16px));max-width:none;max-height:none;border:2px solid #f6f9ff;border-radius:8px;background:white;box-shadow:0 12px 40px #0008;pointer-events:none;opacity:1;transform:none;transition:opacity .18s ease-out,transform .18s cubic-bezier(.22,1,.36,1),display .18s allow-discrete,overlay .18s allow-discrete}
-#document-reader .pdf-hover-lens:not(:popover-open){display:none;opacity:0;transform:translateY(6px) scale(.985)}
-@starting-style{#document-reader .pdf-hover-lens:popover-open{opacity:0;transform:translateY(6px) scale(.985)}}
+#document-reader .pdf-hover-lens{position:fixed;inset:auto;margin:0;padding:0;width:min(360px,calc(100vw - 16px));height:min(260px,calc(100dvh - 16px));max-width:none;max-height:none;border:2px solid #f6f9ff;border-radius:8px;background:white;box-shadow:0 12px 40px #0008;pointer-events:none}
+#document-reader .pdf-hover-lens:not(:popover-open){display:none}
 #document-reader .document-pages>canvas{cursor:zoom-in}
 #document-reader>header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;flex:none;gap:0 8px;padding:8px 12px;border:0;border-bottom:1px solid #26374c;background:#101b2a}
 #document-reader h2{margin:0;min-width:0;font-size:14px;font-weight:500;line-height:1.4;color:#e9f0f8;overflow-wrap:anywhere}

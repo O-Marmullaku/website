@@ -19,10 +19,14 @@ export async function createPDFViewer(root) {
   const status = root.querySelector("#document-status");
   const download = root.querySelector("#document-download");
   const lens=document.createElement('canvas');lens.className='pdf-hover-lens';lens.setAttribute('popover','manual');lens.setAttribute('aria-hidden','true');root.append(lens);
-  let hover=null,lensPage=null,lensTask=null,lensRevision=0;
+  let hover=null,lensPage=null,lensTask=null,lensRevision=0,lensMotion=null,lensVisible=false;
   function dismissLens(){
     hover=null;lensRevision++;lensTask?.cancel();
-    if(lens.matches(':popover-open'))lens.hidePopover();
+    if(!lensVisible)return;
+    lensVisible=false;
+    const opacity=getComputedStyle(lens).opacity;lensMotion?.cancel();
+    const motion=lens.animate([{opacity},{opacity:0}],{duration:180,easing:'ease-out',fill:'forwards'});lensMotion=motion;
+    motion.finished.then(()=>{if(lensMotion===motion&&!lensVisible){lens.hidePopover();motion.cancel();lensMotion=null;}}).catch(()=>{});
   }
   async function paintLens(){
     if(!hover||!lensPage||lensTask)return;
@@ -34,7 +38,14 @@ export async function createPDFViewer(root) {
       await task.promise;
       if(current!==lensRevision||!hover)return;
       lens.width=pending.width;lens.height=pending.height;lens.getContext('2d').drawImage(pending,0,0);
-      if(!lens.matches(':popover-open'))lens.showPopover();
+      if(!lensVisible){
+        const opacity=lens.matches(':popover-open')?getComputedStyle(lens).opacity:0;
+        lensMotion?.cancel();
+        if(!lens.matches(':popover-open'))lens.showPopover();
+        lensVisible=true;
+        lensMotion=lens.animate([{opacity},{opacity:1}],{duration:220,easing:'ease-out',fill:'forwards'});
+        lensMotion.finished.catch(()=>{});
+      }
     }catch(error){if(error.name!=='RenderingCancelledException')dismissLens();}
     finally{if(lensTask===task)lensTask=null;if(hover&&hover!==point)paintLens();}
   }
@@ -42,7 +53,7 @@ export async function createPDFViewer(root) {
     if(event.pointerType==='touch'||!lensPage)return;
     const box=canvas.getBoundingClientRect();hover={x:event.clientX-box.left,y:event.clientY-box.top};
     const width=Math.min(360,innerWidth-16),height=Math.min(260,innerHeight-16);
-    lens.style.left=`${Math.max(8,Math.min(innerWidth-width-8,event.clientX+18+width>innerWidth?event.clientX-width-18:event.clientX+18))}px`;
+    lens.style.left=`${Math.max(8,Math.min(innerWidth-width-8,event.clientX-width/2))}px`;
     const toolbarBottom=root.querySelector('header').getBoundingClientRect().bottom;
     lens.style.top=`${Math.max(toolbarBottom+8,Math.min(innerHeight-height-8,event.clientY-height/2))}px`;
     paintLens();

@@ -131,11 +131,14 @@ try{
   assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'small print renders at least two bitmap pixels per displayed pixel');
   await canvas.click();
   assert.equal(await frame.locator('.image-magnifier.is-visible').count(),0,'clicking the PDF cannot open the blurry image lens');
-  await canvas.hover({position:{x:60,y:50}});
+  await canvas.hover();
   const lens=reader.locator('.pdf-hover-lens:popover-open');await lens.waitFor({state:'visible'});
+  assert(await lens.evaluate(el=>{const page=document.querySelector('#document-reader .document-pages canvas').getBoundingClientRect(),box=el.getBoundingClientRect();return Math.abs(box.x+box.width/2-page.x-page.width/2)<3;}),'the lens stays centered on the cursor instead of flipping sideways');
+  assert(await lens.evaluate(el=>el.getAnimations().some(animation=>animation.effect.getKeyframes().at(-1).opacity==='1'&&animation.effect.getTiming().duration>=200)),'hovering fades the lens in');
   assert(await lens.evaluate(el=>el.width>=el.clientWidth*2&&el.height>=el.clientHeight*2),'hover detail is rendered directly at high resolution');
   assert(await lens.evaluate(el=>el.clientWidth>el.clientHeight&&el.getBoundingClientRect().left>=0&&el.getBoundingClientRect().right<=innerWidth),'the wider reading lens stays inside the viewport');
   assert(await lens.evaluate(el=>el.getBoundingClientRect().top>=document.querySelector('#document-reader>header').getBoundingClientRect().bottom),'the reading lens cannot obscure the document controls');
+  assert(await pdfFrame.evaluate(()=>{document.querySelector('#document-reader .document-pages canvas').dispatchEvent(new PointerEvent('pointerleave'));return document.querySelector('.pdf-hover-lens').getAnimations().some(animation=>animation.effect.getKeyframes().at(-1).opacity==='0'&&animation.effect.getTiming().duration>=180);}),'leaving the page fades out before hiding the lens');
   await reader.getByRole('button',{name:'Zoom in',exact:true}).hover();await lens.waitFor({state:'hidden'});
   assert.equal(await reader.locator('select').count(),0,'zoom has direct controls instead of a percentage dropdown');
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'the page count and navigation remain discoverable for every PDF');
