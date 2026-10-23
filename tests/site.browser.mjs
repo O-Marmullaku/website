@@ -131,6 +131,8 @@ try{
   assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect(),sheet=el.querySelector('.document-sheet').getBoundingClientRect();return innerWidth<=680?box.left===0&&box.top===0&&box.width===innerWidth&&box.height===innerHeight:getComputedStyle(el).backgroundColor==='rgba(0, 0, 0, 0)'&&box.left>0&&sheet.top>0&&sheet.top<=16&&innerWidth-sheet.right>0&&innerWidth-sheet.right<=16&&sheet.bottom<=innerHeight;}),'the PDF sheet sits in the upper right of a transparent sidebar and fills phone screens');
   assert.equal(await frame.locator('.paper').first().evaluate(el=>el.getBoundingClientRect().left),paperLeft,'opening a PDF never shifts the CV sideways');
   assert(await frame.locator('.resume-toolbar').evaluate(el=>el.inert&&getComputedStyle(el).visibility==='hidden'),'CV actions step behind the document while it is open');
+  await pdfFrame.waitForFunction(()=>{const alpha=Number(/([\d.]+)\)$/.exec(getComputedStyle(document.querySelector('#resume'),'::after').backgroundColor)?.[1]);return alpha>=.15&&alpha<=.4;});
+  assert(await pdfFrame.evaluate(()=>{const dim=getComputedStyle(document.querySelector('#resume'),'::after'),paper=document.querySelector('.paper').getBoundingClientRect(),hit=innerWidth<=680||document.elementFromPoint(paper.left+20,innerHeight/2)?.closest('.paper');return dim.pointerEvents==='none'&&Number(dim.zIndex)<Number(getComputedStyle(document.querySelector('#document-reader')).zIndex)&&!!hit&&!document.querySelector('.paper').inert;}),'a light shade dims the CV behind the PDF without taking its clicks or focus');
   assert.equal(await reader.getByRole('link',{name:'Download PDF',exact:true}).isVisible(),true);
   assert.notEqual(await reader.getAttribute('aria-modal'),'true');
   assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),'0','the click magnifier is keyboard accessible');
@@ -190,6 +192,7 @@ try{
   }
   await frame.getByRole('button',{name:'Close PDF',exact:true}).press('Escape');
   await reader.waitFor({state:'hidden'});
+  await pdfFrame.waitForFunction(()=>Number(/([\d.]+)\)$/.exec(getComputedStyle(document.querySelector('#resume'),'::after').backgroundColor)?.[1])===0);
   assert.equal(await frame.locator('#resume[open]').count(),1,'Escape closes the PDF without closing the CV');
   await pdfFrame.waitForFunction(()=>document.activeElement?.getAttribute('aria-label')==='Open first.pdf');
   assert(await pdfTrigger.evaluate(el=>el===document.activeElement),'closing restores focus to the document link: '+await pdfFrame.evaluate(()=>document.activeElement.outerHTML.slice(0,500)));
