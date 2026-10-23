@@ -43,7 +43,8 @@ export async function createPDFViewer(root) {
     const box=canvas.getBoundingClientRect();hover={x:event.clientX-box.left,y:event.clientY-box.top};
     const width=Math.min(360,innerWidth-16),height=Math.min(260,innerHeight-16);
     lens.style.left=`${Math.max(8,Math.min(innerWidth-width-8,event.clientX+18+width>innerWidth?event.clientX-width-18:event.clientX+18))}px`;
-    lens.style.top=`${Math.max(8,Math.min(innerHeight-height-8,event.clientY-height/2))}px`;
+    const toolbarBottom=root.querySelector('header').getBoundingClientRect().bottom;
+    lens.style.top=`${Math.max(toolbarBottom+8,Math.min(innerHeight-height-8,event.clientY-height/2))}px`;
     paintLens();
   });
   canvas.addEventListener('pointerleave',dismissLens);
@@ -91,6 +92,10 @@ export async function createPDFViewer(root) {
       canvas.getContext('2d').drawImage(pendingCanvas,0,0);
       canvas.setAttribute('aria-label',`Page ${pageNumber} of ${pdf.numPages}`);
       canvas.hidden = false;
+      if(resetView){
+        canvas.getAnimations().forEach(animation=>animation.cancel());
+        canvas.animate([{opacity:0,transform:'translateY(12px)'},{opacity:1,transform:'none'}],{duration:320,easing:'cubic-bezier(.22,1,.36,1)'});
+      }
       renderedScale=scale;
       lensPage=page;
       zoom.textContent=`${Math.round(scale*100)}%`;

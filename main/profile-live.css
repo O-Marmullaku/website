@@ -28,7 +28,7 @@ html[data-live] #settings-panel>a.text-button{margin-left:20px}
 @media print{html[data-live] #resume{height:auto;position:static;overflow:visible}html[data-live] .resume-toolbar{display:none}}
 .link-form-actions{display:flex;align-items:center;gap:12px}
 #settings-panel input::placeholder{color:#aebfd3;opacity:1}
-@media(max-width:1000px){
+@media(max-width:480px){
   html[data-live] #resume:has(.document-open)>.resume-toolbar{display:none}
 }
 @media(max-width:680px){

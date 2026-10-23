@@ -26,7 +26,7 @@ function samplePDF(pageCount=1){
  return Buffer.from(pdf);
 }
 try{
- for(const [path,width] of [['/',1920],['/mockup/',1920],['/',390],['/mockup/',390]]){
+ for(const [path,width] of [['/',1920],['/mockup/',1920],['/',1280],['/',390],['/mockup/',390]]){
   if(process.env.TEST_WIDTH&&width!==Number(process.env.TEST_WIDTH))continue;
   const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[],external=[];
   try{
@@ -124,7 +124,8 @@ try{
   const pdfFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
   assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
   await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
-  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.top>=0&&box.right<=innerWidth&&box.bottom<=innerHeight&&(innerWidth<=480?box.width===innerWidth:box.left>innerWidth/2);}),'PDFs open in the right sidebar and fill narrow phone screens');
+  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.top>=0&&box.right<=innerWidth&&box.bottom<=innerHeight&&(innerWidth<=480?box.width===innerWidth:box.left>0&&box.width<innerWidth);}),'PDFs open in the right sidebar and fill narrow phone screens');
+  if(width>480)assert(await reader.evaluate(el=>[...document.querySelectorAll('.cv-download,[data-close="resume"]')].every(button=>{const box=button.getBoundingClientRect();return box.height>0&&box.bottom+8<=el.getBoundingClientRect().top&&button.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));})),'CV download and close remain visible and clickable above the sidebar');
   assert.notEqual(await reader.getAttribute('aria-modal'),'true');
   assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),null,'PDF pages use real zoom, not the image magnifier');
   assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'small print renders at least two bitmap pixels per displayed pixel');
@@ -134,6 +135,7 @@ try{
   const lens=reader.locator('.pdf-hover-lens:popover-open');await lens.waitFor({state:'visible'});
   assert(await lens.evaluate(el=>el.width>=el.clientWidth*2&&el.height>=el.clientHeight*2),'hover detail is rendered directly at high resolution');
   assert(await lens.evaluate(el=>el.clientWidth>el.clientHeight&&el.getBoundingClientRect().left>=0&&el.getBoundingClientRect().right<=innerWidth),'the wider reading lens stays inside the viewport');
+  assert(await lens.evaluate(el=>el.getBoundingClientRect().top>=document.querySelector('#document-reader>header').getBoundingClientRect().bottom),'the reading lens cannot obscure the document controls');
   await reader.getByRole('button',{name:'Zoom in',exact:true}).hover();await lens.waitFor({state:'hidden'});
   assert.equal(await reader.locator('select').count(),0,'zoom has direct controls instead of a percentage dropdown');
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'the page count and navigation remain discoverable for every PDF');
@@ -175,7 +177,7 @@ try{
   assert(Math.abs(await frame.locator('#resume').evaluate(el=>el.scrollTop)-resumeScroll)<2,'closing preserves the CV scroll position');
   await pdfTrigger.click();await canvas.waitFor({state:'visible'});
   await frame.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
-  if(width>680){
+  if(width>=1920){
    await pdfTrigger.click();await canvas.waitFor({state:'visible'});
   }
   await frame.locator('.paper').getByRole('button',{name:'Open second.pdf',exact:true}).click();
