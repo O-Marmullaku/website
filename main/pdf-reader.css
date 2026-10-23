@@ -1,23 +1,24 @@
 /* The side reader keeps the CV available while its document is open. */
-#document-reader{position:fixed;inset:0 0 0 auto;z-index:7;display:flex;flex-direction:column;width:min(640px,100%);height:100dvh;max-width:none;max-height:none;margin:0;padding:0;background:#101b2a;color:#e9f0f8;border:0;border-radius:12px 0 0 12px;overflow:hidden;box-shadow:-20px 0 50px -20px #000a;animation:none}
+#document-reader{position:fixed;inset:0 0 0 auto;z-index:7;display:flex;flex-direction:column;width:min(640px,100%);height:100dvh;max-width:none;max-height:none;margin:0;padding:0;background:#101b2a;color:#e9f0f8;font:400 14px/1.4 system-ui,sans-serif;border:0;border-radius:12px 0 0 12px;overflow:hidden;box-shadow:-20px 0 50px -20px #000a;animation:none}
 #document-reader[hidden]{display:none}
-#document-reader>header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;flex:none;gap:4px 12px;padding:8px 12px;border:0;border-bottom:1px solid #26374c;background:#101b2a}
+#document-reader>header{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;flex:none;gap:0 8px;padding:8px 12px;border:0;border-bottom:1px solid #26374c;background:#101b2a}
 #document-reader h2{margin:0;min-width:0;font-size:14px;font-weight:500;line-height:1.4;color:#e9f0f8;overflow-wrap:anywhere}
 #document-reader .document-actions{display:flex;align-items:center;gap:4px}
-#document-reader :is(button,.document-icon){display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:40px;min-height:40px;padding:8px;border:0;border-radius:6px;background:transparent;color:#c7d8ec;font:400 13px/1.4 "Fira Sans",sans-serif;text-decoration:none;transition:background .16s,color .16s,transform .16s}
-#document-reader .document-icon{gap:6px}
-#document-reader :is(button,.document-icon):hover:not(:disabled){background:#25374e;color:#fff}
-#document-reader :is(button,.document-icon):active:not(:disabled){transform:scale(.96)}
-#document-reader button:disabled{opacity:.35;cursor:default}
+#document-reader button{display:inline-flex;align-items:center;justify-content:center;flex:none;min-width:40px;min-height:40px;padding:8px;border:0;border-radius:6px;background:transparent;color:#c7d8ec;font:inherit;font-size:13px;text-decoration:none;transition:background .16s,color .16s,transform .16s}
+#document-reader #document-next{gap:2px}
+#document-reader button:hover:not(:disabled){background:#25374e;color:#fff}
+#document-reader button:active:not(:disabled){transform:scale(.96)}
+#document-reader button:disabled{opacity:.55;cursor:default}
 #document-reader :is(button,a):focus-visible{outline:2px solid #86c1ff;outline-offset:2px}
-#document-reader :is(button,.document-icon) svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
-#document-reader .document-controls{position:static;grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px 12px;width:100%;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
-#document-reader :is(.document-pagination,.document-zoom-controls,.document-fit-controls){display:flex;align-items:center;gap:2px}
-#document-reader .document-fit-controls{margin-left:auto}
-#document-reader .document-fit-controls button{padding-inline:10px}
-#document-reader .document-fit-controls button[aria-pressed=true]{background:#25374e;color:#fff}
-#document-reader :is(#document-page,#document-zoom){min-width:48px;text-align:center;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums;color:#dce7f4}
-#document-reader #document-page{min-width:40px}
+#document-reader button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+#document-reader .document-controls{position:static;grid-column:1/-1;justify-self:center;display:flex;align-items:center;justify-content:center;flex-wrap:nowrap;gap:8px;width:auto;max-width:100%;margin:0;padding:0;border:0;background:transparent;box-shadow:none}
+#document-reader :is(.document-pagination,.document-zoom-controls){display:flex;align-items:center;gap:0}
+#document-reader .document-pagination{margin-right:8px}
+#document-reader :is(#document-page,#document-zoom){min-width:40px;text-align:center;white-space:nowrap;font-size:13px;font-variant-numeric:tabular-nums;color:#dce7f4}
+#document-reader .restore-icon,#document-reader .fit-page-icon{display:none}
+#document-reader.is-maximized .restore-icon,#document-reader #document-fit[data-fit=fit-page] .fit-page-icon{display:block}
+#document-reader.is-maximized .maximize-icon,#document-reader #document-fit[data-fit=fit-page] .fit-width-icon{display:none}
+#document-reader .document-download{padding:0 16px 12px;background:#0b1522;color:#c7d8ec;font-size:14px;text-decoration:underline;text-underline-offset:3px}
 #document-reader .document-pages{position:relative;flex:1;min-height:0;height:auto;padding:16px;background:#0b1522;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#3c5069 transparent}
 #document-reader .document-pages::-webkit-scrollbar{width:7px;height:7px}
 #document-reader .document-pages::-webkit-scrollbar-thumb{background:#3c5069;border:2px solid #0b1522;border-radius:8px}
@@ -29,8 +30,15 @@
  #document-reader{inset:80px 24px 24px auto;width:min(794px,calc((100vw - 794px)/2 - 48px));height:calc(100dvh - 104px);border-radius:12px}
 }
 @media(max-width:680px){
+ #document-reader button{min-width:44px;min-height:44px}
+}
+#document-reader.is-maximized{inset:0;width:100%;height:100dvh;border-radius:0}
+@media(max-width:480px){
  #document-reader{width:100%;border-radius:0;padding-bottom:env(safe-area-inset-bottom)}
- #document-reader :is(button,.document-icon){min-width:44px;min-height:44px}
- #document-reader .document-pagination{justify-content:center;flex-basis:100%}
+ #document-reader #document-maximize{display:none}
+}
+@media(max-width:360px){
+ #document-reader .document-controls{flex-wrap:wrap;justify-content:center}
+ #document-reader .document-pagination{justify-content:center;flex-basis:100%;margin:0}
 }
 @media print{#document-reader{display:none!important}}

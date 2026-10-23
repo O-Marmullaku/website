@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
 const playwright=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
 const executablePath=process.env.CHROMIUM_EXECUTABLE||process.env.FIREFOX_EXECUTABLE;
 const browser=await playwright[process.env.CHROMIUM_EXECUTABLE?'chromium':'firefox'].launch({headless:true,...(executablePath?{executablePath}:{})});
@@ -123,18 +124,38 @@ try{
   const pdfFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
   assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
   await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
-  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=innerHeight&&(innerWidth<=680?box.width===innerWidth:box.left>innerWidth/2);}),'the reader stays on the right and fills phone viewports');
+  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.left>=0&&box.right<=innerWidth&&box.top>=0&&box.bottom<=innerHeight&&(innerWidth<=480?box.width===innerWidth:box.left>innerWidth/2);}),'the reader stays on the right and fills phone viewports');
   assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),null,'PDF pages use real zoom, not the image magnifier');
   assert.equal(await reader.locator('select').count(),0,'zoom has direct controls instead of a percentage dropdown');
-  assert.equal(await reader.locator('.document-pagination').isVisible(),false,'single-page PDFs do not show redundant page navigation');
+  assert.equal(await reader.locator('.document-pagination').isVisible(),true,'the page count and navigation remain discoverable for every PDF');
+  assert.equal(await reader.locator('#document-page').textContent(),'1 / 1');
+  assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).isEnabled(),false,'a single-page PDF visibly disables Next');
+  assert.equal(await reader.locator('[target="_blank"]').count(),0,'the title bar expands the reader instead of opening a tab');
   assert(await reader.evaluate(el=>{const controls=el.querySelector('.document-controls').getBoundingClientRect(),pages=el.querySelector('.document-pages').getBoundingClientRect();return controls.bottom<=pages.top&&Math.abs(pages.bottom-el.getBoundingClientRect().bottom)<2;}),'controls stay above the document and leave no bottom toolbar');
   const pixels=await canvas.evaluate(el=>el.width),percentage=Number.parseInt(await reader.locator('#document-zoom').textContent());
   await frame.getByRole('button',{name:'Zoom in',exact:true}).click();
   await pdfFrame.waitForFunction(pixels=>document.querySelector('#document-reader canvas').width>pixels,pixels);
   assert(Number.parseInt(await reader.locator('#document-zoom').textContent())>percentage,'zoom reports the rendered scale');
-  for(const label of ['Fit width','Fit page']){
+  for(const label of ['Fit page','Fit width','Fit page']){
    await reader.getByRole('button',{name:label,exact:true}).click();
-   await pdfFrame.waitForFunction(label=>[...document.querySelectorAll('[data-pdf-fit]')].some(button=>button.textContent===label&&button.getAttribute('aria-pressed')==='true'),label);
+   await pdfFrame.waitForFunction(label=>document.querySelector('#document-fit').getAttribute('aria-label')!==label,label);
+  }
+  if(width>480){
+   const sideWidth=await reader.evaluate(el=>el.getBoundingClientRect().width);
+   await reader.getByRole('button',{name:'Maximize PDF',exact:true}).click();
+   await pdfFrame.waitForFunction(()=>{const reader=document.querySelector('#document-reader'),box=reader.getBoundingClientRect();return box.left===0&&box.top===0&&box.width===innerWidth&&box.height===innerHeight;});
+   assert(await reader.evaluate((el,width)=>el.getBoundingClientRect().width>width,sideWidth),'maximize expands the document inside this page');
+   assert(await reader.evaluate(el=>[...el.parentElement.children].filter(sibling=>sibling!==el).every(sibling=>sibling.inert)),'the covered CV cannot receive keyboard focus');
+   await reader.locator('#document-fit').press('Tab');
+   assert(await reader.evaluate(el=>el.contains(document.activeElement)),'Tab remains inside the maximized reader');
+   await reader.locator('#document-maximize').press('Shift+Tab');
+   assert(await reader.locator('#document-fit').evaluate(el=>el===document.activeElement),'Shift+Tab wraps back to the last PDF control');
+   await reader.getByRole('button',{name:'Restore PDF size',exact:true}).click();
+   await pdfFrame.waitForFunction(width=>Math.abs(document.querySelector('#document-reader').getBoundingClientRect().width-width)<1,sideWidth);
+   await reader.getByRole('button',{name:'Maximize PDF',exact:true}).click();
+   await reader.getByRole('button',{name:'Restore PDF size',exact:true}).press('Escape');
+   assert.equal(await reader.isVisible(),true,'Escape restores the side reader before closing it');
+   assert.equal(await reader.getAttribute('aria-modal'),null);
   }
   await frame.getByRole('button',{name:'Close PDF',exact:true}).press('Escape');
   await reader.waitFor({state:'hidden'});
@@ -150,11 +171,32 @@ try{
   await frame.locator('.paper').getByRole('button',{name:'Open second.pdf',exact:true}).click();
   await pdfFrame.waitForFunction(()=>document.querySelector('#document-page').textContent==='1 / 2'&&!document.querySelector('#document-reader canvas').hidden);
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'documents with multiple pages retain navigation');
+  assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).innerText(),'Next');
+  assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).isEnabled(),true);
   await reader.getByRole('button',{name:'Next PDF page',exact:true}).click();
   await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader canvas').getAttribute('aria-label')==='Page 2 of 2');
   assert.equal(await reader.getByRole('button',{name:'Next PDF page',exact:true}).isEnabled(),false);
   await reader.getByRole('button',{name:'Previous PDF page',exact:true}).click();
   await pdfFrame.waitForFunction(()=>document.querySelector('#document-reader canvas').getAttribute('aria-label')==='Page 1 of 2');
+  await reader.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
+  await pdfFrame.evaluate(()=>{
+   const request=window.siblingSession.request;
+   window.siblingSession.request=async(...args)=>{
+    const result=await request(...args);
+    if(args[0]==='asset'){
+     window.siblingSession.request=request;
+     result.arrayBuffer=async()=>{throw new Error('Synthetic PDF read failure');};
+    }
+    return result;
+   };
+  });
+  await pdfTrigger.click();
+  const fallback=reader.getByRole('link',{name:'Download PDF',exact:true});
+  await fallback.waitFor({state:'visible'});
+  const downloading=page.waitForEvent('download');await fallback.click();
+  const download=await downloading;
+  assert.equal(download.suggestedFilename(),'first.pdf');
+  assert.deepEqual(await readFile(await download.path()),samplePDF(),'render failures preserve the original PDF for recovery');
   await reader.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
   await frame.getByRole('button',{name:'Close CV',exact:true}).click();await page.locator('.profile-window iframe').waitFor({state:'detached'});
   for(const name of names.slice(1)){

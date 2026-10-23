@@ -1,11 +1,11 @@
 import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
 import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=quiet-extras';
 import {setupCVPagination} from './cv-pagination.mjs?v=cleanup';
-import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-sidebar-controls-1';
+import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-reader-3';
 import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
 import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
 import { resolveQuote } from "./picture-anchor.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-sidebar-controls-1";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-reader-3";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
 
@@ -386,7 +386,13 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
   document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>closeDialog(button.dataset.close)));
   for(const id of ['resume','settings-panel']) {
     $(id).addEventListener('click',event=>{if(event.target===$(id))closeDialog(id);});
-    $(id).addEventListener('cancel',event=>{event.preventDefault();if(id==='resume'&&!$('document-reader').hidden)closeDocument(true);else closeDialog(id);});
+    $(id).addEventListener('cancel',event=>{
+      event.preventDefault();
+      if(id==='resume'&&!$('document-reader').hidden){
+        if($('document-reader').classList.contains('is-maximized'))setDocumentMaximized(false);
+        else closeDocument(true);
+      }else closeDialog(id);
+    });
     $(id).addEventListener('close',()=>{
       if($(id).open||(id==='settings-panel'&&$('resume').open))return;
       // Repeated Escape can force a native close; keep the draft visible until settled.
@@ -923,6 +929,27 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     }
   }
   let documentExit,documentEntry,documentScrollTop=0;
+  function setDocumentMaximized(maximized){
+    const reader=$('document-reader'),button=$('document-maximize');
+    reader.classList.toggle('is-maximized',maximized);
+    button.title=maximized?'Restore PDF size':'Maximize PDF';
+    button.setAttribute('aria-label',button.title);
+    button.setAttribute('aria-pressed',String(maximized));
+    reader.setAttribute('role',maximized?'dialog':'complementary');
+    if(maximized)reader.setAttribute('aria-modal','true');else reader.removeAttribute('aria-modal');
+    for(const sibling of reader.parentElement.children)if(sibling!==reader)sibling.inert=maximized;
+    document.querySelector('.resume-toolbar').inert=maximized;
+  }
+  $('document-maximize').addEventListener('click',()=>setDocumentMaximized(!$('document-reader').classList.contains('is-maximized')));
+  $('document-reader').addEventListener('keydown',event=>{
+    if(event.key!=='Tab'||!event.currentTarget.classList.contains('is-maximized'))return;
+    const controls=[...event.currentTarget.querySelectorAll('button:not(:disabled),a[href]')].filter(control=>control.getClientRects().length);
+    const first=controls[0],last=controls.at(-1);
+    if(event.shiftKey&&event.target===first||!event.shiftKey&&event.target===last){
+      event.preventDefault();
+      (event.shiftKey?last:first)?.focus({preventScroll:true});
+    }
+  });
   function closeDocument(restoreFocus = false) {
     const reader = $("document-reader"),style=getComputedStyle(reader);
     const wasOpen=!reader.hidden;
@@ -935,11 +962,13 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       if (generation !== documentGeneration) return;
       reader.hidden = true;
       reader.inert = false;
+      setDocumentMaximized(false);
       documentExit?.cancel();
       documentExit = null;
       document.querySelector(".resume-workspace").classList.remove("document-open");
       viewerPromise?.then((viewer) => viewer.close());
-      $("document-new-tab").removeAttribute("href");
+      $("document-download").removeAttribute("href");
+      $("document-download").hidden = true;
       if (documentURL) URL.revokeObjectURL(documentURL);
       documentURL = null;
       if(restoreFocus&&documentTrigger?.closest('#extras-rail'))extrasRail?.open();
@@ -969,7 +998,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     const generation = ++documentGeneration;
     $("document-title").textContent = doc.name;
     $("document-status").textContent = "Opening PDF…";
-    $("document-new-tab").hidden = true;
+    $("document-download").hidden = true;
     $("document-reader").hidden = false;
     document.querySelector(".resume-workspace").classList.add("document-open");
     documentEntry=$('document-reader').animate([{opacity:0,transform:'translateX(48px)'},{opacity:1,transform:'none'}],{duration:240,easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'});
@@ -983,17 +1012,19 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
           "This PDF is unavailable. Add it again.",
         );
       documentURL = URL.createObjectURL(file);
-      $("document-new-tab").href = documentURL;
-      $("document-new-tab").hidden = false;
+      $("document-download").href = documentURL;
+      $("document-download").download = doc.name.replace(/\.pdf$/i,'')+'.pdf';
       sharing?.track("document", "Opened PDF: " + doc.name);
       viewerPromise ||= createPDFViewer($("document-reader"));
       const viewer = await viewerPromise;
       if (generation !== documentGeneration) return;
       try {await viewer.open(file);}
-      catch(error){throw new Error(error.name==='PasswordException'?'This PDF needs a password. Open it in a new tab.':'Could not display this PDF. Open it in a new tab.');}
+      catch(error){throw new Error(error.name==='PasswordException'?'This PDF needs a password. Download it to open in a PDF app.':'Could not display this PDF. Download it to open in a PDF app.');}
     } catch (error) {
-      if (generation === documentGeneration)
+      if (generation === documentGeneration){
         $("document-status").textContent = error.message;
+        $('document-download').hidden=!documentURL;
+      }
     }
   }
   $("close-document").addEventListener("click", () => closeDocument(true));

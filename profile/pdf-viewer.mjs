@@ -15,7 +15,9 @@ export async function createPDFViewer(root) {
   const next = root.querySelector("#document-next");
   const label = root.querySelector("#document-page");
   const zoom = root.querySelector("#document-zoom");
+  const fit = root.querySelector("#document-fit");
   const status = root.querySelector("#document-status");
+  const download = root.querySelector("#document-download");
   let loading,
     pdf,
     rendering,
@@ -58,8 +60,11 @@ export async function createPDFViewer(root) {
       canvas.hidden = false;
       renderedScale=scale;
       zoom.textContent=`${Math.round(scale*100)}%`;
-      root.querySelectorAll('[data-pdf-fit]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.pdfFit===zoomMode)));
+      fit.dataset.fit=zoomMode==='fit-page'?'fit':'fit-page';
+      fit.title=fit.dataset.fit==='fit'?'Fit width':'Fit page';
+      fit.setAttribute('aria-label',fit.title);
       status.textContent = "";
+      download.hidden = true;
       viewport.scrollLeft=resetView?0:canvas.offsetLeft+center.x*sized.width-viewport.clientWidth/2;
       viewport.scrollTop=resetView?0:canvas.offsetTop+center.y*sized.height-viewport.clientHeight/2;
       resetView=false;
@@ -69,9 +74,11 @@ export async function createPDFViewer(root) {
           .map((item) => item.str || "")
           .join(" ");
     } catch (error) {
-      if (current === revision && error.name !== "RenderingCancelledException")
+      if (current === revision && error.name !== "RenderingCancelledException") {
         status.textContent =
-          "This page could not be displayed. Open the PDF in a new tab.";
+          "This page could not be displayed. Download it to open in a PDF app.";
+        download.hidden = !download.hasAttribute('href');
+      }
     }
   }
   previous.addEventListener("click", () => {
@@ -86,7 +93,7 @@ export async function createPDFViewer(root) {
       render(true);
     }
   });
-  root.querySelectorAll('[data-pdf-fit]').forEach(button=>button.addEventListener('click',()=>{zoomMode=button.dataset.pdfFit;render();}));
+  fit.addEventListener('click',()=>{zoomMode=fit.dataset.fit;render();});
   for(const [id,direction] of [['document-zoom-in',1],['document-zoom-out',-1]])root.querySelector('#'+id)?.addEventListener('click',()=>{
     const levels=[.5,.75,1,1.25,1.5,2,3];
     zoomMode=String(direction>0?levels.find(value=>value>renderedScale+.01)||3:[...levels].reverse().find(value=>value<renderedScale-.01)||.5);
@@ -109,6 +116,7 @@ export async function createPDFViewer(root) {
     pdf = null;
     resetView=true;
     canvas.hidden = true;
+    download.hidden = true;
     root.querySelector("#document-text").textContent = "";
     root.querySelector(".document-controls").hidden = true;
   }
@@ -134,7 +142,6 @@ export async function createPDFViewer(root) {
       pdf = loaded;
       pageNumber = 1;
       zoomMode = "fit-page";
-      root.querySelector('.document-pagination').hidden=pdf.numPages===1;
       root.querySelector(".document-controls").hidden = false;
       await render(true);
     },
