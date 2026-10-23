@@ -2,10 +2,10 @@ export const libraryDocuments=(documents,attachedIDs,previewing)=>previewing?doc
 
 export function setupExtrasRail({editable,onLayout}) {
   const rail=document.getElementById('extras-rail'),toolbar=document.querySelector('.resume-toolbar');
-  const button=document.createElement('button');button.className='text-button cv-extras-tool';button.setAttribute('aria-label','More about me');button.setAttribute('aria-controls','extras-rail');button.setAttribute('aria-expanded','false');
-  button.textContent='More about me';
+  const button=document.createElement('button');button.className='text-button cv-extras-tool';button.setAttribute('aria-label','Links & documents');button.setAttribute('aria-controls','extras-rail');button.setAttribute('aria-expanded','false');
+  button.textContent='Links & documents';
   toolbar.insertBefore(button,toolbar.querySelector('.cv-download'));
-  const close=document.createElement('button');close.className='icon-button close-extras';close.setAttribute('aria-label','Close extras');close.innerHTML='<svg aria-hidden="true"><use href="#close"/></svg>';rail.querySelector('.extras-heading').append(close);
+  const close=document.createElement('button');close.className='icon-button close-extras';close.setAttribute('aria-label','Close links and documents');close.innerHTML='<svg aria-hidden="true"><use href="#close"/></svg>';rail.querySelector('.extras-heading').append(close);
   rail.setAttribute('popover','auto');
   function sync(){
     const empty=!rail.querySelector('.extra-block,#pdf-list button');

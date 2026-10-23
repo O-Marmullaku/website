@@ -58,6 +58,8 @@ try{
   assert.equal(earlyEditor,false,'the editor must wait for its required stylesheets');
   let frame=page.frameLocator('.profile-window iframe');
   assert.equal(await frame.locator('#resume-name').textContent(),'Osman Marmullaku');
+  assert.equal(await frame.locator('.cv-extras-tool').textContent(),'Links & documents');
+  assert(await frame.locator('.resume-toolbar').evaluate(el=>{const toolbar=el.getBoundingClientRect(),paper=document.querySelector('.paper').getBoundingClientRect();return toolbar.bottom<=paper.top&&Math.abs(toolbar.left-paper.left)<2&&Math.abs(toolbar.right-paper.right)<2;}),'CV actions sit above and align with the paper');
   assert.equal(await frame.locator('.cv-cell-title .cv-row-text').filter({hasText:unsafeTitle}).count(),1);
   assert.equal(await frame.locator('img[src="x"]').count(),0,'profile text must never become executable markup');
   await frame.getByRole('button',{name:'View Crazy Entertainment projects',exact:true}).click();
@@ -124,8 +126,9 @@ try{
   const pdfFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
   assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
   await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
-  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.top>=0&&box.right<=innerWidth&&box.bottom<=innerHeight&&(innerWidth<=480?box.width===innerWidth:box.left>0&&box.width<innerWidth);}),'PDFs open in the right sidebar and fill narrow phone screens');
-  if(width>480)assert(await reader.evaluate(el=>[...document.querySelectorAll('.cv-download,[data-close="resume"]')].every(button=>{const box=button.getBoundingClientRect();return box.height>0&&box.bottom+8<=el.getBoundingClientRect().top&&button.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));})),'CV download and close remain visible and clickable above the sidebar');
+  assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.top===0&&box.right===innerWidth&&box.height===innerHeight&&(innerWidth<=680?box.width===innerWidth:box.left>0&&box.width<innerWidth);}),'the PDF sidebar uses the full height and fills phone screens');
+  if(width>680)assert(await reader.evaluate(el=>[...document.querySelectorAll('.cv-extras-tool,.cv-download,[data-close="resume"]')].filter(button=>!button.hidden).every(button=>{const box=button.getBoundingClientRect();return box.height>0&&box.right+8<=el.getBoundingClientRect().left&&button.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));})),'CV actions stay clickable in the CV column beside the PDF');
+  assert.equal(await reader.getByRole('link',{name:'Download PDF',exact:true}).isVisible(),true);
   assert.notEqual(await reader.getAttribute('aria-modal'),'true');
   assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),null,'PDF pages use real zoom, not the image magnifier');
   assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'small print renders at least two bitmap pixels per displayed pixel');
@@ -155,7 +158,7 @@ try{
    await reader.getByRole('button',{name:label,exact:true}).click();
    await pdfFrame.waitForFunction(label=>document.querySelector('#document-fit').getAttribute('aria-label')!==label,label);
   }
-  if(width>480){
+  if(width>680){
    const sideWidth=await reader.evaluate(el=>el.getBoundingClientRect().width);
    await reader.getByRole('button',{name:'Maximize PDF',exact:true}).click();
    await pdfFrame.waitForFunction(()=>{const reader=document.querySelector('#document-reader'),box=reader.getBoundingClientRect();return box.left===0&&box.top===0&&box.width===innerWidth&&box.height===innerHeight;});
@@ -163,7 +166,7 @@ try{
    assert(await reader.evaluate(el=>[...el.parentElement.children].filter(sibling=>sibling!==el).every(sibling=>sibling.inert)),'the covered CV cannot receive keyboard focus');
    await reader.locator('#document-fit').press('Tab');
    assert(await reader.evaluate(el=>el.contains(document.activeElement)),'Tab remains inside the maximized reader');
-   await reader.locator('#document-maximize').press('Shift+Tab');
+   await reader.locator('#document-save').press('Shift+Tab');
    assert(await reader.locator('#document-fit').evaluate(el=>el===document.activeElement),'Shift+Tab wraps back to the last PDF control');
    await reader.getByRole('button',{name:'Restore PDF size',exact:true}).click();
    await pdfFrame.waitForFunction(width=>Math.abs(document.querySelector('#document-reader').getBoundingClientRect().width-width)<1,sideWidth);
@@ -206,7 +209,7 @@ try{
    };
   });
   await pdfTrigger.click();
-  const fallback=reader.getByRole('link',{name:'Download PDF',exact:true});
+  const fallback=reader.locator('#document-download');
   await fallback.waitFor({state:'visible'});
   const downloading=page.waitForEvent('download');await fallback.click();
   const download=await downloading;

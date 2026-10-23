@@ -1,11 +1,11 @@
 import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
-import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=labeled-extras';
+import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=links-documents';
 import {setupCVPagination} from './cv-pagination.mjs?v=cleanup';
-import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-reader-11';
+import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-workspace-2';
 import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
 import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
 import { resolveQuote } from "./picture-anchor.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-reader-11";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-workspace-2";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
 
@@ -389,7 +389,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     $(id).addEventListener('cancel',event=>{
       event.preventDefault();
       if(id==='resume'&&!$('document-reader').hidden){
-        if($('document-reader').classList.contains('is-maximized')&&innerWidth>480)setDocumentMaximized(false);
+        if($('document-reader').classList.contains('is-maximized')&&innerWidth>680)setDocumentMaximized(false);
         else closeDocument(true);
       }else closeDialog(id);
     });
@@ -928,7 +928,21 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       $("pdf-list").append(item);
     }
   }
-  let documentExit,documentEntry,documentScrollTop=0;
+  let documentExit,documentEntry,documentScrollTop=0,documentColumnMotion=[];
+  function setDocumentOpen(open){
+    const workspace=document.querySelector('.resume-workspace');
+    if(workspace.classList.contains('document-open')===open)return;
+    // Animate the paper, not its workspace: the fixed PDF is a sibling of the paper stack.
+    const elements=[workspace.querySelector('.cv-paper-stack'),document.querySelector('.resume-toolbar')].filter(Boolean);
+    const starts=elements.map(element=>element.getBoundingClientRect().left);
+    documentColumnMotion.forEach(animation=>animation.cancel());
+    workspace.classList.toggle('document-open',open);
+    documentColumnMotion=elements.map((element,index)=>{
+      const offset=starts[index]-element.getBoundingClientRect().left;
+      const animation=element.animate([{translate:`${offset}px 0`},{translate:'0px 0'}],{duration:400,easing:'cubic-bezier(.22,1,.36,1)'});
+      animation.finished.catch(()=>{});return animation;
+    });
+  }
   function setDocumentMaximized(maximized){
     const reader=$('document-reader'),button=$('document-maximize');
     reader.classList.toggle('is-maximized',maximized);
@@ -965,10 +979,11 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       setDocumentMaximized(false);
       documentExit?.cancel();
       documentExit = null;
-      document.querySelector(".resume-workspace").classList.remove("document-open");
+      setDocumentOpen(false);
       viewerPromise?.then((viewer) => viewer.close());
       $("document-download").removeAttribute("href");
       $("document-download").hidden = true;
+      $('document-save').removeAttribute('href');$('document-save').hidden=true;
       if (documentURL) URL.revokeObjectURL(documentURL);
       documentURL = null;
       if(restoreFocus&&documentTrigger?.closest('#extras-rail'))extrasRail?.open();
@@ -1000,7 +1015,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     $("document-status").textContent = "Opening PDF…";
     $("document-download").hidden = true;
     $("document-reader").hidden = false;
-    document.querySelector(".resume-workspace").classList.add("document-open");
+    setDocumentOpen(true);
     documentEntry=$('document-reader').animate([{opacity:0,transform:'translateX(32px) scale(.985)'},{opacity:1,transform:'none'}],{duration:400,easing:'cubic-bezier(.22,1,.36,1)',fill:'backwards'});
     documentEntry.finished.catch(()=>{});
     $("close-document").focus({ preventScroll: true });
@@ -1014,6 +1029,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       documentURL = URL.createObjectURL(file);
       $("document-download").href = documentURL;
       $("document-download").download = doc.name.replace(/\.pdf$/i,'')+'.pdf';
+      $('document-save').href=documentURL;$('document-save').download=$('document-download').download;$('document-save').hidden=false;
       sharing?.track("document", "Opened PDF: " + doc.name);
       viewerPromise ||= createPDFViewer($("document-reader"));
       const viewer = await viewerPromise;
