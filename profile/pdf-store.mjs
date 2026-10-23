@@ -45,6 +45,6 @@ export function createAssetStore(name) {
   };
 }
 const store=createAssetStore('marmullaku-profile-attachments');
-export const putPreviewAsset=file=>store.put(file);
+export const putPreviewAsset=(file,id)=>store.put(file,id);
 export const getPDF=id=>store.get(id);
 export const deletePDF=id=>store.remove(id);

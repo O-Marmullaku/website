@@ -16,17 +16,17 @@ if (window===parent) {
   const styles=[...template.head.querySelectorAll('link[rel~="stylesheet"]')].map(link=>loadStyle(document.importNode(link,true)));
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
-  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=pdf-reader-4';styles.push(loadStyle(style));
+  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=pdf-reader-6';styles.push(loadStyle(style));
   const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=cleanup';styles.push(loadStyle(paperStyle));
   await Promise.all(styles);
   if(parent.MARMULLAKU_MOCKUP) {
     await (await import('../mockup/preview-session.mjs?v=cleanup')).bootstrapPreview({ownerID:new URLSearchParams(location.search).get('id')||'osman'});
   } else if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&parent.MARMULLAKU_LOCAL_PREVIEW) {
-    await (await import('./local-preview.mjs?v=cleanup')).bootstrapLocal(new URLSearchParams(location.search).get('id')||'osman');
+    await (await import('./local-preview.mjs?v=local-cv-3')).bootstrapLocal(new URLSearchParams(location.search).get('id')||'osman');
   } else {
   for(const path of ['../main/backend-config.js','../main/access-api.js?v=accounts-2','../admin/session.js?v=cleanup'])await new Promise((resolve,reject)=>{
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
   }
-  await import('../profile/editor.js?v=pdf-reader-4');
+  await import('../profile/editor.js?v=pdf-reader-6');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

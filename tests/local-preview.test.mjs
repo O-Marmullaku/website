@@ -11,7 +11,8 @@ test('local editing rejects public and lookalike hostnames',async()=>{
   try{await assert.rejects(bootstrapLocal(),/only available on localhost/);}finally{globalThis.location=old;}
 });
 test('each local profile can edit its own isolated draft and retain it after reload',async()=>{
-  const previous={location:globalThis.location,localStorage:globalThis.localStorage,window:globalThis.window};
+  const previous={location:globalThis.location,localStorage:globalThis.localStorage,window:globalThis.window,fetch:globalThis.fetch};
+  globalThis.fetch=async()=>({ok:false});
   const saved=new Map();globalThis.location={hostname:'localhost'};globalThis.localStorage={getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value)};globalThis.window={};
   try {
     for(const id of ['osman','diellza','drilona','drenusha','dredhza','ali']){
@@ -22,6 +23,18 @@ test('each local profile can edit its own isolated draft and retain it after rel
     assert.deepEqual([...saved.keys()],['marmullaku-local-profiles-v1']);
     assert.equal((await (await bootstrapLocal()).request('directory')).profiles.length,6);
   } finally {Object.assign(globalThis,previous);}
+});
+
+test('normal localhost imports empty CVs and preserves edited drafts',async()=>{
+ const previous={location:globalThis.location,localStorage:globalThis.localStorage,window:globalThis.window,fetch:globalThis.fetch};
+ const saved=new Map();Object.assign(globalThis,{location:{hostname:'localhost'},window:{},localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value)},fetch:async()=>({ok:true,json:async()=>[{profile:{id:'osman',display_name:'Osman Marmullaku',role:'Developer',cv:{profile:'Imported biography',contact:[],skills:[],languages:[],certs:[],interests:'',education:[],experience:[]}},files:[]}]})});
+ try{
+  const api=await bootstrapLocal();let profile=(await api.request('read-profile')).profile;
+  assert.equal(profile.cv.profile,'Imported biography');
+  await api.request('save',{cv:{...profile.cv,profile:'My edited biography'},role:'My role',updated_at:profile.updated_at});
+  profile=(await (await bootstrapLocal()).request('read-profile')).profile;
+  assert.equal(profile.cv.profile,'My edited biography');assert.equal(profile.role,'My role');
+ }finally{Object.assign(globalThis,previous);}
 });
 
 test('public pages and invitation links load account services rather than local editing',async()=>{
