@@ -59,7 +59,7 @@ try{
   let frame=page.frameLocator('.profile-window iframe');
   assert.equal(await frame.locator('#resume-name').textContent(),'Osman Marmullaku');
   assert.equal(await frame.locator('.cv-extras-tool').textContent(),'Links & documents');
-  assert(await frame.locator('.resume-toolbar').evaluate(el=>{const toolbar=el.getBoundingClientRect(),paper=document.querySelector('.paper').getBoundingClientRect();return toolbar.bottom<=paper.top&&Math.abs(toolbar.left-paper.left)<2&&Math.abs(toolbar.right-paper.right)<2;}),'CV actions sit above and align with the paper');
+  assert(await frame.locator('.resume-toolbar').evaluate(el=>{const box=el.getBoundingClientRect();return getComputedStyle(el).position==='fixed'&&box.top>=0&&box.right<=innerWidth;}),'CV actions float in the screen corner, independently of the paper');
   assert.equal(await frame.locator('.cv-cell-title .cv-row-text').filter({hasText:unsafeTitle}).count(),1);
   assert.equal(await frame.locator('img[src="x"]').count(),0,'profile text must never become executable markup');
   await frame.getByRole('button',{name:'View Crazy Entertainment projects',exact:true}).click();
@@ -119,6 +119,7 @@ try{
   const pdfTrigger=frame.locator('.paper').getByRole('button',{name:'Open first.pdf',exact:true});
   await pdfTrigger.scrollIntoViewIfNeeded();
   const resumeScroll=await frame.locator('#resume').evaluate(el=>el.scrollTop);
+  const paperLeft=await frame.locator('.paper').first().evaluate(el=>el.getBoundingClientRect().left);
   await pdfTrigger.click();
   await frame.locator('#document-reader .document-pages canvas').waitFor({state:'visible'});
   await page.waitForFunction(()=>document.querySelector('iframe').contentDocument.querySelector('#document-text').textContent.includes('Synthetic supporting document'));
@@ -127,22 +128,30 @@ try{
   assert.equal(await reader.locator('.document-pages').evaluate(el=>el.scrollTop),0,'opening starts at the top even when toolbar resize cancels the first render');
   await reader.evaluate(async el=>{await Promise.allSettled(el.getAnimations().map(animation=>animation.finished));});
   assert(await reader.evaluate(el=>{const box=el.getBoundingClientRect();return box.top===0&&box.right===innerWidth&&box.height===innerHeight&&(innerWidth<=680?box.width===innerWidth:box.left>0&&box.width<innerWidth);}),'the PDF sidebar uses the full height and fills phone screens');
-  if(width>680)assert(await reader.evaluate(el=>[...document.querySelectorAll('.cv-extras-tool,.cv-download,[data-close="resume"]')].filter(button=>!button.hidden).every(button=>{const box=button.getBoundingClientRect();return box.height>0&&box.right+8<=el.getBoundingClientRect().left&&button.contains(document.elementFromPoint(box.x+box.width/2,box.y+box.height/2));})),'CV actions stay clickable in the CV column beside the PDF');
+  assert.equal(await frame.locator('.paper').first().evaluate(el=>el.getBoundingClientRect().left),paperLeft,'opening a PDF never shifts the CV sideways');
+  assert(await frame.locator('.resume-toolbar').evaluate(el=>el.inert&&getComputedStyle(el).visibility==='hidden'),'CV actions step behind the document while it is open');
   assert.equal(await reader.getByRole('link',{name:'Download PDF',exact:true}).isVisible(),true);
   assert.notEqual(await reader.getAttribute('aria-modal'),'true');
-  assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),null,'PDF pages use real zoom, not the image magnifier');
+  assert.equal(await canvas.getAttribute('role'),'img');assert.equal(await canvas.getAttribute('tabindex'),'0','the click magnifier is keyboard accessible');
   assert(await canvas.evaluate(el=>el.width>=el.getBoundingClientRect().width*2),'small print renders at least two bitmap pixels per displayed pixel');
+  await canvas.hover();
+  await page.waitForTimeout(100);
+  assert.equal(await reader.locator('.pdf-hover-lens:popover-open').count(),0,'hovering alone never enables magnification');
   await canvas.click();
   assert.equal(await frame.locator('.image-magnifier.is-visible').count(),0,'clicking the PDF cannot open the blurry image lens');
-  await canvas.hover();
   const lens=reader.locator('.pdf-hover-lens:popover-open');await lens.waitFor({state:'visible'});
   assert(await lens.evaluate(el=>{const page=document.querySelector('#document-reader .document-pages canvas').getBoundingClientRect(),box=el.getBoundingClientRect();return Math.abs(box.x+box.width/2-page.x-page.width/2)<3;}),'the lens stays centered on the cursor instead of flipping sideways');
-  assert(await lens.evaluate(el=>el.getAnimations().some(animation=>animation.effect.getKeyframes().at(-1).opacity==='1'&&animation.effect.getTiming().duration>=200)),'hovering fades the lens in');
-  assert(await lens.evaluate(el=>el.width>=el.clientWidth*2&&el.height>=el.clientHeight*2),'hover detail is rendered directly at high resolution');
+  assert(await lens.evaluate(el=>el.getAnimations().some(animation=>animation.effect.getKeyframes().at(-1).opacity==='1'&&animation.effect.getTiming().duration>=200)),'clicking fades the lens in');
+  assert(await lens.evaluate(el=>el.width>=el.clientWidth*2&&el.height>=el.clientHeight*2),'magnified detail is rendered directly at high resolution');
   assert(await lens.evaluate(el=>el.clientWidth>el.clientHeight&&el.getBoundingClientRect().left>=0&&el.getBoundingClientRect().right<=innerWidth),'the wider reading lens stays inside the viewport');
   assert(await lens.evaluate(el=>el.getBoundingClientRect().top>=document.querySelector('#document-reader>header').getBoundingClientRect().bottom),'the reading lens cannot obscure the document controls');
   assert(await pdfFrame.evaluate(()=>{document.querySelector('#document-reader .document-pages canvas').dispatchEvent(new PointerEvent('pointerleave'));return document.querySelector('.pdf-hover-lens').getAnimations().some(animation=>animation.effect.getKeyframes().at(-1).opacity==='0'&&animation.effect.getTiming().duration>=180);}),'leaving the page fades out before hiding the lens');
   await reader.getByRole('button',{name:'Zoom in',exact:true}).hover();await lens.waitFor({state:'hidden'});
+  await canvas.press('Enter');await lens.waitFor({state:'visible'});
+  await canvas.press('Escape');await lens.waitFor({state:'hidden'});
+  assert.equal(await reader.isVisible(),true,'Escape dismisses an active lens before closing the PDF');
+  await canvas.click();await lens.waitFor({state:'visible'});
+  await canvas.click();await lens.waitFor({state:'hidden'});
   assert.equal(await reader.locator('select').count(),0,'zoom has direct controls instead of a percentage dropdown');
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'the page count and navigation remain discoverable for every PDF');
   assert.equal(await reader.locator('#document-page').textContent(),'1 / 1');
@@ -167,7 +176,7 @@ try{
    await reader.locator('#document-fit').press('Tab');
    assert(await reader.evaluate(el=>el.contains(document.activeElement)),'Tab remains inside the maximized reader');
    await reader.locator('#document-zoom-out').press('Shift+Tab');
-   assert(await reader.locator('#close-document').evaluate(el=>el===document.activeElement),'Shift+Tab wraps back to the last PDF control');
+   assert(await canvas.evaluate(el=>el===document.activeElement),'Shift+Tab wraps back to the keyboard-accessible PDF page');
    await reader.getByRole('button',{name:'Restore PDF size',exact:true}).click();
    await pdfFrame.waitForFunction(width=>Math.abs(document.querySelector('#document-reader').getBoundingClientRect().width-width)<1,sideWidth);
    await reader.getByRole('button',{name:'Maximize PDF',exact:true}).click();
@@ -183,9 +192,6 @@ try{
   assert(Math.abs(await frame.locator('#resume').evaluate(el=>el.scrollTop)-resumeScroll)<2,'closing preserves the CV scroll position');
   await pdfTrigger.click();await canvas.waitFor({state:'visible'});
   await frame.getByRole('button',{name:'Close PDF',exact:true}).click();await reader.waitFor({state:'hidden'});
-  if(width>=1920){
-   await pdfTrigger.click();await canvas.waitFor({state:'visible'});
-  }
   await frame.locator('.paper').getByRole('button',{name:'Open second.pdf',exact:true}).click();
   await pdfFrame.waitForFunction(()=>document.querySelector('#document-page').textContent==='1 / 2'&&!document.querySelector('#document-reader .document-pages canvas').hidden);
   assert.equal(await reader.locator('.document-pagination').isVisible(),true,'documents with multiple pages retain navigation');

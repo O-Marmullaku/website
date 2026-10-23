@@ -5,7 +5,7 @@ import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-workspace-2';
 import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
 import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
 import { resolveQuote } from "./picture-anchor.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=pdf-workspace-3";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=click-lens-1";
 import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
 
@@ -928,20 +928,10 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       $("pdf-list").append(item);
     }
   }
-  let documentExit,documentEntry,documentScrollTop=0,documentColumnMotion=[];
+  let documentExit,documentEntry,documentScrollTop=0;
   function setDocumentOpen(open){
-    const workspace=document.querySelector('.resume-workspace');
-    if(workspace.classList.contains('document-open')===open)return;
-    // Animate the paper, not its workspace: the fixed PDF is a sibling of the paper stack.
-    const elements=[workspace.querySelector('.cv-paper-stack'),document.querySelector('.resume-toolbar')].filter(Boolean);
-    const starts=elements.map(element=>element.getBoundingClientRect().left);
-    documentColumnMotion.forEach(animation=>animation.cancel());
-    workspace.classList.toggle('document-open',open);
-    documentColumnMotion=elements.map((element,index)=>{
-      const offset=starts[index]-element.getBoundingClientRect().left;
-      const animation=element.animate([{translate:`${offset}px 0`},{translate:'0px 0'}],{duration:400,easing:'cubic-bezier(.22,1,.36,1)'});
-      animation.finished.catch(()=>{});return animation;
-    });
+    document.querySelector('.resume-workspace').classList.toggle('document-open',open);
+    document.querySelector('.resume-toolbar').inert=open;
   }
   function setDocumentMaximized(maximized){
     const reader=$('document-reader'),button=$('document-maximize');
@@ -952,12 +942,12 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     reader.setAttribute('role',maximized?'dialog':'complementary');
     if(maximized)reader.setAttribute('aria-modal','true');else reader.removeAttribute('aria-modal');
     for(const sibling of reader.parentElement.children)if(sibling!==reader)sibling.inert=maximized;
-    document.querySelector('.resume-toolbar').inert=maximized;
+    document.querySelector('.resume-toolbar').inert=maximized||!reader.hidden;
   }
   $('document-maximize').addEventListener('click',()=>setDocumentMaximized(!$('document-reader').classList.contains('is-maximized')));
   $('document-reader').addEventListener('keydown',event=>{
     if(event.key!=='Tab'||!event.currentTarget.classList.contains('is-maximized'))return;
-    const controls=[...event.currentTarget.querySelectorAll('button:not(:disabled),a[href]')].filter(control=>control.getClientRects().length);
+    const controls=[...event.currentTarget.querySelectorAll('button:not(:disabled),a[href],[tabindex="0"]')].filter(control=>control.getClientRects().length);
     const first=controls[0],last=controls.at(-1);
     if(event.shiftKey&&event.target===first||!event.shiftKey&&event.target===last){
       event.preventDefault();

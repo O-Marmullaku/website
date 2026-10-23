@@ -19,9 +19,9 @@ export async function createPDFViewer(root) {
   const status = root.querySelector("#document-status");
   const download = root.querySelector("#document-download");
   const lens=document.createElement('canvas');lens.className='pdf-hover-lens';lens.setAttribute('popover','manual');lens.setAttribute('aria-hidden','true');root.append(lens);
-  let hover=null,lensPage=null,lensTask=null,lensRevision=0,lensMotion=null,lensVisible=false;
+  let lensEnabled=false,hover=null,lensPage=null,lensTask=null,lensRevision=0,lensMotion=null,lensVisible=false;
   function dismissLens(){
-    hover=null;lensRevision++;lensTask?.cancel();
+    lensEnabled=false;hover=null;lensRevision++;lensTask?.cancel();
     if(!lensVisible)return;
     lensVisible=false;
     const opacity=getComputedStyle(lens).opacity;lensMotion?.cancel();
@@ -49,19 +49,33 @@ export async function createPDFViewer(root) {
     }catch(error){if(error.name!=='RenderingCancelledException')dismissLens();}
     finally{if(lensTask===task)lensTask=null;if(hover&&hover!==point)paintLens();}
   }
-  canvas.addEventListener('pointermove',event=>{
-    if(event.pointerType==='touch'||!lensPage)return;
+  function positionLens(event){
+    if(!lensEnabled||!lensPage)return;
     const box=canvas.getBoundingClientRect();hover={x:event.clientX-box.left,y:event.clientY-box.top};
     const width=Math.min(360,innerWidth-16),height=Math.min(260,innerHeight-16);
     lens.style.left=`${Math.max(8,Math.min(innerWidth-width-8,event.clientX-width/2))}px`;
     const toolbarBottom=root.querySelector('header').getBoundingClientRect().bottom;
     lens.style.top=`${Math.max(toolbarBottom+8,Math.min(innerHeight-height-8,event.clientY-height/2))}px`;
     paintLens();
+  }
+  function toggleLens(event){
+    if(lensEnabled){dismissLens();return;}
+    lensEnabled=true;positionLens(event);
+  }
+  canvas.tabIndex=0;
+  canvas.title='Click to magnify';
+  canvas.setAttribute('aria-description','Click or press Enter to magnify. Click again or press Escape to dismiss.');
+  canvas.addEventListener('click',toggleLens);
+  canvas.addEventListener('pointermove',positionLens);
+  canvas.addEventListener('keydown',event=>{
+    if(event.key!=='Enter'&&event.key!==' ')return;
+    event.preventDefault();
+    const box=canvas.getBoundingClientRect();toggleLens({clientX:box.x+box.width/2,clientY:box.y+box.height/2});
   });
-  canvas.addEventListener('pointerleave',dismissLens);
+  canvas.addEventListener('pointerleave',event=>{if(event.pointerType!=='touch')dismissLens();});
   viewport.addEventListener('scroll',dismissLens);
   window.addEventListener('resize',dismissLens);
-  root.addEventListener('keydown',event=>{if(event.key==='Escape')dismissLens();});
+  root.addEventListener('keydown',event=>{if(event.key==='Escape'&&lensEnabled){event.preventDefault();event.stopPropagation();dismissLens();}});
   let loading,
     pdf,
     rendering,

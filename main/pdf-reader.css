@@ -7,6 +7,7 @@
 #document-reader .pdf-hover-lens{position:fixed;inset:auto;margin:0;padding:0;width:min(360px,calc(100vw - 16px));height:min(260px,calc(100dvh - 16px));max-width:none;max-height:none;border:1px solid #d6dce4;border-radius:6px;background:white;box-shadow:0 8px 24px -8px #0006;pointer-events:none}
 #document-reader .pdf-hover-lens:not(:popover-open){display:none}
 #document-reader .document-pages>canvas{cursor:zoom-in}
+#document-reader .document-pages>canvas:focus-visible{outline:2px solid #86c1ff;outline-offset:3px}
 #document-reader>header{display:flex;align-items:center;flex:none;gap:8px;margin:12px 16px 0;padding:4px;border:0;border-radius:8px;background:#0f1a29ee}
 #document-reader h2{flex:1;margin:0 4px;min-width:40px;font-size:13px;font-weight:500;line-height:1.4;color:#f1f5fa;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #document-reader .document-actions{display:flex;align-items:center;flex:none;gap:0}
