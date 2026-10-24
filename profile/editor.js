@@ -10,7 +10,7 @@ import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
 import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
 
 (async () => {
-  const adapter = await (await import('../main/profile-adapter.mjs?v=cleanup')).createLiveAdapter();
+  const adapter = await (await import('../main/profile-adapter.mjs?v=parallel-media-1')).createLiveAdapter();
   const $ = (id) => document.getElementById(id);
   setupDocumentHints($('resume'));
   let experienceProjects;
@@ -1107,9 +1107,6 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     addEventListener('beforeunload',event=>{if(adapter.dirty||pendingUploads.size){event.preventDefault();event.returnValue='';}});
     if(new URLSearchParams(location.search).get('view')==='settings'&&adapter.editable) $('settings-panel').showModal();
     else openResume(['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);
-    let fontTimeout;
-    await Promise.race([document.fonts.ready,new Promise(resolve=>{fontTimeout=setTimeout(resolve,3000);})]);
-    clearTimeout(fontTimeout);
     await portrait.decode().catch(()=>{});
     pagination=setupCVPagination(document.querySelector('.paper'));
     document.fonts.addEventListener('loadingdone',pagination.schedule);

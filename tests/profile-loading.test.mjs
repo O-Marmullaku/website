@@ -22,10 +22,11 @@ function fixture(){
   const window={siblingSession:{active:false},MARMULLAKU_LOCAL_PREVIEW:true,requestPrivateCV(){}};
   const document={baseURI:origin+'/',activeElement:element(),body:{append(){}},querySelector:()=>element(),dispatchEvent:event=>updates.push(event),createElement:()=>{const item=element();elements.push(item);return item;}};
   let entered=0,exited=0;
-  const source=readFileSync(new URL('../main/profile-bridge.js',import.meta.url),'utf8').split('\n').slice(2).join('\n');
+  const source=readFileSync(new URL('../main/profile-bridge.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('await window.marmullakuServicesReady;','');
   vm.runInNewContext(source,{
     window,document,location:{href:origin+'/',origin,hash:''},URL,URLSearchParams,CustomEvent,
     createProfileMotion:()=>({enter(){entered++;},reset(){},exit:async()=>{exited++;}}),
+    setupProfilePreload(){},
     addEventListener:(name,fn)=>events[name]=fn,setTimeout:()=>1,clearTimeout(){},
   });
   const send=(frame,type,data={})=>events.message({origin,source:frame.contentWindow,data:{type,...data}});

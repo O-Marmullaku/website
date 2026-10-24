@@ -64,7 +64,7 @@ test('mockup starts from the actual homepage without loading production account 
   const loader=readFileSync(new URL('../main/profile-loader.mjs',import.meta.url),'utf8');
   assert(!loader.includes('../mockup/index.html'));assert(!loader.includes('../mockup/profile.js'));
   assert(loader.includes('parent.MARMULLAKU_MOCKUP'));
-  assert(loader.includes("fetch('../profile/editor.html'"));
+  assert.match(loader,/fetch\('\.\.\/profile\/editor\.html(?:\?[^']*)?'/);
   assert(loader.includes("import('../profile/editor.js"));
 });
 

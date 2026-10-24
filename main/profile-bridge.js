@@ -1,4 +1,6 @@
 import {createProfileMotion} from '../main/profile-motion.mjs?v=frame-recovery-1';
+import {setupProfilePreload} from '../main/profile-preload.mjs?v=fast-open-1';
+setupProfilePreload(document);
 await window.marmullakuServicesReady;
 (() => {
   const session=window.siblingSession,identity=document.querySelector('.footer-identity');

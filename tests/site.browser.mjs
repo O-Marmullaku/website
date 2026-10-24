@@ -28,10 +28,16 @@ function samplePDF(pageCount=1){
 try{
  for(const [path,width] of [['/',1920],['/mockup/',1920],['/',1280],['/',390],['/mockup/',390]]){
   if(process.env.TEST_WIDTH&&width!==Number(process.env.TEST_WIDTH))continue;
-  const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[],external=[];
+  const context=await browser.newContext({viewport:{width,height:1000}}),page=await context.newPage(),errors=[],external=[],failedRequests=[];
   try{
   page.on('pageerror',error=>errors.push(error.message));
+  page.on('requestfailed',request=>failedRequests.push({path:new URL(request.url()).pathname,error:request.failure()?.errorText}));
   await context.addInitScript(seed=>{
+   window.testCVRequests=[];let session;
+   Object.defineProperty(window,'siblingSession',{configurable:true,get:()=>session,set(value){
+    session=value;const request=value.request;
+    value.request=function(action,...args){window.testCVRequests.push(action);return request.call(this,action,...args);};
+   }});
    if(window!==top||localStorage.getItem('site-test-seeded'))return;
    for(const key of ['marmullaku-local-profiles-v1','marmullaku-site-preview-v1'])localStorage.setItem(key,JSON.stringify(seed));
    localStorage.setItem('marmullaku-site-preview-live-sync-v1','true');localStorage.setItem('site-test-seeded','true');localStorage.setItem('lang','en');
@@ -43,11 +49,15 @@ try{
    if(!['fonts.googleapis.com','fonts.gstatic.com'].includes(url.hostname))external.push(url.href);
    return route.abort();
   });
-  let releaseStyle,styleReleased=false,earlyEditor=false;
-  const styleGate=new Promise(resolve=>{releaseStyle=()=>{styleReleased=true;resolve();};});
+  let releaseStyle;
+  const styleGate=new Promise(resolve=>{releaseStyle=resolve;});
   await page.route('**/profile/editor.css*',async route=>{await styleGate;await route.continue();});
-  page.on('request',request=>{if(new URL(request.url()).pathname==='/profile/editor.js'&&!styleReleased)earlyEditor=true;});
+  if(path==='/'&&width===1280)await page.route('**/profile/editor.js*',route=>route.request().frame()===page.mainFrame()?route.abort():route.continue());
   await page.goto(base+path);
+  await page.getByRole('button',{name:'Osman Marmullaku',exact:true}).hover();
+  await page.locator('link[rel="modulepreload"][href*="profile/editor.js"]').waitFor({state:'attached'});
+  assert.equal(await page.locator('.profile-window iframe').count(),0,'preloading never opens an editor');
+  assert.equal(await page.evaluate(()=>window.testCVRequests.some(action=>['read','read-profile','asset'].includes(action))),false,'hover warms public files without reading private CV data');
   for(const [language,label] of [['DE','Lebenslauf ansehen'],['FR','Voir le CV'],['ไทย','ดูประวัติ'],['中文','查看简历'],['EN','View résumé']]){
    await page.getByRole('button',{name:language,exact:true}).click();
    assert.equal(await page.locator('.cta [data-i18n="view"]').first().textContent(),label);
@@ -62,9 +72,11 @@ try{
    await page.unroute(failedFrame);
   }
   await page.getByRole('button',{name:'Osman Marmullaku',exact:true}).click();
-  await page.waitForTimeout(150);releaseStyle();
+  await page.locator('.profile-window iframe').waitFor({state:'attached'});
+  await page.waitForTimeout(150);
+  assert.equal(await page.evaluate(()=>document.querySelector('iframe').contentWindow.testCVRequests?.includes('read-profile')||false),false,'the editor must wait for required styles before reading its CV');
+  releaseStyle();
   await page.locator('.profile-window[data-motion="open"]').waitFor({state:'visible'});
-  assert.equal(earlyEditor,false,'the editor must wait for its required stylesheets');
   let frame=page.frameLocator('.profile-window iframe');
   assert.equal(await frame.locator('#resume-name').textContent(),'Osman Marmullaku');
   assert.equal(await frame.locator('.cv-extras-tool').textContent(),'Links & documents');
@@ -248,7 +260,7 @@ try{
   assert.deepEqual(errors,[]);assert.deepEqual(external,[],'sample flows never contact the real backend');
   console.log(`PASS ${path} ${width}: stylesheet readiness, safe text, editing, role sync, upload race, PDF persistence and all profiles`);
   }catch(error){
-   console.error(JSON.stringify({path,width,errors,frames:await Promise.all(page.frames().map(async frame=>({url:frame.url(),body:await frame.locator('body').innerText({timeout:1000}).catch(()=>''),portrait:await frame.evaluate(()=>{const el=document.querySelector('.cv-portrait');return el?{complete:el.complete,width:el.naturalWidth}:null;}).catch(()=>null)})))}));
+   console.error(JSON.stringify({path,width,errors,failedRequests,frames:await Promise.all(page.frames().map(async frame=>({url:frame.url(),body:await frame.locator('body').innerText({timeout:1000}).catch(()=>''),portrait:await frame.evaluate(()=>{const el=document.querySelector('.cv-portrait');return el?{complete:el.complete,width:el.naturalWidth}:null;}).catch(()=>null)})))}));
    await page.screenshot({path:'work/site-browser-failure.png'});throw error;
   }finally{await context.close();}
  }

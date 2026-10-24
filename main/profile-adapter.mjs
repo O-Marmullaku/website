@@ -43,10 +43,12 @@ export async function createLiveAdapter() {
   const getFile=id=>request('asset',{id},{binary:true});
   async function hydrate(id) {const value=await dataURL(await getFile(id));assetIDs.set(value,id);return value;}
   if (profile.cv.editor) {
+    const ids=[...new Set([...Object.values(profile.cv.editor.rows).flat().map(row=>row.logo_id),profile.cv.editor.picture_id].filter(Boolean))],images=new Map();
+    for(let i=0;i<ids.length;i+=4)await Promise.all(ids.slice(i,i+4).map(async id=>images.set(id,await hydrate(id))));
     for (const [field,rows] of Object.entries(profile.cv.editor.rows)) {
-      for (const [index,row] of rows.entries()) if(row.logo_id) state.cvRows[field][index].logo=await hydrate(row.logo_id);
+      for (const [index,row] of rows.entries()) if(row.logo_id) state.cvRows[field][index].logo=images.get(row.logo_id);
     }
-    if (profile.cv.editor.picture_id) state.picture=await hydrate(profile.cv.editor.picture_id);
+    if (profile.cv.editor.picture_id) state.picture=images.get(profile.cv.editor.picture_id);
   }
   async function upload(file) {const value=await dataURL(file);return request('upload',{name:file.name,mime:file.type,base64:value.split(',')[1]});}
   async function imageID(value) {

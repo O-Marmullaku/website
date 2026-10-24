@@ -4,7 +4,7 @@ if (window===parent) {
   if(params.get('view')==='settings'){destination.searchParams.set('settings','1');destination.searchParams.set('sign-in','1');}
   location.replace(destination);
 } else try {
-  const response=await fetch('../profile/editor.html',{cache:'no-store'});
+  const response=await fetch('../profile/editor.html?v=fast-open-1');
   if(!response.ok)throw new Error('Could not load the CV. Please try again.');
   const template=new DOMParser().parseFromString(await response.text(),'text/html');
   const loadStyle=link=>new Promise((resolve,reject)=>{
@@ -13,7 +13,10 @@ if (window===parent) {
     const timer=setTimeout(()=>finish(true),required?10000:3000);
     link.onload=()=>finish(false);link.onerror=()=>finish(true);document.head.append(link);
   });
-  const styles=[...template.head.querySelectorAll('link[rel~="stylesheet"]')].map(link=>loadStyle(document.importNode(link,true)));
+  const styles=[...template.head.querySelectorAll('link[rel~="stylesheet"]')].map(link=>{
+    const loading=loadStyle(document.importNode(link,true));
+    return new URL(link.href,location.href).origin===location.origin?loading:Promise.resolve();
+  });
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
   const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=reader-toolbar-1';styles.push(loadStyle(style));
@@ -28,5 +31,5 @@ if (window===parent) {
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
   }
-  await import('../profile/editor.js?v=mobile-uat-2');
+  await import('../profile/editor.js?v=fast-open-1');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

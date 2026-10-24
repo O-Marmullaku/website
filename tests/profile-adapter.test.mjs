@@ -1,6 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fromProfile,toCV} from '../main/profile-adapter.mjs';
+import {fromProfile,toCV,createLiveAdapter} from '../main/profile-adapter.mjs';
+
+test('media loads in bounded parallel batches and repeated IDs reuse one authorized request',async t=>{
+ const previous={location:globalThis.location,window:globalThis.window,FileReader:globalThis.FileReader},pending=[],calls=[];
+ t.after(()=>Object.assign(globalThis,previous));
+ const rows={experience:Array.from({length:6},(_,i)=>({id:crypto.randomUUID(),title:'Example',logo_id:'image'+i}))};
+ rows.experience.push({id:crypto.randomUUID(),title:'Same logo',logo_id:'image0'});
+ const profile={id:'osman',display_name:'Test',role:'',cv:{profile:'',editor:{rows,data:{},picture_id:'image0'}}};
+ globalThis.location={search:'?id=osman',hash:''};
+ globalThis.FileReader=class{readAsDataURL(file){this.result='data:image/png;base64,'+file.id;queueMicrotask(()=>this.onload());}};
+ globalThis.window={siblingSession:{async request(action,data){if(action==='read-profile')return {profile,editable:true};assert.equal(action,'asset');calls.push(data.id);return new Promise(resolve=>pending.push(()=>resolve({id:data.id})));}}};
+ const loading=createLiveAdapter();await new Promise(setImmediate);
+ assert.equal(calls.length,4,'four independent requests start without waiting for each other');
+ pending.splice(0).forEach(release=>release());await new Promise(setImmediate);
+ assert.equal(calls.length,6);pending.splice(0).forEach(release=>release());
+ const adapter=await loading;
+ assert.equal(new Set(calls).size,6);
+ assert.equal(adapter.state.cvRows.experience[6].logo,adapter.state.cvRows.experience[0].logo);
+ assert.equal(adapter.state.picture,adapter.state.cvRows.experience[0].logo);
+ const saved=toCV(adapter.state,new Map([[adapter.state.picture,'image0']]));
+ assert.equal(saved.editor.rows.experience[0].logo_id,'image0','loaded media retains its saved identity');
+});
 test('real CV conversion preserves contact links, ratings, dates and reference text',()=>{
   const cv={contact:[['Email','mailto:sample@example.invalid']],skills:[['Design',65]],languages:[['German','Native']],profile:'About',experience:[{when:'2024',title:'Role',org:'Company',points:['First','Second']}],education:[{when:'2023',title:'Degree',org:'School'}],certs:[{when:'2022',title:'Certificate',org:'Issuer'}],interests:'Music\nArt'};
   const state=fromProfile({id:'osman',display_name:'Owner',role:'Title',cv}),saved=toCV(state,new Map());
