@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 const origin='http://localhost:8000';
 const tick=()=>new Promise(setImmediate);
 function fixture(){
-  const events={},elements=[],closeEvents=[],updates=[];
+  const events={},elements=[],closeEvents=[],updates=[],signIns=[];
   function element(){
     const classes=new Set(),handlers={};
     return {
@@ -19,7 +19,7 @@ function fixture(){
       close(){this.open=false;closeEvents.push(()=>this.fire('close'));},
     };
   }
-  const window={siblingSession:{active:false},MARMULLAKU_LOCAL_PREVIEW:true,requestPrivateCV(){}};
+  const window={siblingSession:{active:false},MARMULLAKU_LOCAL_PREVIEW:true,requestPrivateCV(){},showSignIn:id=>signIns.push(id)};
   const document={baseURI:origin+'/',activeElement:element(),body:{append(){}},querySelector:()=>element(),dispatchEvent:event=>updates.push(event),createElement:()=>{const item=element();elements.push(item);return item;}};
   let entered=0,exited=0;
   const source=readFileSync(new URL('../main/profile-bridge.js',import.meta.url),'utf8').replace(/^import .*;\r?\n/gm,'').replace('await window.marmullakuServicesReady;','');
@@ -30,7 +30,7 @@ function fixture(){
     addEventListener:(name,fn)=>events[name]=fn,setTimeout:()=>1,clearTimeout(){},
   });
   const send=(frame,type,data={})=>events.message({origin,source:frame.contentWindow,data:{type,...data}});
-  return {window,elements,closeEvents,updates,send,panel:elements[0],get entered(){return entered;},get exited(){return exited;}};
+  return {window,elements,closeEvents,updates,signIns,send,signedIn:()=>events['marmullaku-signed-in'](),panel:elements[0],get entered(){return entered;},get exited(){return exited;}};
 }
 
 test('preparing a profile leaves the homepage visible and ignores stale frames',async()=>{
@@ -92,4 +92,11 @@ test('saving publishes the public role update used by language switching',async(
   const f=fixture();await f.window.openPrivateCV(null,{id:'osman'});
   f.send(f.elements.at(-1),'marmullaku-saved',{id:'osman',role:'Updated title'});
   assert.equal(f.updates[0].type,'marmullaku-profile-updated');assert.equal(f.updates[0].detail.role,'Updated title');
+});
+
+test('reauthentication keeps the same CV frame and retries its pending draft',async()=>{
+ const f=fixture();await f.window.openPrivateCV(null,{id:'osman'});const frame=f.elements.at(-1);f.send(frame,'marmullaku-ready');
+ let flushes=0;frame.contentWindow.flushProfile=async()=>{flushes++;};
+ f.send(frame,'marmullaku-sign-in-required',{profile_id:'osman'});assert.deepEqual(f.signIns,['osman']);
+ f.signedIn();await tick();assert.equal(flushes,1);assert.equal(frame.removed,undefined);assert.equal(f.panel.open,true);
 });

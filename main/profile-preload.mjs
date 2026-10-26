@@ -2,17 +2,17 @@
 export function setupProfilePreload(document) {
   let warmed=false;
   const resources=[
-    ['modulepreload','profile/editor.js?v=fast-open-1'],
-    ['modulepreload','main/profile-adapter.mjs?v=parallel-media-1'],
-    ['modulepreload','main/live-sharing.mjs?v=sharing-recovery-1'],
-    ['preload','profile/editor.html?v=fast-open-1','fetch'],
-    ['preload','profile/editor.css?v=aligned-logos','style'],
-    ['preload','main/profile-live.css?v=reader-toolbar-1','style'],
-    ['preload','main/cv-paper.css?v=mobile-entries-1','style'],
-    ['preload','main/pdf-reader.css?v=reader-docked-1','style'],
+    ['modulepreload','profile/editor.js?v=revamp-20261026'],
+    ['modulepreload','main/profile-adapter.mjs?v=revamp-20261026'],
+    ['modulepreload','main/live-sharing.mjs?v=revamp-20261026'],
+    ['preload','profile/editor.html?v=revamp-20261026','fetch'],
+    ['preload','profile/editor.css?v=revamp-20261026','style'],
+    ['preload','main/profile-live.css?v=revamp-20261026','style'],
+    ['preload','main/cv-paper.css?v=revamp-20261026','style'],
+    ['preload','main/pdf-reader.css?v=revamp-20261026','style'],
     ['preload','main/backend-config.js','script'],
-    ['preload','main/access-api.js?v=accounts-2','script'],
-    ['preload','admin/session.js?v=cleanup','script'],
+    ['preload','main/access-api.js?v=revamp-20261026','script'],
+    ['preload','admin/session.js?v=revamp-20261026','script'],
   ];
   const warm=event=>{
     if(warmed||document.defaultView?.navigator.connection?.saveData||!event.target.closest?.('.card,.footer-account-name,.footer-settings'))return;

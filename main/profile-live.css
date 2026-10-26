@@ -1,9 +1,9 @@
 html[data-live] body{background:transparent;min-height:100dvh}
-html[data-live] .site-header,html[data-live] #family-home,html[data-live] #company-view,html[data-live] body>footer{display:none!important}
+
 html[data-live] #settings-panel::backdrop{background:transparent;backdrop-filter:none}
 html[data-live] #resume{width:100%;max-width:100%;height:100dvh;max-height:100dvh;margin:0;border:0;background:transparent}
 html[data-live] #resume::backdrop{background:transparent;backdrop-filter:none}
-html[data-live] #resume-mode{display:none}
+
 .mobile-edit-note{display:none}
 @media(max-width:680px){
   #resume:not(.preview-view) .resume-toolbar{flex-wrap:wrap;gap:6px 10px;padding:10px 16px}
@@ -28,9 +28,7 @@ html[data-live] #settings-panel>a.text-button{margin-left:20px}
 @media print{html[data-live] #resume{height:auto;position:static;overflow:visible}html[data-live] .resume-toolbar{display:none}}
 .link-form-actions{display:flex;align-items:center;gap:12px}
 #settings-panel input::placeholder{color:#aebfd3;opacity:1}
-@media(max-width:680px){
-  html[data-live] #resume:has(.document-open)>.resume-toolbar{display:none}
-}
+
 @media(max-width:680px){
   #resume .cv-row{padding-right:52px}
   #resume .cv-cell{min-height:44px;padding-right:46px}
@@ -59,9 +57,7 @@ html[data-live] #resume .resume-toolbar button:focus-visible{outline:2px solid #
 html[data-live] #resume :is(.cv-download,[data-close=resume])::after{content:attr(aria-label);position:absolute;top:calc(100% + 8px);right:0;padding:5px 10px;border-radius:6px;background:#1c3049;color:#eef3fa;font:400 12px/1.4 'Fira Sans',system-ui,sans-serif;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s}
 html[data-live] #resume .resume-toolbar button:is(:hover,:focus-visible)::after{opacity:1}
 @media(max-width:680px){html[data-live] #resume .cv-extras-tool{min-height:44px}}
-html[data-live] #resume .resume-workspace{margin-top:32px}
-html[data-live] #resume .paper{min-height:1128px}
-html[data-live] #resume #extras-rail{position:static;padding-top:0}
+
 html[data-live] #resume .resume-section{position:relative}
 html[data-live] #resume .section-heading,html[data-live] #resume .paper-header .editable{position:relative}
 html[data-live] #resume .section-heading>.edit,html[data-live] #resume .paper-header .edit{position:absolute;right:0;top:50%;transform:translateY(-50%)}
@@ -114,25 +110,24 @@ html[data-live] #resume .paper-foot{flex:none}
 }
 
 /* Center the document independently of everything in its outer margin. */
-html[data-live] #resume .resume-workspace,html[data-live] #resume .resume-workspace.document-open,html[data-live] #resume .resume-workspace:has(#extras-rail[hidden]){position:relative;display:block;width:min(794px,calc(100% - 48px));max-width:794px;margin-inline:auto}
-html[data-live] #resume .document-open .paper{visibility:visible}
-html[data-live] #resume #extras-rail{position:absolute;left:calc(100% + 32px);right:auto;top:0;width:260px;padding:0}
+html[data-live] #resume .resume-workspace{position:relative;display:block;width:min(794px,calc(100% - 48px));max-width:794px;margin-inline:auto}
+
 html[data-live] #resume .extras-empty .pdf-library h3,html[data-live] #resume .extras-empty .pdf-help{display:none}
 html[data-live] #resume.preview-view .extras-empty{display:none}
-html[data-live] #resume .close-extras{display:none}
+
   html[data-live] #resume #extras-rail[popover]{position:fixed;inset:0 0 0 auto;margin:0;width:min(360px,100%);height:100dvh;max-height:100dvh;padding:76px 24px 24px;border:0;border-left:1px solid #344b67;background:#0b1522;color:#eef3fa;overflow:auto;box-shadow:-20px 0 50px -20px #000a;z-index:6;transform:translateX(100%);opacity:0;transition:transform .28s cubic-bezier(.2,.8,.2,1),opacity .28s,display .28s allow-discrete,overlay .28s allow-discrete}
   html[data-live] #resume #extras-rail:popover-open{display:block;transform:none;opacity:1}
   @starting-style{html[data-live] #resume #extras-rail:popover-open{transform:translateX(100%);opacity:0}}
   html[data-live] #resume #extras-rail::backdrop{background:#030b1744}
   html[data-live] #resume .close-extras{position:absolute;display:grid;place-items:center;right:16px;top:16px;width:44px;height:44px;color:#d6e6fa}
   html[data-live] #resume .extras-empty .extras-heading{margin-bottom:20px}
-  html[data-live] #resume .extra-picture{margin-top:0!important}
+
 @media(max-width:680px){
-  html[data-live] #resume .resume-workspace,html[data-live] #resume .resume-workspace.document-open{width:calc(100% - 32px)}
+  html[data-live] #resume .resume-workspace{width:calc(100% - 32px)}
   html[data-live] #resume .mobile-edit-note,html[data-live] #resume .resume-toolbar>#resume-status{max-width:calc(100% - 192px)}
 }
 @media print{
-  html[data-live] #resume .resume-workspace,html[data-live] #resume .resume-workspace.document-open{width:100%;max-width:none;margin:0}
+  html[data-live] #resume .resume-workspace{width:100%;max-width:none;margin:0}
   html[data-live] #resume #extras-rail{display:none!important}
   html[data-live] #resume .paper{display:block;min-height:0;box-shadow:none}
 }
@@ -141,7 +136,6 @@ html[data-live] #resume,html[data-live] #settings-panel{animation:none;scrollbar
 html[data-live] #settings-panel{height:100dvh;overflow:auto}
 html[data-live] #resume .paper{transform-origin:50% 0}
 html[data-live] #resume .cv-view-switch{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:8px;transition:opacity .18s,visibility .18s}
-html[data-live] #resume:has(.document-open) .cv-view-switch{opacity:0;visibility:hidden;pointer-events:none}
 html[data-live] #resume .cv-mode-options,html[data-live] #resume .cv-appearance-toggle{padding:3px;border:1px solid #40546b;border-radius:8px;background:#102034;box-shadow:0 5px 16px -6px #0009}
 html[data-live] #resume .cv-mode-options{display:flex;gap:2px}
 html[data-live] #resume .cv-view-switch button{min-height:36px;padding:0 14px;border:0;border-radius:5px;background:transparent;color:#d4e0ed;font:13px/1.4 'Fira Sans',sans-serif;cursor:pointer;transition:background .18s,color .18s}
@@ -157,6 +151,7 @@ html[data-live] #resume .cv-view-switch button[aria-pressed=true]:hover{backgrou
 }
 
 /* The CV stays centered; its overlay actions step aside for an open PDF. */
+html[data-live] #resume:has(.document-open) .cv-view-switch{opacity:0;visibility:hidden;pointer-events:none}
 html[data-live] #resume:has(.document-open)>.resume-toolbar{opacity:0;visibility:hidden;pointer-events:none}
 html[data-live] #resume .resume-workspace{margin-top:32px}
 @media(max-width:680px){html[data-live] #resume .resume-workspace{margin-top:80px}}
@@ -175,33 +170,15 @@ html[data-live] #resume .resume-workspace{margin-top:32px}
 
 /* Preserve the original CV's composition and its distinct paper typography. */
 html[data-live] #resume .paper{font-family:Arial,Helvetica,sans-serif;color:#080808}
-html[data-live] #resume .cv-page .resume-sections{grid-template-columns:27.5% minmax(0,1fr)}
-html[data-live] #resume .resume-column:first-child{background:#adbacd;border-right:1px solid #7696b5}
-html[data-live] #resume .resume-column:last-child{padding:14px 18px 8px}
-html[data-live] #resume .cv-portrait{width:calc(100% - 18px);margin:22px 9px 26px;aspect-ratio:1.08;background:#f7f7f7;object-fit:contain;object-position:center bottom}
-html[data-live] #resume .resume-column:first-child .section-heading{background:#155c8c;padding:6px 10px;margin-bottom:14px}
-html[data-live] #resume .resume-column:first-child .section-heading h3{font-size:12px;font-weight:400;color:#fff}
-html[data-live] #resume .section-heading h3{font-size:14px;color:#24547b}
-html[data-live] #resume .resume-column:last-child .section-heading{padding:3px 0;border-color:#c8c8c8}
-html[data-live] #resume [data-section=profile] .section-heading{border-top:0}
-html[data-live] #resume [data-section=profile] .section-heading h3{width:100%;font-size:12px;font-weight:400;text-align:center;text-transform:uppercase;text-decoration:underline;color:#080808}
-html[data-live] #resume .section-copy{font-size:12px;line-height:1.4;color:#080808}
-html[data-live] #resume .cv-row-text{font-size:12px;color:#080808;min-height:0}
-html[data-live] #resume .cv-cell-date .cv-row-text{font-size:11px;font-style:italic}
-html[data-live] #resume .cv-contact-label{display:block;margin-bottom:4px;font-size:12px}
+
+html[data-live] #resume [data-section=profile] .section-heading h3{width:100%}
+
 html[data-live] #resume .cv-cell a.cv-row-text{text-decoration:none}
 html[data-live] #resume .cv-cell a.cv-row-text:hover{text-decoration:underline}
-html[data-live] #resume .cv-row-language .cv-cell-title{display:flex;align-items:baseline;flex-wrap:wrap;gap:0 3px}
-html[data-live] #resume .cv-language-description{display:inline;font-size:12px;color:#080808}
-html[data-live] #resume .cv-language-dots{gap:4px;margin-top:10px}
-html[data-live] #resume .cv-language-dots i{width:13px;height:13px;background:#d5d5d5}
+html[data-live] #resume .cv-row-language .cv-cell-title{align-items:baseline;flex-wrap:wrap}
+
 html[data-live] #resume .cv-language-dots i.filled{background:#080808}
 html[data-live] #resume .cv-row-language:hover .cv-language-level{opacity:1}
-html[data-live] #resume .paper-foot{margin-left:calc(27.5% + 18px);margin-right:18px}
-@media(max-width:680px){
- html[data-live] #resume .cv-portrait{width:140px;margin:18px auto}
- html[data-live] #resume .cv-row-text,html[data-live] #resume .section-copy,html[data-live] #resume .cv-language-description{font-size:14px}
-}
 
 /* Actual sheets, with live content flowing at entry boundaries. */
 html[data-live] #resume .cv-paper-stack{display:grid;gap:24px;transform-origin:50% 0}
@@ -209,7 +186,7 @@ html[data-live] #resume .cv-page{height:var(--cv-page-height);min-height:0;paddi
 html[data-live] #resume .cv-page .resume-sections{min-height:0;flex:1}
 html[data-live] #resume .cv-page .paper-foot{display:flex;justify-content:space-between;min-height:40px;padding:12px 0;color:#617082;font-size:11px}
 html[data-live] #resume .cv-running-head{padding:18px 24px 12px;color:#425d77;font-size:13px;min-height:48px}
-html[data-live] #resume #extras-rail{transition:opacity .22s ease}
+
 html[data-live] #resume .extras-heading{gap:10px;margin-bottom:20px}
 html[data-live] #resume .extras-heading h2{font-size:14px;font-weight:500}
 html[data-live] #resume .extra-block{padding:0 0 16px;margin-bottom:20px;border-bottom:1px solid #3d536755}

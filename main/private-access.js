@@ -1,8 +1,10 @@
 (() => {
   const dialog = document.querySelector('#access-dialog'), title = document.querySelector('#access-title'), detail = document.querySelector('#access-detail'), button = document.querySelector('#access-continue'), error = document.querySelector('#access-error');
-  let token;
+  let token,welcome;
   function updateToken() {
-    token = location.hash.match(/^#invite=([A-Za-z0-9_-]{43})$/)?.[1];
+    const next=location.hash.match(/^#invite=([A-Za-z0-9_-]{43})$/)?.[1];
+    if(next!==token)welcome=null;
+    token=next;
     window.marmullakuInvitationURL = token ? `${location.origin}${location.pathname}#invite=${token}` : null;
   }
   updateToken();
@@ -26,7 +28,11 @@
     if (!token) { title.textContent = t().private; detail.textContent = t().invitation; return; }
     title.textContent = t().checking; detail.textContent = '';
     try {
-      const data = await window.marmullakuRequest('welcome', {}, {token});
+      if(!welcome){
+        const request=window.marmullakuRequest('welcome',{}, {token});welcome=request;
+        request.catch(()=>{if(welcome===request)welcome=null;});
+      }
+      const data = await welcome;
       if (current !== generation) return;
       const invited = document.querySelector(`.role[data-i18n="${data.profile.id}"]`)?.closest('.card');
       const allowed = data.profiles || [data.profile];
@@ -42,25 +48,15 @@
       detail.textContent = e.status === 404 ? t().renewal : e.message;
     }
   };
-  button.addEventListener('click', async () => {
+  button.addEventListener('click', () => {
     if (!token || !pendingCard || button.disabled) return;
-    const current = generation;
     button.disabled = true; button.textContent = t().opening; error.textContent = '';
-    try {
-      // The profile frame rechecks the invitation before loading private content.
-      const data = {profile:{id:pendingCard.querySelector('.role').dataset.i18n}};
-      if (current !== generation) return;
-      const card = pendingCard;
-      dialog.close();
-      window.openPrivateCV(card, data.profile);
-    } catch (e) {
-      if (current !== generation) return;
-      error.textContent = e.status === 404 ? t().renewal : e.message;
-      button.disabled = false; button.textContent = t().view;
-    }
+    const card=pendingCard;
+    dialog.close();
+    window.openPrivateCV(card,{id:card.querySelector('.role').dataset.i18n});
   });
   addEventListener('load', () => {
-    if (token || location.hash.startsWith('#invite=')) window.requestPrivateCV(null);
+    if (location.hash.startsWith('#invite=')) window.requestPrivateCV(null);
   });
   addEventListener('hashchange', () => {
     updateToken();

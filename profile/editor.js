@@ -1,16 +1,17 @@
-import {setupCVAppearance} from './cv-appearance.mjs?v=appearance-panel';
-import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=links-documents';
-import {setupCVPagination} from './cv-pagination.mjs?v=reading-position-1';
-import {setupImageMagnifier} from './image-magnifier.mjs?v=pdf-workspace-2';
-import {setupDocumentHints} from './document-hints.mjs?v=cleanup';
-import {setupExperienceProjects} from './experience-projects.mjs?v=experience-projects-2';
+import {setupCVAppearance} from './cv-appearance.mjs?v=revamp-20261026';
+import {setupExtrasRail,libraryDocuments} from '../main/cv-extras-rail.mjs?v=revamp-20261026';
+import {setupCVPagination} from './cv-pagination.mjs?v=revamp-20261026';
+import {setupImageMagnifier} from './image-magnifier.mjs?v=revamp-20261026';
+import {setupDocumentHints} from './document-hints.mjs?v=revamp-20261026';
+import {setupExperienceProjects} from './experience-projects.mjs?v=revamp-20261026';
 import { resolveQuote } from "./picture-anchor.mjs";
-import { createPDFViewer } from "./pdf-viewer.mjs?v=reader-sheet-1";
-import { normalizeRows, rowLayouts, rowText } from "./cv-rows.mjs?v=accounts-2";
-import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
+import { createPDFViewer } from "./pdf-viewer.mjs?v=revamp-20261026";
+import { rowLayouts, rowText } from "./cv-rows.mjs?v=revamp-20261026";
+import { createRowEditor } from "./cv-row-editor.mjs?v=revamp-20261026";
+import {scrollAttachmentIntoView} from '../main/profile-motion.mjs?v=revamp-20261026';
 
 (async () => {
-  const adapter = await (await import('../main/profile-adapter.mjs?v=parallel-media-1')).createLiveAdapter();
+  const adapter = await (await import('../main/profile-adapter.mjs?v=revamp-20261026')).createLiveAdapter();
   const $ = (id) => document.getElementById(id);
   setupDocumentHints($('resume'));
   let experienceProjects;
@@ -24,130 +25,12 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     ["certificates", "Certificates"],
     ["interests", "Interests / Hobbies"],
   ];
-  const initial = {
-    name: "Osman Marmullaku",
-    role: "Job title",
-    theme: "navy",
-    typography: "classic",
-    entryStyle: "plain",
-    contact: "Email address\nPortfolio website",
-    skills: "Interface design\nWeb development\nCreative technology",
-    languages: "Add your languages",
-    profile: "Write a short introduction and what you want to do next.",
-    experience:
-      "Your latest role or project\nCompany or organisation · Dates\n\nDescribe your work and what you achieved.",
-    education: "Qualification or programme\nInstitution · Dates",
-    certificates: "Add a relevant certification",
-    interests: "Add your interests",
-    fact: "Something about you.",
-    linkLabel: "Portfolio",
-    linkURL: "https://example.com",
-    buttonLabel: "See my work",
-    buttonURL: "https://example.com",
-    picture: "../main/pictures/previews/sample-one.svg",
-    pictureCaption: "A project in pictures",
-  };
-  let data = { ...initial },
-    activeEditor = null,
-    previewing = false,
-    extraTypes = ["picture", "fact", "link", "button"],
-    pictureAnchor = null,
-    pickingPicture = false,
-    pendingDocument = null,
-    documents = [],
-    documentAccess = true,
-    documentURL = null,
-    documentGeneration = 0,
-    documentTrigger = null;
-  let sharing,pagination;
-  let viewerPromise,
-    cvRows,
-    rowEditor,
-    uploadAnchor = null;
-  try {
-    const stored = adapter.state;
-    cvRows = stored?.cvRows;
-    if (stored && typeof stored === "object")
-      for (const field of Object.keys(initial))
-        if (typeof stored[field] === "string") data[field] = stored[field];
-    if (Array.isArray(stored?.extraTypes))
-      extraTypes = [...new Set(stored.extraTypes)].filter((type) =>
-        ["picture", "fact", "link", "button"].includes(type),
-      );
-    if (sections.some(([field]) => field === stored?.pictureAnchor?.field)) {
-      const saved = stored.pictureAnchor;
-      pictureAnchor = {
-        field: saved.field,
-        quote:
-          typeof saved.quote === "string" ? saved.quote.slice(0, 5000) : "",
-        before: typeof saved.before === "string" ? saved.before.slice(-32) : "",
-        after: typeof saved.after === "string" ? saved.after.slice(0, 32) : "",
-        rowId:
-          typeof saved.rowId === "string" &&
-          /^[a-f0-9-]{36}$/i.test(saved.rowId)
-            ? saved.rowId
-            : null,
-      };
-    }
-    if (Array.isArray(stored?.documents))
-      documents = stored.documents
-        .filter(
-          (doc) =>
-            typeof doc?.id === "string" &&
-            /^[a-f0-9-]{36}$/i.test(doc.id) &&
-            typeof doc.name === "string",
-        )
-        .map((doc) => ({
-          id: doc.id,
-          name: doc.name.slice(0, 180),
-          anchor: sections.some(([field]) => field === doc.anchor?.field)
-            ? {
-                field: doc.anchor.field,
-                rowId:
-                  typeof doc.anchor.rowId === "string" &&
-                  /^[a-f0-9-]{36}$/i.test(doc.anchor.rowId)
-                    ? doc.anchor.rowId
-                    : null,
-                quote:
-                  typeof doc.anchor.quote === "string"
-                    ? doc.anchor.quote.slice(0, 5000)
-                    : "",
-                before:
-                  typeof doc.anchor.before === "string"
-                    ? doc.anchor.before.slice(-32)
-                    : "",
-                after:
-                  typeof doc.anchor.after === "string"
-                    ? doc.anchor.after.slice(0, 32)
-                    : "",
-              }
-            : null,
-        }));
-  } catch {}
-  const oldIntroduction =
-    "Introduce yourself in a few sentences. What do you enjoy building, what are you good at, and what would you like to do next?";
-  const oldDescription =
-    "Describe what you built, your contribution, and the difference it made. Keep it specific and in your own words.";
-  if (data.profile === oldIntroduction) data.profile = initial.profile;
-  if (data.role === "Your professional title") data.role = initial.role;
-  if (
-    data.fact === "One detail that makes this profile yours." ||
-    data.fact === "A small detail beyond the résumé."
-  )
-    data.fact = "Add a fun fact";
-  cvRows = normalizeRows(cvRows, data);
-  for (const row of cvRows.experience)
-    if (row.body.trim() === oldDescription)
-      row.body = "Describe your work and what you achieved.";
-  for (const row of cvRows.interests)
-    if (row.title === "What keeps you curious outside work?")
-      row.title = initial.interests;
-  let rowIdentity = Object.values(cvRows)
-    .flat()
-    .map((row) => row.id)
-    .join(",");
-  for (const field of Object.keys(rowLayouts))
-    data[field] = rowText(cvRows[field]);
+  let {cvRows,extraTypes,pictureAnchor,documents,...data}=adapter.state;
+  let activeEditor=null,previewing=false,pickingPicture=false,pendingDocument=null,
+    documentURL=null,documentGeneration=0,documentTrigger=null;
+  let sharing,pagination,viewerPromise,rowEditor,uploadAnchor=null;
+  let rowIdentity=Object.values(cvRows).flat().map(row=>row.id).join(',');
+  for(const field of Object.keys(rowLayouts))data[field]=rowText(cvRows[field]);
   const pencil = '<svg aria-hidden="true"><use href="#pencil"/></svg>';
   function node(tag, text, cls) {
     const e = document.createElement(tag);
@@ -232,7 +115,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     },
   });
   experienceProjects=setupExperienceProjects($('resume'));
-  Object.keys(initial).forEach(sync);
+  Object.keys(data).forEach(sync);
   function finish(keep) {
     rowEditor?.finish(keep);
     if (!activeEditor) return;
@@ -339,29 +222,20 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       if(value&&!value.isContentEditable){const button=value.closest('[data-field]')?.querySelector('[data-edit]');if(button)start(button);}
     }
   });
-  function openResume(allowed = null) {
+  function openResume(preview = true) {
     pagination?.restore();
     finish(true);
     cancelAttachment();
-    previewing = !!allowed;
-    documentAccess = !allowed || allowed.includes("documents");
+    previewing = preview;
     closeDocument();
     $("resume").classList.toggle("preview-view", previewing);
     rowEditor.syncMode();
     document.querySelectorAll('[data-cv-view]').forEach(button=>button.setAttribute('aria-pressed',String((button.dataset.cvView==='preview')===previewing)));
-    document
-      .querySelectorAll("[data-section]")
-      .forEach(
-        (el) =>
-          (el.hidden = !!allowed && !allowed.includes(el.dataset.section)),
-      );
-    $("extras-rail").hidden = !!allowed && !allowed.includes("extras");
     if (!$("resume").open) $("resume").showModal();
     decoratePictureAnchor();
     renderDocumentLinks();
     renderDocumentLibrary();
     extrasRail?.sync();
-    requestAnimationFrame(alignPicture);
     pagination?.layout();
   }
   let closing=false;
@@ -435,7 +309,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     sharing?.track("picture", "Viewed photo: " + data.pictureCaption);
     const block = document.querySelector(".extra-picture");
     if (!block) return;
-    block.scrollIntoView({ behavior: "smooth", block: "center" });
+    scrollAttachmentIntoView(block);
     block.classList.remove("attachment-focus");
     requestAnimationFrame(() => block.classList.add("attachment-focus"));
   }
@@ -449,8 +323,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       !extraTypes.includes("picture") ||
       activeEditor?.field === pictureAnchor.field
     ) {
-      requestAnimationFrame(alignPicture);
-      return;
+        return;
     }
     if (previewing && $("extras-rail").hidden) return;
     const section = document.querySelector(
@@ -513,15 +386,8 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
           ? "The linked words changed. The picture remains attached to this section."
           : "Find attached text";
     }
-    requestAnimationFrame(alignPicture);
   }
   let extrasRail;
-  function alignPicture() {
-    const block=document.querySelector('.extra-picture');
-    if(!block)return;
-    block.style.paddingTop='';block.style.marginTop='';
-    $('extras-rail').classList.remove('has-attachment');
-  }
   function cancelAttachment() {
     pickingPicture = false;
     pendingDocument = null;
@@ -636,8 +502,6 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     }
     attachToSection(field, quote, before, after, row?.dataset.rowId || null);
   });
-  addEventListener("resize", alignPicture);
-  document.fonts.ready.then(alignPicture);
   function renderExtras() {
     $("extra-blocks").replaceChildren();
     for (const type of extraTypes) {
@@ -686,12 +550,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
             sectionName(pictureAnchor.field),
             "text-button picture-anchor-label",
           );
-          label.addEventListener("click", () =>
-            pictureTarget()?.scrollIntoView({
-              behavior: "smooth",
-              block: "center",
-            }),
-          );
+          label.addEventListener("click",()=>scrollAttachmentIntoView(pictureTarget()));
           attachment.append(label);
         }
         const attach = node(
@@ -765,6 +624,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
   );
   $("extra-picture").addEventListener("change", () => {
     const file = $("extra-picture").files[0];
+    $("extra-picture").value="";
     if (!file) return;
     if (
       !["image/png", "image/jpeg", "image/webp"].includes(file.type) ||
@@ -798,7 +658,6 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     $("link-editor").hidePopover();
   });
   $('cancel-link')?.addEventListener('click',()=>{ $('link-editor').hidePopover();document.querySelector(`[data-url-type="${$('link-form').dataset.type}"]`)?.focus({preventScroll:true}); });
-  function documentVisible() {return !previewing || documentAccess;}
   function renderDocumentLinks() {
     document.querySelectorAll(".document-attachment").forEach((item) => {
       const doc = documents.find((doc) => doc.id === item.dataset.documentId);
@@ -807,14 +666,13 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
         document.querySelector(`[data-row-id="${doc.anchor.rowId}"]`);
       if (
         !doc?.anchor ||
-        !documentVisible(doc) ||
         item.closest("[data-section]").dataset.section !== doc.anchor.field ||
         (item.closest("[data-row-id]") || null) !== (expectedRow || null)
       )
         item.remove();
     });
     for (const doc of documents) {
-      if (!doc.anchor || !documentVisible(doc)) continue;
+      if (!doc.anchor) continue;
       const section = document.querySelector(
         `[data-section="${doc.anchor.field}"]`,
       );
@@ -870,9 +728,9 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
   function renderDocumentLibrary() {
     $("pdf-list").replaceChildren();
     const attachedIDs=new Set([...document.querySelectorAll('#resume .paper .document-attachment')].filter(item=>!item.closest('[data-section]')?.hidden).map(item=>item.dataset.documentId));
-    const library=libraryDocuments(documents.filter(documentVisible),attachedIDs,previewing);
+    const library=libraryDocuments(documents,attachedIDs,previewing);
     document.querySelector(".pdf-library").hidden =
-      previewing && (!documentAccess || !library.length);
+      previewing && !library.length;
     for (const doc of library) {
       const item = node("div", undefined, "pdf-item"),
         open = node("button", doc.name, "text-button pdf-name");
@@ -980,8 +838,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       if(restoreFocus&&documentTrigger?.isConnected)documentTrigger.focus({preventScroll:true});
       if(wasOpen)$('resume').scrollTop=documentScrollTop;
       documentTrigger = null;
-      requestAnimationFrame(alignPicture);
-    };
+      };
     if (restoreFocus && !reader.hidden) {
       reader.inert = true;
       documentExit = reader.animate([
@@ -993,7 +850,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
   }
   async function openDocument(id, trigger) {
     const doc = documents.find((doc) => doc.id === id);
-    if (!doc || !documentVisible(doc)) return;
+    if (!doc) return;
     finish(true);
     cancelAttachment();
     if($('extras-rail').matches(':popover-open'))$('extras-rail').hidePopover();
@@ -1070,7 +927,7 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
     pendingUploads.add(uploading);
     uploading.finally(()=>pendingUploads.delete(uploading));
   });
-  sharing = await (await import('../main/live-sharing.mjs?v=sharing-recovery-1')).createLiveSharing(adapter,window.flushProfile);
+  sharing = await (await import('../main/live-sharing.mjs?v=revamp-20261026')).createLiveSharing(adapter,window.flushProfile);
   document.addEventListener("click", (event) => {
     const link = event.target.closest("#extra-blocks a");
     if (link)
@@ -1083,12 +940,10 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
   {
     const card=parent.document.querySelector(`.role[data-i18n="${adapter.profile.id}"]`)?.closest('.card');
     portrait.src = card?.querySelector('.who')?.src || `../main/pictures/portraits/${adapter.profile.id}.webp`;
-    document.querySelector('.paper-foot span').textContent = '';
-    document.querySelector('.pdf-help').textContent = 'PDF · up to 10 MB';
     const download=node('button','','text-button cv-download');download.setAttribute('aria-label','Save CV as PDF');
     download.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M5 16v5h14v-5"/></svg><span>Save CV as PDF</span>';
     download.addEventListener('click',()=>window.print());
-    addEventListener('beforeprint',()=>{finish(true);rowEditor.finish(true);});
+    addEventListener('beforeprint',()=>{finish(true);});
     document.querySelector('.resume-toolbar').insertBefore(download,document.querySelector('[data-close="resume"]'));
     if(adapter.editable){
       const appearanceUI=setupCVAppearance({data,onChange(field){sync(field);save();}});
@@ -1096,22 +951,23 @@ import { createRowEditor } from "./cv-row-editor.mjs?v=reference-layout";
       const modes=node('div',undefined,'cv-mode-options');modes.setAttribute('role','group');modes.setAttribute('aria-label','CV view');
       for(const mode of ['edit','preview']){
         const button=node('button',mode==='edit'?'Edit':'Preview');button.dataset.cvView=mode;
-        button.addEventListener('click',()=>{if(previewing===(mode==='preview'))return;openResume(mode==='edit'?null:['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);});
+        button.addEventListener('click',()=>{if(previewing===(mode==='preview'))return;openResume(mode==='preview');});
         modes.append(button);
       }
       controls.append(modes,appearanceUI.toggle);
       document.querySelector('.resume-toolbar').prepend(controls);
       const help=node('p','Click text to edit. Changes save automatically.','cv-edit-help');document.querySelector('#resume').append(help);
     }
-    extrasRail=setupExtrasRail({editable:()=>!previewing,onLayout:alignPicture});
-    addEventListener('beforeunload',event=>{if(adapter.dirty||pendingUploads.size){event.preventDefault();event.returnValue='';}});
+    extrasRail=setupExtrasRail({editable:()=>!previewing});
+    addEventListener('beforeunload',event=>{if(activeEditor)finish(true);if(adapter.dirty||pendingUploads.size){event.preventDefault();event.returnValue='';}});
     if(new URLSearchParams(location.search).get('view')==='settings'&&adapter.editable) $('settings-panel').showModal();
-    else openResume(['contact','skills','languages','profile','experience','education','certificates','interests','documents','extras']);
+    else openResume();
     await portrait.decode().catch(()=>{});
     pagination=setupCVPagination(document.querySelector('.paper'));
     document.fonts.addEventListener('loadingdone',pagination.schedule);
     pagination.layout();
     setupImageMagnifier();
+    if(adapter.mediaWarning)$('resume-status').textContent=adapter.mediaWarning;
     parent.postMessage({type:'marmullaku-ready'},location.origin);
   }
 })().catch(error=>{

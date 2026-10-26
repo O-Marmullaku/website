@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {cardProjection,createProfileMotion} from '../main/profile-motion.mjs';
+import {cardProjection,createProfileMotion,scrollAttachmentIntoView} from '../main/profile-motion.mjs';
 function fixture(){
  const records=[];
  const element=(name,rect)=>({name,isConnected:true,style:{},dataset:{},classList:{add(){},remove(){}},getBoundingClientRect:()=>rect,animate(frames,options){let resolve,reject;const animation={frames,options,finished:new Promise((yes,no)=>{resolve=yes;reject=no;}),finish(){resolve();},cancel(){this.cancelled=true;reject(new Error('cancelled'));}};animation.finished.catch(()=>{});records.push({name,animation});return animation;}});
@@ -20,16 +20,6 @@ test('CV entrance and exit animate the paper and card; cleanup restores the card
 test('closing during entrance cannot set the window back to open',async()=>{
  const f=fixture();const entering=f.motion.enter(f.frame,f.origin,'cv');const exiting=f.motion.exit(f.frame);await entering;assert.equal(f.panel.dataset.motion,'closing');f.finish();await exiting;f.motion.reset();
 });
-test('sidebar follows the paper entrance and fades out before the paper closes',async()=>{
- const f=fixture();const entering=f.motion.enter(f.frame,f.origin,'cv');
- const arrival=f.records.find(x=>x.name==='rail').animation;
- assert.equal(arrival.frames[0].opacity,0);assert.equal(arrival.options.fill,'backwards');assert.equal(arrival.options.delay,220);
- f.finish();await entering;const exiting=f.motion.exit(f.frame);
- const departure=f.records.filter(x=>x.name==='rail').at(-1).animation;
- assert.equal(departure.frames.at(-1).opacity,0);assert(departure.options.duration<420);
- f.finish();await exiting;f.motion.reset();
- assert(f.records.filter(x=>x.name==='rail').every(x=>x.animation.cancelled));
-});
 test('settings use a shorter window transition and never fade a CV card',async()=>{
  const f=fixture();const entering=f.motion.enter(f.frame,undefined,'settings');f.finish();await entering;assert.equal(f.records.some(x=>x.name==='card'),false);assert.equal(f.records.find(x=>x.name==='settings').animation.options.duration,280);
  const exiting=f.motion.exit(f.frame);f.finish();await exiting;assert.equal(f.records.at(-1).animation.options.duration,200);f.motion.reset();
@@ -40,4 +30,14 @@ test('failed frames fade out without access to their inaccessible window',async(
  f.frame.contentWindow=new Proxy({}, {get(){throw new Error('Blocked failed frame');}});
  const exiting=f.motion.exit(f.frame);f.finish();await exiting;
  assert.equal(f.records.at(-1).name,'frame');
+});
+
+test('attachment scrolling animates to the reading position without OS motion preferences',t=>{
+ const previous={requestAnimationFrame:globalThis.requestAnimationFrame,cancelAnimationFrame:globalThis.cancelAnimationFrame},frames=new Map();let id=0;
+ t.after(()=>Object.assign(globalThis,previous));
+ globalThis.requestAnimationFrame=fn=>{frames.set(++id,fn);return id;};globalThis.cancelAnimationFrame=key=>frames.delete(key);
+ const container={scrollTop:200,scrollHeight:2000,clientHeight:400,getBoundingClientRect:()=>({top:20})};
+ scrollAttachmentIntoView({closest:()=>container,getBoundingClientRect:()=>({top:500,height:40})});
+ const advance=time=>{const [key,fn]=frames.entries().next().value;frames.delete(key);fn(time);};
+ advance(100);assert.equal(container.scrollTop,200);advance(250);assert(container.scrollTop>200&&container.scrollTop<500);advance(400);assert.equal(container.scrollTop,500);assert.equal(frames.size,0);
 });

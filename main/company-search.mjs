@@ -133,7 +133,7 @@ export function companyCombobox(input,list,recent) {
   }
   input.addEventListener('input',search);input.addEventListener('focus',search);input.addEventListener('blur',close);
   input.addEventListener('keydown',event=>{
-    if(event.key==='Escape'){event.preventDefault();event.stopPropagation();close();}
+    if(event.key==='Escape'&&!list.hidden){event.preventDefault();event.stopPropagation();close();}
     if(['ArrowDown','ArrowUp'].includes(event.key)&&items.length){event.preventDefault();active=(active+(event.key==='ArrowDown'?1:-1)+items.length)%items.length;[...list.children].forEach((el,index)=>el.setAttribute('aria-selected',String(index===active)));input.setAttribute('aria-activedescendant','company-option-'+active);}
     if(event.key==='Enter'&&!list.hidden&&active>=0){event.preventDefault();choose(items[active]);}
   });

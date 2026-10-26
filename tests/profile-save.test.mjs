@@ -60,7 +60,7 @@ test('a conflict stays visible and only an explicit exit confirmation discards p
 test('a rejected save can be explicitly discarded while server failures keep the draft open',async t=>{
   let status=401;
   const {adapter}=await fixture(t,()=>{throw Object.assign(new Error('Save rejected'),{status});});
-  for(status of [400,401,413]){
+  for(status of [400,413]){
     adapter.save({...adapter.state,role:'Unsaved title'});
     globalThis.confirm=()=>false;
     assert.equal(await adapter.settle(),false);assert.equal(adapter.dirty,true);
@@ -70,4 +70,20 @@ test('a rejected save can be explicitly discarded while server failures keep the
   status=503;adapter.save({...adapter.state,role:'Retry this draft'});
   globalThis.confirm=()=>{assert.fail('A server failure should be retried without discarding the draft');};
   await assert.rejects(adapter.settle(),error=>error.status===503);assert.equal(adapter.dirty,true);
+});
+
+test('expired sign-in preserves the draft and resumes saving after authentication',async t=>{
+ let authenticated=false;
+ const {adapter,calls,messages}=await fixture(t,()=>{if(!authenticated)throw Object.assign(new Error('Please sign in.'),{status:401});});
+ globalThis.confirm=()=>{assert.fail('An expired sign-in must not offer to discard the draft');};
+ adapter.save({...adapter.state,role:'Keep this draft'});await assert.rejects(adapter.settle(),error=>error.status===401);
+ assert.equal(adapter.dirty,true);assert(messages.some(message=>message.type==='marmullaku-sign-in-required'&&message.profile_id==='osman'));
+ authenticated=true;await adapter.flush();assert.equal(calls.at(-1).role,'Keep this draft');assert.equal(adapter.dirty,false);
+});
+
+test('rapid edits clone the latest draft only when the save starts',async t=>{
+ const {adapter,calls}=await fixture(t);const clone=globalThis.structuredClone;let clones=0;
+ globalThis.structuredClone=(...args)=>{clones++;return clone(...args);};t.after(()=>{globalThis.structuredClone=clone;});
+ for(let i=0;i<20;i++)adapter.save({...adapter.state,role:'Draft '+i});assert.equal(clones,0);
+ await adapter.flush();assert.equal(clones,1);assert.equal(calls.length,1);assert.equal(calls[0].role,'Draft 19');
 });

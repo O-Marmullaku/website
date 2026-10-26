@@ -1,10 +1,10 @@
-import { companyCombobox } from './company-search.mjs?v=cleanup';
+import { companyCombobox } from './company-search.mjs?v=revamp-20261026';
 const $=id=>document.getElementById(id);
 const node=(tag,text,cls)=>{const el=document.createElement(tag);el.textContent=text||'';if(cls)el.className=cls;return el;};
 const stamp=value=>new Intl.DateTimeFormat(undefined,{dateStyle:'medium',timeStyle:'short'}).format(new Date(value));
 export async function createLiveSharing(adapter,settle) {
   if(!adapter.editable)return {isGuest:true,track:kind=>adapter.track(kind),refresh(){}};
-  let links=[],events=[],refreshing=false;
+  let links=[],events=[],refreshing=null,refreshAgain=false;
   const status=message=>$('settings-status').textContent=message;
   status('');
   const company=companyCombobox($('company-name'),$('company-suggestions'),()=>links.map(link=>({name:link.company})));
@@ -38,7 +38,13 @@ export async function createLiveSharing(adapter,settle) {
         const tab=window.open('about:blank','_blank');if(tab)tab.opener=null;
         adapter.request('copy-link',{id:link.id}).then(result=>{if(tab)tab.location.replace(url(result.token));else showURL(url(result.token));}).catch(error=>{tab?.close();status(error.message);});
       });
-      toggle.addEventListener('click',report(async()=>{toggle.disabled=true;try{await adapter.request('toggle-link',{id:link.id,revoked:!link.revoked});await refresh();}finally{toggle.disabled=false;}}));
+      toggle.addEventListener('click',report(async()=>{
+        const focused=document.activeElement===toggle;toggle.disabled=true;
+        try{
+          await adapter.request('toggle-link',{id:link.id,revoked:!link.revoked});await refresh();
+          if(focused&&document.activeElement===document.body)[...$('company-links').children].find(item=>item.dataset.linkId===link.id)?.querySelectorAll('button')[2]?.focus({preventScroll:true});
+        }finally{toggle.disabled=false;}
+      }));
       actions.append(copyButton,open,toggle);item.append(actions);
       const activity=node('details','','link-activity');activity.open=expanded.has(link.id);activity.append(node('summary','Activity'));
       const list=node('ol');for(const event of history){const row=node('li');const time=node('time',stamp(event.created_at));time.dateTime=event.created_at;row.append(node('span',event.label),time);list.append(row);}
@@ -46,9 +52,10 @@ export async function createLiveSharing(adapter,settle) {
     }
     if(focusID&&focusIndex>=0)[...host.children].find(item=>item.dataset.linkId===focusID)?.querySelectorAll('button,summary')[focusIndex]?.focus({preventScroll:true});
   }
-  async function refresh() {
-    if(refreshing)return;refreshing=true;
-    try {
+  function refresh() {
+    if(refreshing){refreshAgain=true;return refreshing;}
+    refreshing=(async()=>{do{
+      refreshAgain=false;
       const [history,family]=await Promise.all([adapter.request('links'),adapter.request('family')]);links=history.links;events=history.events;paintLinks();
       $('sibling-permissions').replaceChildren();
       for(const person of family.profiles.filter(person=>person.id!==adapter.profile.id)) {
@@ -57,11 +64,12 @@ export async function createLiveSharing(adapter,settle) {
         check.addEventListener('change',report(async()=>{check.disabled=true;try{await adapter.request('share-family',{recipient_id:person.id,enabled:check.checked});status('Family access saved.');}catch(error){check.checked=!check.checked;throw error;}finally{check.disabled=false;}}));
         $('sibling-permissions').append(label);
       }
-      $('family-panel').querySelector('.family-help').textContent='They can open your CV and include it in their company links. Turn this off to remove that access.';
-    } finally{refreshing=false;}
+    }while(refreshAgain);})().finally(()=>{refreshing=null;});
+    return refreshing;
   }
   const tabs=[['companies-tab','companies'],['family-tab','family-panel']];
   function selectTab(tab,panel){
+    status('');
     for(const [other,target] of tabs){const selected=other===tab;$(other).setAttribute('aria-selected',String(selected));$(other).tabIndex=selected?0:-1;$(target).hidden=target!==panel;}
     refresh().catch(error=>status(error.message));
   }
@@ -72,10 +80,13 @@ export async function createLiveSharing(adapter,settle) {
   }
   $('create-link').addEventListener('click',report(async()=>{
     const name=company();if(!name){status('Enter a company name.');$('company-name').focus();return;}
-    const existing=links.find(link=>!link.revoked&&(!link.expires_at||Date.parse(link.expires_at)>Date.now())&&link.company.toLowerCase()===name.toLowerCase());
-    if(existing){await copy(existing);return;}
     const button=$('create-link');button.disabled=true;
-    try{await adapter.flush();const result=await adapter.request('create',{company:name});showURL(url(result.token));status('Link created. Copy it below.');await refresh();}finally{button.disabled=false;}
+    try{
+      await refresh();
+      const existing=links.find(link=>!link.revoked&&(!link.expires_at||Date.parse(link.expires_at)>Date.now())&&link.company.toLowerCase()===name.toLowerCase());
+      if(existing){await copy(existing);return;}
+      await adapter.flush();const result=await adapter.request('create',{company:name});showURL(url(result.token));status('Link created. Copy it below.');await refresh();
+    }finally{button.disabled=false;}
   }));
   const signout=node('button','Sign out','text-button');
   signout.addEventListener('click',report(async()=>{if(!await settle())return;await window.siblingSession.signOut();parent.postMessage({type:'marmullaku-signed-out'},location.origin);}));

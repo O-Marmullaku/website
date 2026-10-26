@@ -1,4 +1,4 @@
-import { rowLayouts, moveRow, contactLabel } from "./cv-rows.mjs?v=reference-layout";
+import { rowLayouts, moveRow, contactLabel } from "./cv-rows.mjs?v=revamp-20261026";
 
 export function createRowEditor({
   rows,
@@ -277,10 +277,11 @@ export function createRowEditor({
           logoTarget = { fieldName, id: row.id };
           logoInput.click();
         });
-        if (row.logo)
+        if (row.logo || row.logo_id)
           action(menu, "Remove logo", () => {
             checkpoint();
             row.logo = "";
+            row.logo_id = null;
             paint(fieldName);
             commit();
           });

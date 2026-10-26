@@ -1,5 +1,5 @@
-import {createProfileMotion} from '../main/profile-motion.mjs?v=frame-recovery-1';
-import {setupProfilePreload} from '../main/profile-preload.mjs?v=fast-open-1';
+import {createProfileMotion} from '../main/profile-motion.mjs?v=revamp-20261026';
+import {setupProfilePreload} from '../main/profile-preload.mjs?v=revamp-20261026';
 setupProfilePreload(document);
 await window.marmullakuServicesReady;
 (() => {
@@ -47,7 +47,7 @@ await window.marmullakuServicesReady;
     if(current!==generation)return;
     view=nextView;origin=source||document.activeElement;focusBefore=document.activeElement;origin?.setAttribute('aria-busy','true');notice.hidden=dismiss.hidden=true;
     frame?.remove();frame=document.createElement('iframe');frame.title=view==='settings'?'Profile settings':'CV';frame.referrerPolicy='no-referrer';frame.className='profile-frame-loading';
-    const url=new URL('profile/',document.baseURI);url.searchParams.set('view',view);url.searchParams.set('v','reader-sheet-1');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
+    const url=new URL('profile/',document.baseURI);url.searchParams.set('view',view);url.searchParams.set('v','revamp-20261026');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
     frame.src=url;panel.classList.toggle('settings-window',view==='settings');panel.append(frame);panel.classList.add('preparing');
     clearTimeout(loading);loading=setTimeout(()=>{origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');notice.textContent='Could not open this page. Close and try again.';notice.hidden=dismiss.hidden=false;if(!panel.open)panel.showModal();},20000);
   }
@@ -60,7 +60,7 @@ await window.marmullakuServicesReady;
   const publishRole=profile=>document.dispatchEvent(new CustomEvent('marmullaku-profile-updated',{detail:{id:profile.id,role:profile.role}}));
   async function boot() {
     if(!session.active)return;
-    try{own=(await session.request('profile')).profile;signedFooter();publishRole(own);if(new URLSearchParams(location.search).has('settings'))open('settings',own.id);}
+    try{own=(await session.request('profile')).profile;signedFooter();publishRole(own);if(new URLSearchParams(location.search).has('settings')&&!panel.open)open('settings',own.id);}
     catch(error){if([401,403].includes(error.status))await session.signOut();}
   }
   const guestRequest=window.requestPrivateCV;
@@ -75,6 +75,7 @@ await window.marmullakuServicesReady;
     const data=event.data;if(!data||typeof data!=='object')return;
     if(data.type==='marmullaku-ready'){clearTimeout(loading);notice.hidden=dismiss.hidden=true;if(!closing){origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');if(!panel.open)panel.showModal();motion.enter(frame,origin,view);}}
     if(data.type==='marmullaku-close')close();
+    if(data.type==='marmullaku-sign-in-required')window.showSignIn?.(data.profile_id);
     if(data.type==='marmullaku-error'){clearTimeout(loading);notice.hidden=dismiss.hidden=false;notice.textContent=String(data.message).slice(0,300);frame.hidden=true;origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');if(!panel.open)panel.showModal();}
     if(data.type==='marmullaku-saved'&&typeof data.id==='string'&&typeof data.role==='string'&&(window.MARMULLAKU_LOCAL_PREVIEW||own?.id===data.id)){
       if(own?.id===data.id)own.role=data.role;
@@ -82,5 +83,8 @@ await window.marmullakuServicesReady;
     }
     if(data.type==='marmullaku-signed-out')close({settled:true}).then(()=>location.assign(new URL('./',location.href)));
   });
-  addEventListener('marmullaku-signed-in',boot);boot();
+  addEventListener('marmullaku-signed-in',()=>{
+    boot();
+    if(frame?.contentDocument)frame.contentWindow.flushProfile?.().catch(error=>{const status=frame?.contentDocument?.querySelector('#resume-status');if(status)status.textContent=error.message;});
+  });boot();
 })();

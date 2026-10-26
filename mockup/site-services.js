@@ -5,9 +5,9 @@
     el.onerror=()=>reject(new Error('Could not load account services.'));document.head.append(el);
   });
   window.marmullakuServicesReady=(async()=>{
-    await (await import('./preview-session.mjs?v=cleanup')).bootstrapPreview();
-    await script('main/sign-in.js?v=ui-review-final');
-    await script('main/private-access.js?v=cleanup');
+    await (await import('./preview-session.mjs?v=revamp-20261026')).bootstrapPreview();
+    await script('main/sign-in.js?v=revamp-20261026');
+    await script('main/private-access.js?v=revamp-20261026');
     if(document.readyState==='complete') {
       if(new URLSearchParams(location.search).has('sign-in'))window.showSignIn();
       if(location.hash.startsWith('#invite='))window.requestPrivateCV(null);

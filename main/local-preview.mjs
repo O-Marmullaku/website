@@ -1,6 +1,6 @@
-import {createPreviewAPI} from '../mockup/preview-api.mjs?v=local-cv-3';
-import {putPreviewAsset,getPDF,deletePDF,createAssetStore} from '../profile/pdf-store.mjs?v=local-cv-3';
-import {profilesToSeed} from '../mockup/profile-seed.mjs?v=cv-copy';
+import {createPreviewAPI} from '../mockup/preview-api.mjs?v=revamp-20261026';
+import {putPreviewAsset,getPDF,deletePDF,createAssetStore} from '../profile/pdf-store.mjs?v=revamp-20261026';
+import {profilesToSeed} from '../mockup/profile-seed.mjs?v=revamp-20261026';
 
 export const isLocalPreview=host=>['localhost','127.0.0.1','[::1]'].includes(host);
 const key='marmullaku-local-profiles-v1';

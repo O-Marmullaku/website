@@ -21,18 +21,24 @@ try{
    const profiles=[{id:'osman',display_name:'Synthetic owner'},{id:'diellza',display_name:'Synthetic sibling'}];
    const adapter={editable:true,profile:profiles[0],flush:async()=>{},async request(action,data){
     state.calls.push(action);
+    if(action==='links'&&state.blockNext){
+     state.blockNext=false;state.blocked=true;
+     const snapshot={links:structuredClone(state.links),events:[]};
+     await new Promise(resolve=>state.releaseRefresh=resolve);state.blocked=false;return snapshot;
+    }
     if(action==='links'||action==='family'){
      await gate;if(state.fail)throw new Error('Sharing unavailable. Try again.');
      return action==='links'?{links:state.links,events:[]}:{profiles,family:state.family};
     }
     if(action==='create'){state.links.push({id:'synthetic-link',company:data.company,created_at:new Date().toISOString(),revoked:false});return {token:'S'.repeat(43)};}
+    if(action==='copy-link')return {token:'S'.repeat(43)};
     if(action==='toggle-link'){state.links.find(link=>link.id===data.id).revoked=data.revoked;return {};}
     if(action==='share-family'){state.family=data.enabled?[{recipient_id:data.recipient_id,enabled:true}]:[];return {};}
     throw new Error('Unexpected test action '+action);
    }};
    window.MARMULLAKU_LOCAL_PREVIEW=true;
    // This must resolve while optional sharing requests remain blocked.
-   await createLiveSharing(adapter,async()=>true);state.ready=true;
+   state.sharing=await createLiveSharing(adapter,async()=>true);state.ready=true;
    document.querySelector('#settings-panel').showModal();
   },base);
   assert(await page.evaluate(()=>window.fixture.ready),'sharing metadata must not block CV boot');
@@ -47,10 +53,21 @@ try{
   await page.getByRole('button',{name:'Create link',exact:true}).click();
   await page.getByRole('button',{name:'Turn off',exact:true}).waitFor();
   assert((await page.locator('#created-link').inputValue()).includes('?local=1#invite='));
+  await page.evaluate(()=>{window.fixture.blockNext=true;window.fixture.sharing.refresh();});
+  await page.waitForFunction(()=>window.fixture.blocked);
   await page.getByRole('button',{name:'Turn off',exact:true}).focus();await page.keyboard.press('Enter');
+  await page.waitForFunction(()=>window.fixture.calls.includes('toggle-link'));
+  await page.evaluate(()=>window.fixture.releaseRefresh());
   await page.getByRole('button',{name:'Turn on',exact:true}).waitFor();
-  assert(await page.getByRole('button',{name:'Turn on',exact:true}).evaluate(el=>el===document.activeElement),'refresh retains focus on the updated link action');
+  assert(await page.getByRole('button',{name:'Turn on',exact:true}).evaluate(el=>el===document.activeElement),'refresh retains focus on the updated link action: '+await page.evaluate(()=>document.activeElement.outerHTML.slice(0,600)));
   await page.keyboard.press('Enter');await page.getByRole('button',{name:'Turn off',exact:true}).waitFor();
+  await page.evaluate(()=>{window.fixture.blockNext=true;window.fixture.sharing.refresh();});
+  await page.waitForFunction(()=>window.fixture.blocked);
+  await page.getByRole('button',{name:'Create link',exact:true}).click();
+  assert(await page.locator('#create-link').isDisabled(),'creation waits for in-flight metadata');
+  await page.evaluate(()=>window.fixture.releaseRefresh());
+  await page.waitForFunction(()=>window.fixture.calls.includes('copy-link'));
+  assert.equal(await page.evaluate(()=>window.fixture.calls.filter(action=>action==='create').length),1,'a create during refresh copies the existing company link');
   await page.getByRole('tab',{name:'Family',exact:true}).click();
   const share=page.getByRole('checkbox',{name:'Let Synthetic sibling view and share my CV',exact:true});
   await share.check();await page.getByText('Family access saved.',{exact:true}).waitFor();assert.equal(await page.evaluate(()=>window.fixture.family.length),1);
@@ -59,6 +76,12 @@ try{
   assert.equal(await page.getByRole('tab',{name:'Company links',exact:true}).getAttribute('aria-selected'),'true');
   assert(await page.locator('#settings-panel').evaluate(el=>el.scrollWidth<=el.clientWidth),'settings must not overflow horizontally');
   await page.screenshot({path:`work/uat-sharing-${width}.png`});
+  await page.locator('#company-name').focus();
+  await page.locator('#company-suggestions').waitFor({state:'visible'});
+  await page.keyboard.press('Escape');
+  assert(await page.locator('#settings-panel').isVisible(),'first Escape dismisses company suggestions');
+  await page.keyboard.press('Escape');
+  await page.locator('#settings-panel').waitFor({state:'hidden'});
   console.log(`PASS sharing ${width}x${height}: non-blocking load, retry, validation, create, toggle/focus, family sharing, keyboard tabs, overflow`);
   await page.setContent(homepage);
   await page.evaluate(()=>{

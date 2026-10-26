@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 function fixture(overrides={}) {
-  const elements=new Map();
-  const el=id=>{if(!elements.has(id))elements.set(id,{value:'',hidden:false,disabled:false,textContent:'',listeners:{},setAttribute(){},focus(){},reset(){},showModal(){this.open=true;},close(){this.open=false;},addEventListener(type,fn){this.listeners[type]=fn;}});return elements.get(id);};
+  const elements=new Map(),events=[];
+  const el=id=>{if(!elements.has(id))elements.set(id,{value:'',hidden:false,disabled:false,textContent:'',listeners:{},setAttribute(){},focus(){},reset(){},showModal(){this.open=true;},close(){const open=this.open;this.open=false;if(open)this.listeners.close?.();},addEventListener(type,fn){this.listeners[type]=fn;}});return elements.get(id);};
   const session={active:false,async sendCode(){},async verify(){},async signIn(){throw new Error('Incorrect email or password.');},...overrides};
-  const context={window:{siblingSession:session},document:{getElementById:el,querySelector(){return null;}},location:{search:''},URLSearchParams,addEventListener(){},dispatchEvent(){},Event};
+  const context={window:{siblingSession:session},document:{getElementById:el,querySelector(){return null;}},location:{search:''},URLSearchParams,addEventListener(){},dispatchEvent:event=>events.push(event.type),Event};
   vm.runInNewContext(readFileSync(new URL('../main/sign-in.js',import.meta.url),'utf8'),context);
-  return {el,open:context.window.showSignIn,submit:()=>el('sign-in-form').listeners.submit({preventDefault(){}})};
+  return {el,events,open:context.window.showSignIn,submit:()=>el('sign-in-form').listeners.submit({preventDefault(){}})};
 }
 test('password setup lets you change the email without losing it',async()=>{
   const {el,open,submit}=fixture();await open();el('sign-in-setup').listeners.click();el('sign-in-email').value='preview@example.invalid';await submit();
@@ -28,4 +28,15 @@ test('admin sign-in preserves the archive destination',()=>{
   const html=readFileSync(new URL('../admin/index.html',import.meta.url),'utf8');let target;
   vm.runInNewContext(html.match(/<script>(.*?)<\/script>/s)[1],{URL,URLSearchParams,location:{href:'https://marmullaku.ch/admin/?return=legacy',search:'?return=legacy',replace:url=>{target=new URL(url);}}});
   assert.equal(target.pathname,'/');assert.equal(target.searchParams.get('return'),'legacy');assert.equal(target.searchParams.get('sign-in'),'1');
+});
+
+test('closing a pending sign-in still publishes the authenticated state',async()=>{
+ let release;const f=fixture({signIn:()=>new Promise(resolve=>{release=resolve;})});await f.open();const pending=f.submit();
+ f.el('sign-in-dialog').close();await f.open();assert.equal(f.el('sign-in-submit').disabled,true,'reopening cannot submit a second request');
+ release();await pending;assert.deepEqual(f.events,['marmullaku-signed-in']);assert.equal(f.el('sign-in-submit').disabled,false);
+});
+
+test('draft recovery refuses a different account before notifying the editor',async()=>{
+ let signedOut=false;const f=fixture({async signIn(){},async request(){return {profile:{id:'diellza'}};},async signOut(){signedOut=true;}});
+ await f.open('osman');await f.submit();assert.equal(signedOut,true);assert.equal(f.el('sign-in-dialog').open,true);assert.match(f.el('sign-in-status').textContent,/account that owns this CV/);assert.deepEqual(f.events,[]);
 });

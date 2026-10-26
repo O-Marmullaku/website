@@ -91,8 +91,14 @@ try{
   assert.equal(await page.locator('.profile-window[open] iframe').count(),1,'projects keep the CV open');
   await frame.locator('[data-cv-view="edit"]').click();
   const title=frame.locator('.paper-header [data-value="role"]');
-  await title.click();await title.fill('Updated title');await title.press('Enter');
   let liveFrame=page.frames().find(frame=>new URL(frame.url()).pathname==='/profile/');
+  await liveFrame.evaluate(()=>window.flushProfile());
+  await title.click();
+  assert(await title.evaluate(el=>{
+   el.textContent='Immediate unsaved edit';el.dispatchEvent(new InputEvent('input',{bubbles:true}));
+   const event=new Event('beforeunload',{cancelable:true});window.dispatchEvent(event);return event.defaultPrevented;
+  }),'the unload handler protects section edits before their 600ms save timer');
+  await title.click();await title.fill('Updated title');await title.press('Enter');
   await liveFrame.evaluate(()=>{
    const flush=window.flushProfile;
    window.flushProfile=async()=>{await new Promise(resolve=>{window.releaseClose=resolve;});return flush();};

@@ -1,6 +1,6 @@
 export const libraryDocuments=(documents,attachedIDs,previewing)=>previewing?documents.filter(doc=>!attachedIDs.has(doc.id)):documents;
 
-export function setupExtrasRail({editable,onLayout}) {
+export function setupExtrasRail({editable}) {
   const rail=document.getElementById('extras-rail'),toolbar=document.querySelector('.resume-toolbar');
   const button=document.createElement('button');button.className='text-button cv-extras-tool';button.setAttribute('aria-label','Links & documents');button.setAttribute('aria-controls','extras-rail');button.setAttribute('aria-expanded','false');
   button.textContent='Links & documents';
@@ -17,5 +17,5 @@ export function setupExtrasRail({editable,onLayout}) {
   close.addEventListener('click',()=>{rail.hidePopover();button.focus({preventScroll:true});});
   rail.addEventListener('toggle',event=>button.setAttribute('aria-expanded',String(event.newState==='open')));
   new MutationObserver(sync).observe(rail,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden']});
-  sync();requestAnimationFrame(onLayout);return {sync,open(){if(!button.hidden&&!rail.matches(':popover-open'))rail.showPopover();}};
+  sync();return {sync,open(){if(!button.hidden&&!rail.matches(':popover-open'))rail.showPopover();}};
 }

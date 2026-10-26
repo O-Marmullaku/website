@@ -1,4 +1,19 @@
 const ease='cubic-bezier(.2,.8,.2,1)';
+let scrolling;
+export function scrollAttachmentIntoView(target){
+  const container=target?.closest('#extras-rail,#resume');
+  if(!container)return;
+  cancelAnimationFrame(scrolling);
+  const box=target.getBoundingClientRect(),bounds=container.getBoundingClientRect(),from=container.scrollTop;
+  const to=Math.max(0,Math.min(container.scrollHeight-container.clientHeight,from+box.top-bounds.top-(container.clientHeight-box.height)/2));
+  let started;
+  const step=time=>{
+    started??=time;const progress=Math.min(1,(time-started)/300);
+    container.scrollTop=from+(to-from)*(1-(1-progress)**3);
+    if(progress<1)scrolling=requestAnimationFrame(step);
+  };
+  scrolling=requestAnimationFrame(step);
+}
 export function cardProjection(card,paper) {
   const scale=card.width/paper.width;
   return {transform:`translate(${card.left+card.width/2-paper.left-paper.width/2}px, ${card.top-paper.top}px) scale(${scale})`,clipPath:`inset(0px 0px ${Math.max(0,paper.height-card.height/scale)}px 0px round ${6/scale}px)`};
@@ -14,8 +29,6 @@ export function createProfileMotion(panel) {
       panel.classList.remove('is-closing');panel.dataset.motion='entering';
       const element=visual(frame);frame.classList.remove('profile-frame-loading');
       const tasks=[play(frame,[{opacity:0},{opacity:1}],{duration:240,easing:ease})];
-      const rail=view==='cv'&&frame.contentDocument?.querySelector('#extras-rail');
-      if(rail&&!rail.hidden)tasks.push(play(rail,[{opacity:0,transform:'translateX(16px)'},{opacity:1,transform:'none'}],{duration:380,delay:220,easing:ease,fill:'backwards'}));
       if(element&&card&&view==='cv') {
         const rect=element.getBoundingClientRect(),from=cardProjection(card.getBoundingClientRect(),rect);
         element.style.transformOrigin='50% 0';
@@ -28,12 +41,8 @@ export function createProfileMotion(panel) {
       generation++;
       const element=visual(frame),style=element&&frame.contentWindow.getComputedStyle(element),current=style&&{opacity:style.opacity,transform:style.transform,clipPath:style.clipPath};
       const opacity=frame?frame.ownerDocument.defaultView.getComputedStyle(frame).opacity:1;
-      const rail=view==='cv'&&frame?.contentDocument?.querySelector('#extras-rail');
-      const railStyle=rail&&frame.contentWindow.getComputedStyle(rail);
-      const railFrom=railStyle&&{opacity:railStyle.opacity,transform:railStyle.transform};
       stop();panel.classList.add('is-closing');panel.dataset.motion='closing';
       const duration=view==='cv'&&card?420:200,tasks=[];
-      if(rail&&!rail.hidden)tasks.push(play(rail,[railFrom,{opacity:0,transform:'translateX(10px)'}],{duration:160,easing:ease,fill:'forwards'}));
       if(element) {
         const to=view==='cv'&&card?.isConnected?cardProjection(card.getBoundingClientRect(),element.getBoundingClientRect()):{transform:view==='settings'?'translateX(26px)':'translateY(8px) scale(.985)'};
         tasks.push(play(element,[current,{...to,opacity:0}],{duration,easing:'cubic-bezier(.5,0,.2,1)',fill:'forwards'}));

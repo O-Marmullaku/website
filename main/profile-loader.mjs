@@ -4,7 +4,7 @@ if (window===parent) {
   if(params.get('view')==='settings'){destination.searchParams.set('settings','1');destination.searchParams.set('sign-in','1');}
   location.replace(destination);
 } else try {
-  const response=await fetch('../profile/editor.html?v=fast-open-1');
+  const response=await fetch('../profile/editor.html?v=revamp-20261026');
   if(!response.ok)throw new Error('Could not load the CV. Please try again.');
   const template=new DOMParser().parseFromString(await response.text(),'text/html');
   const loadStyle=link=>new Promise((resolve,reject)=>{
@@ -19,17 +19,17 @@ if (window===parent) {
   });
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
-  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=reader-toolbar-1';styles.push(loadStyle(style));
-  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=mobile-entries-1';styles.push(loadStyle(paperStyle));
+  const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=revamp-20261026';styles.push(loadStyle(style));
+  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=revamp-20261026';styles.push(loadStyle(paperStyle));
   await Promise.all(styles);
   if(parent.MARMULLAKU_MOCKUP) {
-    await (await import('../mockup/preview-session.mjs?v=cleanup')).bootstrapPreview({ownerID:new URLSearchParams(location.search).get('id')||'osman'});
+    await (await import('../mockup/preview-session.mjs?v=revamp-20261026')).bootstrapPreview({ownerID:new URLSearchParams(location.search).get('id')||'osman'});
   } else if(['localhost','127.0.0.1','[::1]'].includes(location.hostname)&&parent.MARMULLAKU_LOCAL_PREVIEW) {
-    await (await import('./local-preview.mjs?v=local-cv-3')).bootstrapLocal(new URLSearchParams(location.search).get('id')||'osman');
+    await (await import('./local-preview.mjs?v=revamp-20261026')).bootstrapLocal(new URLSearchParams(location.search).get('id')||'osman');
   } else {
-  for(const path of ['../main/backend-config.js','../main/access-api.js?v=accounts-2','../admin/session.js?v=cleanup'])await new Promise((resolve,reject)=>{
+  for(const path of ['../main/backend-config.js','../main/access-api.js?v=revamp-20261026','../admin/session.js?v=revamp-20261026'])await new Promise((resolve,reject)=>{
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
   }
-  await import('../profile/editor.js?v=fast-open-1');
+  await import('../profile/editor.js?v=revamp-20261026');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

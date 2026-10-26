@@ -53,14 +53,6 @@ html[data-live] #resume .cv-running-head{color:var(--cv-muted);background:var(--
 /* Owner controls are overlays so Edit and Preview retain identical page breaks. */
 html[data-live] #resume .cv-row-options{right:-24px}
 html[data-live] #resume .resume-column:first-child .cv-row-options{right:-16px}
-.cv-theme-picker{margin:0 0 24px;padding:0;border:0;display:grid;grid-template-columns:1fr 1fr;gap:6px}
-.cv-theme-picker legend{color:#c3d3e4;font-size:12px;margin-bottom:10px}
-.cv-theme-picker label{position:relative;display:flex;align-items:center;gap:8px;min-height:40px;padding:8px;font-size:12px;color:#e5edf7;border:1px solid transparent;border-radius:6px;cursor:pointer}
-.cv-theme-picker label:has(:checked){border-color:#9bcaff;background:#20344b}
-.cv-theme-picker label:has(:focus-visible){outline:2px solid #9bcaff;outline-offset:2px}
-.cv-theme-picker input{position:absolute;opacity:0;width:1px;height:1px;padding:0}
-.cv-theme-dot{width:18px;height:18px;border-radius:50%;box-shadow:0 0 0 1px #ffffff55;flex:none}
-.preview-view .cv-theme-picker{display:none}
 @media(max-width:680px){
  html[data-live] #resume .cv-page .resume-sections{display:block}
  html[data-live] #resume .resume-column:first-child{padding:1px 22px 12px}
@@ -91,7 +83,7 @@ html.cv-printing[data-live] #resume .cv-row-logo{float:right;display:block;width
 html.cv-printing[data-live] #resume .cv-row-text,html.cv-printing[data-live] #resume .section-copy,html.cv-printing[data-live] #resume .cv-language-description{font-size:14.5px}
 html.cv-printing[data-live] #resume .cv-cell-date .cv-row-text{font-size:14px}
 html.cv-printing[data-live] #resume .paper-foot{margin:0 23px 0 calc(29.3% + 23px)}
-@media print{.cv-theme-picker{display:none!important}html[data-live] #resume .cv-page{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
+@media print{html[data-live] #resume .cv-page{print-color-adjust:exact;-webkit-print-color-adjust:exact}}
 
 html[data-live] #resume .cv-row-list{padding-left:12px}
 html[data-live] #resume .resume-column:first-child [data-section=contact] .cv-row{padding-left:36px;padding-right:0}
@@ -146,11 +138,6 @@ html.cv-printing[data-live] #resume .cv-document-card{padding-right:44px}
 html.cv-printing[data-live] #resume .cv-row.cv-document-card{margin-right:0}
 html.cv-printing[data-live] #resume .cv-row-timeline.cv-document-card:not(:has(.cv-row-logo)){padding-right:36px}
 html.cv-printing[data-live] #resume .cv-row-timeline.cv-document-card:has(.cv-row-logo){padding-right:0}
-
-.cv-typography-picker{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:-8px 0 24px;color:#c3d3e4;font-size:12px}
-.cv-typography-picker select{width:auto;min-height:40px;padding:8px;color:#e5edf7;background:#13263c;border:1px solid #607c9b;border-radius:5px;font:inherit}
-.preview-view .cv-typography-picker{display:none}
-@media print{.cv-typography-picker{display:none!important}}
 
 html[data-live] #resume .cv-section-continuation .section-heading h3{font-size:var(--cv-heading-size)}
 

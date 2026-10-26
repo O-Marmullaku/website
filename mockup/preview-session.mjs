@@ -1,6 +1,6 @@
-import {createPreviewAPI} from './preview-api.mjs?v=cleanup';
-import {createAssetStore,getPDF as originalAsset} from '../profile/pdf-store.mjs?v=cleanup';
-import {profilesToSeed,applyCopyUpdates} from './profile-seed.mjs?v=cv-copy';
+import {createPreviewAPI} from './preview-api.mjs?v=revamp-20261026';
+import {createAssetStore,getPDF as originalAsset} from '../profile/pdf-store.mjs?v=revamp-20261026';
+import {profilesToSeed,applyCopyUpdates} from './profile-seed.mjs?v=revamp-20261026';
 
 const key='marmullaku-site-preview-v1',signedOut='marmullaku-preview-signed-out';
 const store=createAssetStore('marmullaku-site-preview-attachments');

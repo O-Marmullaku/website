@@ -1,4 +1,4 @@
-import {positionRowHint} from './document-hints.mjs?v=experience-projects-2';
+import {positionRowHint} from './document-hints.mjs?v=revamp-20261026';
 
 // Selected from CrazyEntertainmentWebsite/index.html; the studio link opens its full catalogue.
 const projects=[
