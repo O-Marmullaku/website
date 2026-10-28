@@ -8,6 +8,7 @@ try{
  await page.goto(base+'/robots.txt');
  await page.setContent(`<html data-live="true"><head><base href="${base}/profile/"><link rel="stylesheet" href="${base}/profile/editor.css"><link rel="stylesheet" href="${base}/main/profile-live.css"><link rel="stylesheet" href="${base}/main/cv-paper.css"></head><body><dialog id="resume" open><div class="resume-workspace"><article class="paper" style="margin-top:200px"><section data-section="experience" style="padding:24px"><div class="cv-rows">
  <div class="cv-row cv-row-timeline"><div class="cv-cell-date">2025–present</div><div class="cv-row-content"><img class="cv-row-logo" src="${base}/main/pictures/projects/tableking.webp" alt="Studio logo"><div class="cv-cell-title"><a class="cv-row-text" href="https://crazyentertainment.ch/">Self-employed Software Developer</a></div><p>Crazy Entertainment Marmullaku</p><p>Develop and maintain web, mobile and desktop applications.</p></div></div>
+ <div class="cv-row cv-row-timeline plain-experience"><div class="cv-cell-date">2025</div><div class="cv-row-content"><div class="cv-cell-title"><p class="cv-row-text">Telematics Soldier</p></div><p>Swiss Armed Forces</p></div></div>
  <div class="cv-row cv-row-timeline cv-document-card"><div class="cv-cell-date">2023–2024</div><div class="cv-row-content"><img class="cv-row-logo" src="${base}/main/pictures/projects/dump-to-txt.webp" alt="Company logo"><div class="cv-cell-title"><p class="cv-row-text">Software Developer</p></div><p>Siemens</p></div><div class="document-attachments"><button class="document-link" aria-label="Open Arbeitszeugnis Siemens"><span>Arbeitszeugnis Siemens</span></button></div></div>
  </div></section></article></div></dialog></body></html>`);
  await page.evaluate(async base=>{
@@ -15,13 +16,20 @@ try{
   const {setupExperienceProjects}=await import(base+'/profile/experience-projects.mjs');
   const {setupImageMagnifier}=await import(base+'/profile/image-magnifier.mjs');
   const root=document.querySelector('#resume');setupDocumentHints(root);window.projects=setupExperienceProjects(root);setupImageMagnifier();
+  root.addEventListener('click',event=>{if(event.target===root)root.close();});
+  window.panelTransitions=[];root.addEventListener('transitionrun',event=>{if(event.target.matches('.cv-project-panel'))window.panelTransitions.push(event.propertyName);});
  },base);
  const trigger=page.getByRole('button',{name:'View Crazy Entertainment projects',exact:true});
  const panel=page.locator('.cv-project-panel'),studio=page.locator('.cv-row').first();
  await trigger.locator('img').waitFor({state:'visible'});
  const positions=()=>page.locator('.cv-row').evaluateAll(rows=>rows.map(row=>row.getBoundingClientRect().toJSON()));
  const baseline=await positions();
+ await trigger.click();await panel.waitFor({state:'visible'});
+ assert(await page.locator('#resume').evaluate(el=>el.open),'the travelling logo cannot intercept pointer-up and turn a trigger click into a backdrop click');
+ await panel.getByRole('button',{name:'Close projects',exact:true}).click();await panel.waitFor({state:'hidden'});
+ await page.mouse.move(0,0);
  await studio.hover();await panel.waitFor({state:'visible'});
+ await page.waitForFunction(()=>window.panelTransitions.includes('opacity'));
  assert.equal(await trigger.getAttribute('aria-expanded'),'true');
  assert.deepEqual(await positions(),baseline,'the logo flight must not move résumé text or page breaks');
  assert(await panel.evaluate(el=>el.getBoundingClientRect().left>document.querySelector('.cv-row').getBoundingClientRect().right),'desktop projects appear to the right');
@@ -30,9 +38,19 @@ try{
  assert.equal(await panel.getByText('CoachLexy',{exact:true}).count(),1);
  assert.equal(await panel.getByRole('link',{name:'All projects',exact:true}).getAttribute('href'),'https://crazyentertainment.ch/#work');
  await panel.hover();await page.waitForTimeout(240);assert(await panel.isVisible(),'pointer can cross the gap into projects');
+ await studio.hover();await page.waitForTimeout(240);assert(await panel.evaluate(el=>el.matches(':popover-open')),'returning to the source cancels the scheduled close');
+ await trigger.focus();
+ await page.locator('.plain-experience').hover();
+ assert.equal(await panel.evaluate(el=>el.matches(':popover-open')),false,'entering an ordinary row immediately closes the old projects panel');
+ assert.equal(await studio.evaluate(el=>getComputedStyle(el,'::after').opacity),'0','a focused project row cannot remain highlighted while another row is hovered');
+ await panel.waitFor({state:'hidden'});
+ await studio.hover();await panel.waitFor({state:'visible'});
  await page.locator('.cv-document-card').hover();await page.locator('.cv-document-hint').waitFor({state:'visible'});
- assert.equal(await panel.isVisible(),false,'document and project hints do not compete');
- await trigger.focus();await panel.waitFor({state:'visible'});await trigger.press('Enter');
+ assert.equal(await panel.evaluate(el=>el.matches(':popover-open')),false,'document and project hints do not compete');
+ await panel.waitFor({state:'hidden'});
+ await page.locator('.plain-experience').hover();
+ assert.equal(await page.locator('.cv-document-hint').evaluate(el=>el.matches(':popover-open')),false,'entering another row clears a stale document hint');
+ await trigger.focus();await trigger.press('Enter');await panel.waitFor({state:'visible'});
  assert(await panel.getByRole('link').first().evaluate(el=>el===document.activeElement),'keyboard activation enters the project links');
  await page.keyboard.press('Escape');await panel.waitFor({state:'hidden'});
  assert(await trigger.evaluate(el=>el===document.activeElement),'Escape returns focus to the project action');
@@ -43,8 +61,10 @@ try{
  await page.evaluate(()=>window.projects.sync());assert.equal(await trigger.count(),1,'repeated rendering does not duplicate actions');
  await page.setViewportSize({width:1200,height:900});await trigger.click();await panel.waitFor({state:'visible'});
  assert(await panel.evaluate(el=>el.scrollWidth<=el.clientWidth),'medium widths use the fallback instead of squeezing the project header');
+ await page.waitForTimeout(300);await page.screenshot({path:'work/projects-hover-desktop.png'});
  await page.setViewportSize({width:390,height:844});await trigger.click();await panel.waitFor({state:'visible'});
  assert(await panel.evaluate(el=>{const r=el.getBoundingClientRect();return r.left>=12&&r.right<=innerWidth-12&&r.top>=12&&r.bottom<=innerHeight-12&&el.scrollWidth<=el.clientWidth;}),'mobile panel fits the viewport without clipping');
+ await page.waitForTimeout(300);await page.screenshot({path:'work/projects-hover-phone.png'});
  await page.evaluate(()=>dispatchEvent(new Event('beforeprint')));await panel.waitFor({state:'hidden'});
  await page.emulateMedia({media:'print'});
  assert.equal(await trigger.locator('img').evaluate(el=>getComputedStyle(el).visibility),'visible','print retains the studio logo');

@@ -1,5 +1,5 @@
 import {createProfileMotion} from '../main/profile-motion.mjs?v=revamp-20261026';
-import {setupProfilePreload} from '../main/profile-preload.mjs?v=revamp-20261026';
+import {setupProfilePreload} from '../main/profile-preload.mjs?v=hover-20261028';
 setupProfilePreload(document);
 await window.marmullakuServicesReady;
 (() => {
@@ -47,7 +47,7 @@ await window.marmullakuServicesReady;
     if(current!==generation)return;
     view=nextView;origin=source||document.activeElement;focusBefore=document.activeElement;origin?.setAttribute('aria-busy','true');notice.hidden=dismiss.hidden=true;
     frame?.remove();frame=document.createElement('iframe');frame.title=view==='settings'?'Profile settings':'CV';frame.referrerPolicy='no-referrer';frame.className='profile-frame-loading';
-    const url=new URL('profile/',document.baseURI);url.searchParams.set('view',view);url.searchParams.set('v','revamp-20261026');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
+    const url=new URL('profile/',document.baseURI);url.searchParams.set('view',view);url.searchParams.set('v','hover-20261028');if(id)url.searchParams.set('id',id);if(token)url.hash='invite='+token;
     frame.src=url;panel.classList.toggle('settings-window',view==='settings');panel.append(frame);panel.classList.add('preparing');
     clearTimeout(loading);loading=setTimeout(()=>{origin?.removeAttribute('aria-busy');panel.classList.remove('preparing');notice.textContent='Could not open this page. Close and try again.';notice.hidden=dismiss.hidden=false;if(!panel.open)panel.showModal();},20000);
   }

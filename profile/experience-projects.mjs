@@ -1,4 +1,4 @@
-import {positionRowHint} from './document-hints.mjs?v=revamp-20261026';
+import {positionRowHint} from './document-hints.mjs?v=hover-20261028';
 
 // Selected from CrazyEntertainmentWebsite/index.html; the studio link opens its full catalogue.
 const projects=[
@@ -21,10 +21,10 @@ export function setupExperienceProjects(root){
   }
   root.append(panel);
   const logo=panel.querySelector('.project-studio-logo');
-  let source,row,closing,flight,dismissing=false,printing=false;
+  let source,row,opening,closing,flight,dismissing=false,printing=false;
   const cancelClose=()=>clearTimeout(closing);
   function hide(){
-    cancelClose();flight?.cancel();dismissing=true;
+    clearTimeout(opening);cancelClose();flight?.cancel();dismissing=true;
     row?.classList.remove('projects-open');source?.setAttribute('aria-expanded','false');
     if(panel.matches(':popover-open'))panel.hidePopover();
     source=row=null;dismissing=false;
@@ -33,7 +33,7 @@ export function setupExperienceProjects(root){
     if(!source?.isConnected||!positionRowHint(panel,row,320,280))hide();
   }
   function show(button){
-    cancelClose();
+    clearTimeout(opening);cancelClose();
     if(dismissing||printing)return;
     if(!button?.isConnected||root.querySelector('.document-open,[contenteditable="plaintext-only"]'))return hide();
     if(source===button&&panel.matches(':popover-open'))return;
@@ -48,7 +48,7 @@ export function setupExperienceProjects(root){
     flight=logo.animate([
       {transform:`translate(${start.left-end.left}px,${start.top-end.top}px) scale(${start.width/end.width},${start.height/end.height})`},
       {transform:'none'},
-    ],{duration:420,easing:'cubic-bezier(.16,1,.3,1)'});
+    ],{duration:280,easing:'cubic-bezier(.16,1,.3,1)'});
   }
   const scheduleClose=()=>{cancelClose();closing=setTimeout(hide,180);};
   function dismissToSource(){
@@ -72,11 +72,18 @@ export function setupExperienceProjects(root){
     });
   }
   root.addEventListener('pointerover',event=>{
-    if(event.pointerType==='touch'||event.target.closest('.document-link,.cv-row-options,[contenteditable="plaintext-only"]'))return;
-    const entry=event.target.closest('[data-section="experience"] .cv-row');
-    const button=entry?.querySelector('.cv-project-trigger');if(button)show(button);
+    if(event.pointerType==='touch')return;
+    const entry=event.target.closest('.cv-row');
+    if(entry&&source&&entry!==row)hide();
+    if(event.target.closest('.document-link,.cv-row-options,[contenteditable="plaintext-only"]'))return;
+    const button=entry?.querySelector('.cv-project-trigger');
+    if(button===source&&button)cancelClose();
+    else if(button){clearTimeout(opening);opening=setTimeout(()=>show(button),120);}
   });
-  root.addEventListener('pointerout',event=>{if(source&&!row.contains(event.relatedTarget)&&!panel.contains(event.relatedTarget))scheduleClose();});
+  root.addEventListener('pointerout',event=>{
+    if(!event.target.closest('.cv-row')?.contains(event.relatedTarget))clearTimeout(opening);
+    if(source&&!row.contains(event.relatedTarget)&&!panel.contains(event.relatedTarget))scheduleClose();
+  });
   panel.addEventListener('pointerenter',cancelClose);
   panel.addEventListener('pointerleave',event=>{if(!row?.contains(event.relatedTarget))scheduleClose();});
   root.addEventListener('focusin',event=>{

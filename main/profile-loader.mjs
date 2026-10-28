@@ -20,7 +20,7 @@ if (window===parent) {
   template.querySelectorAll('script').forEach(script=>script.remove());
   document.body.replaceChildren(...[...template.body.childNodes].map(node=>document.importNode(node,true)));
   const style=document.createElement('link');style.rel='stylesheet';style.href='../main/profile-live.css?v=revamp-20261026';styles.push(loadStyle(style));
-  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=revamp-20261026';styles.push(loadStyle(paperStyle));
+  const paperStyle=document.createElement('link');paperStyle.rel='stylesheet';paperStyle.href='../main/cv-paper.css?v=hover-20261028';styles.push(loadStyle(paperStyle));
   await Promise.all(styles);
   if(parent.MARMULLAKU_MOCKUP) {
     await (await import('../mockup/preview-session.mjs?v=revamp-20261026')).bootstrapPreview({ownerID:new URLSearchParams(location.search).get('id')||'osman'});
@@ -31,5 +31,5 @@ if (window===parent) {
     const script=document.createElement('script');script.src=path;script.onload=resolve;script.onerror=()=>reject(new Error('Could not load account services.'));document.body.append(script);
   });
   }
-  await import('../profile/editor.js?v=revamp-20261026');
+  await import('../profile/editor.js?v=hover-20261028');
 } catch(error){parent.postMessage({type:'marmullaku-error',message:error.message},location.origin);}

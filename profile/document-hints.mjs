@@ -43,6 +43,7 @@ export function setupDocumentHints(root) {
   const scheduleClose=()=>{cancelClose();closing=setTimeout(hide,140);};
   root.addEventListener('pointerover',event=>{
     if(event.pointerType==='touch')return;
+    if(source&&event.target.closest('.cv-row')&&!row.contains(event.target))hide();
     const card=event.target.closest('.cv-document-card');
     const button=event.target.closest('.document-link')||card?.querySelector('.document-link');
     if(button)show(button);
